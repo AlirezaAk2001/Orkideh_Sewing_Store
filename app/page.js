@@ -25,8 +25,7 @@ export default function Home() {
         setError(err.message);
       } finally {
         setLoading(false);
-        // تاخیر کوچک برای نمایش اسکلتون
-        setTimeout(() => setIsContentLoaded(true), 300);
+        setIsContentLoaded(true);
       }
     };
     fetchCategories();

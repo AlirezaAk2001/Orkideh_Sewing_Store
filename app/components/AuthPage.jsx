@@ -12,6 +12,59 @@ import { useAuth } from "../../lib/context";
 
 const allowedAdmins = ["poshtibani.orkideh@gmail.com"];
 
+const AnimatedTextField = ({ field, label, type = "text", formData, errors, touched, shakeFields, handleChange, handleBlur, ...props }) => {
+  const hasError = errors[field] && touched[field];
+  const isShaking = shakeFields[field];
+
+  return (
+    <div>
+      <motion.div
+        animate={isShaking ? {
+          x: [0, -10, 10, -8, 8, -5, 5, 0],
+          transition: { duration: 0.4 }
+        } : {}}
+      >
+        <TextField
+          {...rtlStyles}
+          type={type}
+          name={field}
+          label={label}
+          className="w-full p-2 sm:p-3 md:p-4 border rounded"
+          value={formData[field]}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          error={hasError}
+          {...props}
+        />
+      </motion.div>
+      {hasError && (
+        <motion.p
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-red-500 text-xs sm:text-sm md:text-base mt-1"
+        >
+          {errors[field]}
+        </motion.p>
+      )}
+    </div>
+  );
+};
+
+const rtlStyles = {
+  InputLabelProps: {
+    sx: {
+      transformOrigin: "right !important",
+      left: "inherit !important",
+      right: "1.75rem !important",
+    },
+  },
+  sx: {
+    "& legend": {
+      textAlign: "right",
+    },
+  },
+};
+
 export default function AuthPage() {
   const { login, loading, error, updateUser } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
@@ -20,6 +73,7 @@ export default function AuthPage() {
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
+    fullName: "",
     email: "",
     username: "",
     password: "",
@@ -28,6 +82,8 @@ export default function AuthPage() {
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({}); // برای tracking فیلدهای لمس شده
   const [usernameExists, setUsernameExists] = useState(false);
+  const [isCheckingUsername, setIsCheckingUsername] = useState(false);
+  const [usernameAvailable, setUsernameAvailable] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [verificationCode, setVerificationCode] = useState("");
@@ -37,21 +93,6 @@ export default function AuthPage() {
   const pathname = usePathname();
   const router = useRouter();
   const [backgroundImage, setBackgroundImage] = useState("/image/logo.png");
-
-  const rtlStyles = {
-    InputLabelProps: {
-      sx: {
-        transformOrigin: "right !important",
-        left: "inherit !important",
-        right: "1.75rem !important",
-      },
-    },
-    sx: {
-      "& legend": {
-      textAlign: "right",
-      },
-    },
-  };
 
   useEffect(() => {
     const fetchBackground = async () => {
@@ -86,6 +127,16 @@ export default function AuthPage() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    if (name === "fullName") {
+      const parts = value.trim().split(/\s+/);
+      const first = parts[0] || "";
+      const last = parts.slice(1).join(" ") || "";
+      setFormData((prev) => ({ ...prev, fullName: value, firstName: first, lastName: last }));
+      setTouched((prev) => ({ ...prev, fullName: true }));
+      validateField("firstName", first);
+      validateField("lastName", last);
+      return;
+    }
     setTouched((prev) => ({ ...prev, [name]: true }));
     validateField(name, value);
   };
@@ -97,6 +148,34 @@ export default function AuthPage() {
   };
 
   useEffect(() => {
+    if (!formData.username || formData.username.length < 3) {
+      setUsernameExists(false);
+      setUsernameAvailable(false);
+      setIsCheckingUsername(false);
+      return;
+    }
+
+    setIsCheckingUsername(true);
+    setUsernameExists(false);
+    setUsernameAvailable(false);
+
+    const checkUsernameExists = async () => {
+      try {
+        const res = await fetch(`/api/user/check-username?username=${formData.username}`);
+        const data = await res.json();
+        setUsernameExists(data.exists);
+        setUsernameAvailable(!data.exists);
+        if (data.exists) triggerShake(["username"]);
+      } catch (err) {
+        console.error("خطا در بررسی نام کاربری موجود:", err);
+      } finally {
+        setIsCheckingUsername(false);
+      }
+    };
+
+    const timeout = setTimeout(checkUsernameExists, 600);
+    return () => clearTimeout(timeout);
+  }, [formData.username]); useEffect(() => {
     const checkUsernameExists = async () => {
       if (!formData.username || formData.username.length < 3) {
         setUsernameExists(false);
@@ -131,8 +210,14 @@ export default function AuthPage() {
         else if (!persianRegex.test(value)) error = "نام خانوادگی باید به فارسی باشد";
         break;
       case "email":
-        if (!value.trim()) error = "ایمیل نمی‌تواند خالی باشد";
-        else if (!/\S+@\S+\.\S+/.test(value)) error = "ایمیل معتبر وارد کنید";
+        if (!isLogin) {
+          // ولیدیشن سخت‌گیرانه فقط برای حالت ثبت‌نام
+          if (!value.trim()) error = "ایمیل نمی‌تواند خالی باشد";
+          else if (!/\S+@\S+\.\S+/.test(value)) error = "ایمیل معتبر وارد کنید";
+        } else {
+          // ولیدیشن ساده برای حالت ورود (ایمیل یا نام کاربری)
+          if (!value.trim()) error = "ایمیل یا نام کاربری نمی‌تواند خالی باشد";
+        }
         break;
       case "username":
         if (!value.trim()) error = "نام کاربری نمی‌تواند خالی باشد";
@@ -169,7 +254,7 @@ export default function AuthPage() {
         newErrors.firstName = "نام باید به فارسی باشد";
         fieldsToValidate.push("firstName");
       }
-      
+
       if (!lastName.trim()) {
         newErrors.lastName = "نام خانوادگی نمی‌تواند خالی باشد";
         fieldsToValidate.push("lastName");
@@ -177,7 +262,7 @@ export default function AuthPage() {
         newErrors.lastName = "نام خانوادگی باید به فارسی باشد";
         fieldsToValidate.push("lastName");
       }
-      
+
       if (!email.trim()) {
         newErrors.email = "ایمیل نمی‌تواند خالی باشد";
         fieldsToValidate.push("email");
@@ -185,7 +270,7 @@ export default function AuthPage() {
         newErrors.email = "ایمیل معتبر وارد کنید";
         fieldsToValidate.push("email");
       }
-      
+
       if (!username.trim()) {
         newErrors.username = "نام کاربری نمی‌تواند خالی باشد";
         fieldsToValidate.push("username");
@@ -193,7 +278,7 @@ export default function AuthPage() {
         newErrors.username = "نام کاربری باید فقط شامل حروف، اعداد یا _ باشد و حداقل ۳ کاراکتر داشته باشد";
         fieldsToValidate.push("username");
       }
-      
+
       if (!password.trim()) {
         newErrors.password = "رمز عبور نمی‌تواند خالی باشد";
         fieldsToValidate.push("password");
@@ -201,7 +286,7 @@ export default function AuthPage() {
         newErrors.password = "رمز عبور باید حداقل ۸ کاراکتر، شامل عدد، حرف و یک کاراکتر خاص باشد";
         fieldsToValidate.push("password");
       }
-      
+
       if (!confirmPassword.trim()) {
         newErrors.confirmPassword = "تأیید رمز عبور نمی‌تواند خالی باشد";
         fieldsToValidate.push("confirmPassword");
@@ -210,14 +295,12 @@ export default function AuthPage() {
         fieldsToValidate.push("confirmPassword");
       }
     } else {
+      // ولیدیشن حالت ورود
       if (!email.trim()) {
-        newErrors.email = "ایمیل نمی‌تواند خالی باشد";
-        fieldsToValidate.push("email");
-      } else if (!/\S+@\S+\.\S+/.test(email)) {
-        newErrors.email = "ایمیل معتبر وارد کنید";
+        newErrors.email = "ایمیل یا نام کاربری نمی‌تواند خالی باشد";
         fieldsToValidate.push("email");
       }
-      
+
       if (!password.trim()) {
         newErrors.password = "رمز عبور نمی‌تواند خالی باشد";
         fieldsToValidate.push("password");
@@ -225,12 +308,12 @@ export default function AuthPage() {
     }
 
     setErrors(newErrors);
-    
+
     // ایجاد لرزش برای فیلدهای خطادار
     if (fieldsToValidate.length > 0) {
       triggerShake(fieldsToValidate);
     }
-    
+
     return Object.keys(newErrors).length === 0;
   };
 
@@ -245,7 +328,7 @@ export default function AuthPage() {
         const resp = await fetch("/api/auth/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: formData.email, password: formData.password }),
+          body: JSON.stringify({ identifier: formData.email, password: formData.password }),
         });
         const data = await resp.json();
         if (!resp.ok) throw new Error(data.error || "Login failed");
@@ -321,48 +404,9 @@ export default function AuthPage() {
     console.log("Pathname:", pathname, "isVerifying:", isVerifying, "loading:", loading);
   }, [pathname, isVerifying, loading]);
 
-  // کامپوننت فیلد ورودی با لرزش
-  const AnimatedTextField = ({ field, label, type = "text", ...props }) => {
-    const hasError = errors[field] && touched[field];
-    const isShaking = shakeFields[field];
-    
-    return (
-      <div>
-        <motion.div
-          animate={isShaking ? {
-            x: [0, -10, 10, -8, 8, -5, 5, 0],
-            transition: { duration: 0.4 }
-          } : {}}
-        >
-          <TextField
-            {...rtlStyles}
-            type={type}
-            name={field}
-            label={label}
-            className="w-full p-2 sm:p-3 md:p-4 border rounded"
-            value={formData[field]}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            error={hasError}
-            {...props}
-          />
-        </motion.div>
-        {hasError && (
-          <motion.p 
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-red-500 text-xs sm:text-sm md:text-base mt-1"
-          >
-            {errors[field]}
-          </motion.p>
-        )}
-      </div>
-    );
-  };
-
   return (
     <>
-      <Toaster 
+      <Toaster
         position="top-center"
         reverseOrder={false}
         toastOptions={{
@@ -399,77 +443,226 @@ export default function AuthPage() {
                 <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 sm:mb-4 text-center">
                   {isLogin ? "ورود" : "ثبت‌نام"}
                 </h2>
-        
+
                 <form onSubmit={handleSubmit} className="space-y-2 sm:space-y-1 md:space-y-2" dir="rtl">
                   {!isLogin && (
                     <>
-                      <AnimatedTextField field="firstName" label="نام" />
-                      <AnimatedTextField field="lastName" label="نام خانوادگی" />
+                      {/* باکس واحد نام و نام خانوادگی */}
+                      <div>
+                        <motion.div
+                          animate={shakeFields.firstName || shakeFields.lastName ? {
+                            x: [0, -10, 10, -8, 8, -5, 5, 0],
+                            transition: { duration: 0.4 }
+                          } : {}}
+                        >
+                          <TextField
+                            {...rtlStyles}
+                            fullWidth
+                            type="text"
+                            name="fullName"
+                            label="نام و نام خانوادگی"
+                            placeholder="مثال: محسن عزیزی"
+                            value={formData.fullName}
+                            onChange={handleChange}
+                            onBlur={(e) => {
+                              const parts = e.target.value.trim().split(/\s+/);
+                              const first = parts[0] || "";
+                              const last = parts.slice(1).join(" ") || "";
+
+                              if (!first && !last) {
+                                setErrors((prev) => ({ ...prev, firstName: "نام و نام خانوادگی نمی‌تواند خالی باشد" }));
+                                setTouched((prev) => ({ ...prev, firstName: true }));
+                              } else if (first && !last) {
+                                setErrors((prev) => ({ ...prev, lastName: "نام خانوادگی نمی‌تواند خالی باشد" }));
+                                setTouched((prev) => ({ ...prev, lastName: true }));
+                              } else if (!first && last) {
+                                setErrors((prev) => ({ ...prev, firstName: "نام نمی‌تواند خالی باشد" }));
+                                setTouched((prev) => ({ ...prev, firstName: true }));
+                              }
+                            }}
+                            error={!!((errors.firstName && touched.firstName) || (errors.lastName && touched.lastName))}
+                          />
+                        </motion.div>
+                        <div>
+                          {errors.firstName && touched.firstName && (
+                            <motion.p
+                              initial={{ opacity: 0, y: -6 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              className="text-red-500 text-xs sm:text-sm mt-1"
+                            >
+                              {errors.firstName}
+                            </motion.p>
+                          )}
+                          {errors.lastName && touched.lastName && !errors.firstName && (
+                            <motion.p
+                              initial={{ opacity: 0, y: -6 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              className="text-red-500 text-xs sm:text-sm mt-1"
+                            >
+                              {errors.lastName}
+                            </motion.p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* نام کاربری اول */}
+                      <div>
+                        <AnimatedTextField
+                          field="username"
+                          label="نام کاربری"
+                          formData={formData}
+                          placeholder="مثال: aaa_123"
+                          errors={errors}
+                          touched={touched}
+                          shakeFields={shakeFields}
+                          handleChange={handleChange}
+                          handleBlur={handleBlur}
+                        />
+                        <div>
+                          {isCheckingUsername && formData.username.length >= 3 && (
+                            <motion.div
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              className="flex items-center gap-2 text-gray-500 text-xs sm:text-sm"
+                            >
+                              <CircularProgress size={14} color="inherit" />
+                              <span>در حال بررسی نام کاربری...</span>
+                            </motion.div>
+                          )}
+                          {!isCheckingUsername && usernameExists && (
+                            <motion.p
+                              initial={{ opacity: 0, y: -6 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              className="text-red-500 text-xs sm:text-sm"
+                            >
+                              نام کاربری انتخاب شده تکراری است
+                            </motion.p>
+                          )}
+                          {!isCheckingUsername && usernameAvailable && formData.username.length >= 3 && (
+                            <motion.p
+                              initial={{ opacity: 0, y: -6 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              className="text-green-500 text-xs sm:text-sm"
+                            >
+                              نام کاربری انتخاب شده مورد قبول است
+                            </motion.p>
+                          )}
+                        </div>
+                      </div>
                     </>
                   )}
-              
-                  <AnimatedTextField field="email" label="ایمیل" type="email" />
-                  
-                  {!isLogin && (
+
+                  {/* ایمیل بعد از نام کاربری */}
+                  <AnimatedTextField
+                    field="email"
+                    label={isLogin ? "ایمیل یا نام کاربری" : "ایمیل"}
+                    placeholder={isLogin ? "مثال: example@gmail.com یا aaa_123" : "example@gmail.com"}
+                    type={isLogin ? "text" : "email"}
+                    formData={formData}
+                    errors={errors}
+                    touched={touched}
+                    shakeFields={shakeFields}
+                    handleChange={handleChange}
+                    handleBlur={handleBlur}
+                  />
+
+                  {/* رمز عبور و تأیید رمز عبور کنار هم */}
+                  {!isLogin ? (
                     <div>
-                      <AnimatedTextField field="username" label="نام کاربری" />
-                      {usernameExists && (
-                        <motion.p 
-                          initial={{ opacity: 0, y: -10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className="text-red-500 text-xs sm:text-sm md:text-base mt-1"
-                        >
-                          این نام کاربری قبلاً انتخاب شده است
-                        </motion.p>
-                      )}
+                      <div className="flex gap-2">
+                        {/* رمز عبور */}
+                        <div className="flex-1">
+                          <motion.div
+                            animate={shakeFields.password ? {
+                              x: [0, -10, 10, -8, 8, -5, 5, 0],
+                              transition: { duration: 0.4 }
+                            } : {}}
+                            className="relative"
+                          >
+                            <TextField
+                              {...rtlStyles}
+                              fullWidth
+                              type={showPassword ? "text" : "password"}
+                              name="password"
+                              label="رمز عبور"
+                              placeholder="مثال: A@123456"
+                              value={formData.password}
+                              onChange={handleChange}
+                              onBlur={handleBlur}
+                              error={!!(errors.password && touched.password)}
+                            />
+                            {formData.password && (
+                              <button
+                                type="button"
+                                onClick={() => setShowPassword((prev) => !prev)}
+                                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                                tabIndex={-1}
+                              >
+                                <Icon path={showPassword ? mdiEyeOffOutline : mdiEyeOutline} size={0.9} />
+                              </button>
+                            )}
+                          </motion.div>
+                        </div>
+                        {/* تأیید رمز عبور */}
+                        <div className="flex-1">
+                          <motion.div
+                            animate={shakeFields.confirmPassword ? {
+                              x: [0, -10, 10, -8, 8, -5, 5, 0],
+                              transition: { duration: 0.4 }
+                            } : {}}
+                            className="relative"
+                          >
+                            <TextField
+                              {...rtlStyles}
+                              fullWidth
+                              type={showConfirmPassword ? "text" : "password"}
+                              name="confirmPassword"
+                              label="تأیید رمز عبور"
+                              placeholder="مثال: A@123456"
+                              value={formData.confirmPassword}
+                              onChange={handleChange}
+                              onBlur={handleBlur}
+                              error={!!(errors.confirmPassword && touched.confirmPassword)}
+                            />
+                            {formData.confirmPassword && (
+                              <button
+                                type="button"
+                                onClick={() => setShowConfirmPassword((prev) => !prev)}
+                                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                                tabIndex={-1}
+                              >
+                                <Icon path={showConfirmPassword ? mdiEyeOffOutline : mdiEyeOutline} size={0.9} />
+                              </button>
+                            )}
+                          </motion.div>
+                        </div>
+                      </div>
+                      {/* پیغام‌های خطای رمز عبور */}
+                      <div className="min-h-[20px]">
+                        {errors.password && touched.password && (
+                          <motion.p
+                            initial={{ opacity: 0, y: -6 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="text-red-500 text-xs sm:text-sm mt-1"
+                          >
+                            {errors.password}
+                          </motion.p>
+                        )}
+                        {errors.confirmPassword && touched.confirmPassword && !errors.password && (
+                          <motion.p
+                            initial={{ opacity: 0, y: -6 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="text-red-500 text-xs sm:text-sm mt-1"
+                          >
+                            {errors.confirmPassword}
+                          </motion.p>
+                        )}
+                      </div>
                     </div>
-                  )}
-                  
-                  <div>
-                    <motion.div
-                      animate={shakeFields.password ? {
-                        x: [0, -10, 10, -8, 8, -5, 5, 0],
-                        transition: { duration: 0.4 }
-                      } : {}}
-                      className="relative"
-                    >
-                      <TextField
-                        {...rtlStyles}
-                        type={showPassword ? "text" : "password"}
-                        name="password"
-                        label="رمز عبور"
-                        className="w-full p-2 sm:p-3 md:p-4 border rounded pl-10"
-                        value={formData.password}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        error={errors.password && touched.password}
-                      />
-                      {formData.password && (
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword((prev) => !prev)}
-                          className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                          tabIndex={-1}
-                        >
-                          <Icon path={showPassword ? mdiEyeOffOutline : mdiEyeOutline} size={0.9} />
-                        </button>
-                      )}
-                    </motion.div>
-                    {errors.password && touched.password && (
-                      <motion.p 
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="text-red-500 text-xs sm:text-sm md:text-base mt-1"
-                      >
-                        {errors.password}
-                      </motion.p>
-                    )}
-                  </div>
-                  
-                  {!isLogin && (
+                  ) : (
                     <div>
                       <motion.div
-                        animate={shakeFields.confirmPassword ? {
+                        animate={shakeFields.password ? {
                           x: [0, -10, 10, -8, 8, -5, 5, 0],
                           transition: { duration: 0.4 }
                         } : {}}
@@ -477,38 +670,39 @@ export default function AuthPage() {
                       >
                         <TextField
                           {...rtlStyles}
-                          type={showConfirmPassword ? "text" : "password"}
-                          name="confirmPassword"
-                          label="تأیید رمز عبور"
+                          type={showPassword ? "text" : "password"}
+                          name="password"
+                          label="رمز عبور"
+                          placeholder="مثال: A@123456"
                           className="w-full p-2 sm:p-3 md:p-4 border rounded pl-10"
-                          value={formData.confirmPassword}
+                          value={formData.password}
                           onChange={handleChange}
                           onBlur={handleBlur}
-                          error={errors.confirmPassword && touched.confirmPassword}
+                          error={!!(errors.password && touched.password)}
                         />
-                        {formData.confirmPassword && (
+                        {formData.password && (
                           <button
                             type="button"
-                            onClick={() => setShowConfirmPassword((prev) => !prev)}
+                            onClick={() => setShowPassword((prev) => !prev)}
                             className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
                             tabIndex={-1}
                           >
-                            <Icon path={showConfirmPassword ? mdiEyeOffOutline : mdiEyeOutline} size={0.9} />
+                            <Icon path={showPassword ? mdiEyeOffOutline : mdiEyeOutline} size={0.9} />
                           </button>
                         )}
                       </motion.div>
-                      {errors.confirmPassword && touched.confirmPassword && (
-                        <motion.p 
+                      {errors.password && touched.password && (
+                        <motion.p
                           initial={{ opacity: 0, y: -10 }}
                           animate={{ opacity: 1, y: 0 }}
                           className="text-red-500 text-xs sm:text-sm md:text-base mt-1"
                         >
-                          {errors.confirmPassword}
+                          {errors.password}
                         </motion.p>
                       )}
                     </div>
                   )}
-                  
+
                   <Button
                     type="submit"
                     variant="contained"

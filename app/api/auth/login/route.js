@@ -6,23 +6,29 @@ import prisma from "@/lib/prisma";
 export async function POST(req) {
   try {
     const body = await req.json();
-    const { email, password } = body;
+    // به جای email، یک متغیر کلی به نام identifier دریافت می‌کنیم
+    const { identifier, password } = body;
 
-    if (!email || !password) {
+    if (!identifier || !password) {
       return NextResponse.json(
-        { error: "ایمیل و رمز عبور الزامی است." },
+        { error: "ایمیل/نام کاربری و رمز عبور الزامی است." },
         { status: 400 }
       );
     }
 
-    // 🔎 کاربر رو از دیتابیس پیدا کن
-    const user = await prisma.user.findUnique({
-      where: { email },
+    // 🔎 کاربر رو از دیتابیس با ایمیل یا نام کاربری پیدا کن
+    const user = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { email: identifier },
+          { username: identifier }
+        ]
+      },
     });
 
     if (!user) {
       return NextResponse.json(
-        { error: "کاربری با این ایمیل یافت نشد." },
+        { error: "کاربری با این مشخصات یافت نشد." },
         { status: 404 }
       );
     }

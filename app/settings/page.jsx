@@ -7,7 +7,7 @@ import Swal from "sweetalert2";
 import { Save, Loader2, RotateCcwKey } from "lucide-react";
 import Icon from '@mdi/react';
 import { mdiAccountEditOutline, mdiAccountCogOutline, mdiEyeOutline, mdiEyeOffOutline } from '@mdi/js';
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { TextField, InputAdornment, IconButton } from "@mui/material";
 import axios from "axios";
 
@@ -56,6 +56,8 @@ export default function SettingsPage() {
   const [username, setUsername] = useState(currentUser?.username || "");
   const [usernameError, setUsernameError] = useState("");
   const [isSavingUsername, setIsSavingUsername] = useState(false);
+  const [isCheckingUsername, setIsCheckingUsername] = useState(false);
+  const [usernameAvailable, setUsernameAvailable] = useState(false);
 
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -96,41 +98,55 @@ export default function SettingsPage() {
 
     if (value === currentUser?.username) {
       setUsernameError("");
+      setUsernameAvailable(false);
+      setIsCheckingUsername(false);
       return;
     }
+
+    setIsCheckingUsername(true);
+    setUsernameAvailable(false);
 
     try {
       const res = await axios.get(`/api/user/check-username?username=${value}`);
       if (res.data.exists) {
         setUsernameError("نام کاربری مورد نظر قبلاً انتخاب شده است. لطفاً نام دیگری وارد کنید.");
+        setUsernameAvailable(false);
         triggerShake(["username"]);
       } else {
         setUsernameError("");
+        setUsernameAvailable(true);
       }
     } catch (err) {
       console.error("خطا در بررسی نام کاربری موجود:", err);
+    } finally {
+      setIsCheckingUsername(false);
     }
   };
 
   const handleUsernameChange = (value) => {
     setUsername(value);
+    setUsernameAvailable(false);
 
     if (!value.trim()) {
       setUsernameError("نام کاربری نمی‌تواند خالی باشد.");
+      setIsCheckingUsername(false);
       return;
     }
 
     if (value === currentUser?.username) {
       setUsernameError("این نام کاربری فعلی شماست.");
+      setIsCheckingUsername(false);
       return;
     }
 
     if (!usernameRegex.test(value)) {
       setUsernameError("نام کاربری فقط می‌تواند شامل حروف، اعداد و خط زیر (_) باشد.");
+      setIsCheckingUsername(false);
       return;
     }
 
     setUsernameError("");
+    setIsCheckingUsername(true);
   };
 
   useEffect(() => {
@@ -277,16 +293,53 @@ export default function SettingsPage() {
                 transition: { duration: 0.4 },
               } : {}}
             >
-            <TextField
-              {...rtlStyles}
-              fullWidth
-              label="نام کاربری جدید"
-              value={username}
-              onChange={(e) => handleUsernameChange(e.target.value)}
-              error={!!usernameError}
-              helperText={usernameError || " "}
-            />
+              <TextField
+                {...rtlStyles}
+                fullWidth
+                label="نام کاربری جدید"
+                value={username}
+                onChange={(e) => handleUsernameChange(e.target.value)}
+                error={!!usernameError}
+              />
             </motion.div>
+            <div className="min-h-[22px] mt-1">
+              <AnimatePresence mode="wait">
+                {isCheckingUsername && username !== currentUser?.username && (
+                  <motion.div
+                    key="checking"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="flex items-center gap-2 text-gray-400 text-xs"
+                  >
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                    <span>در حال بررسی نام کاربری...</span>
+                  </motion.div>
+                )}
+                {!isCheckingUsername && usernameError && (
+                  <motion.p
+                    key="error"
+                    initial={{ opacity: 0, y: -4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    className="text-red-400 text-xs"
+                  >
+                    {usernameError}
+                  </motion.p>
+                )}
+                {!isCheckingUsername && usernameAvailable && !usernameError && (
+                  <motion.p
+                    key="available"
+                    initial={{ opacity: 0, y: -4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    className="text-green-400 text-xs"
+                  >
+                    نام کاربری انتخاب شده مورد قبول است
+                  </motion.p>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
           <button
             onClick={handleSaveUsername}

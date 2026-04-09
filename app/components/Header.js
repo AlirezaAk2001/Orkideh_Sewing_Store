@@ -14,24 +14,33 @@ export default function Header() {
   const router = useRouter();
   const pathname = usePathname(); // دریافت مسیر فعلی
   const isMaintenance = pathname === '/maintenance'; // بررسی اینکه آیا در صفحه تعمیرات هستیم یا خیر
-  const { currentUser, loading, logout } = useAuth();
-  const { favoritesCount } = useFavorites();
-  const { cartCount } = useCart();
+  const { currentUser, loading: authLoading, logout } = useAuth();
+  const { favoritesCount, initialized: favInit } = useFavorites();
+  const { cartCount, initialized: cartInit } = useCart();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [logoUrl, setLogoUrl] = useState(null);
+  const [logoLoaded, setLogoLoaded] = useState(false); // ← اضافه کن
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [showSkeleton, setShowSkeleton] = useState(false);
   const searchInputRef = useRef(null);
 
+  const loading = authLoading || !favInit || !cartInit || !logoLoaded;
+
   // لود لوگو
   useEffect(() => {
     fetch("/api/background")
       .then((resp) => resp.json())
-      .then((data) => setLogoUrl(data.data || "/img/default-logo.png"))
-      .catch((err) => console.error("خطا در لود لوگو:", err));
+      .then((data) => {
+        setLogoUrl(data.data || "/img/default-logo.png");
+        setLogoLoaded(true); // ← اضافه کن
+      })
+      .catch((err) => {
+        console.error("خطا در لود لوگو:", err);
+        setLogoLoaded(true); // ← حتی در خطا هم true کن تا گیر نکنه
+      });
   }, []);
 
   // مدیریت کلیک کاربر
@@ -112,14 +121,14 @@ export default function Header() {
       >
         {/* اسکلتون عکس محصول */}
         <div className="w-8 h-8 bg-gray-200 rounded mt-1"></div>
-        
+
         <div className="flex flex-col flex-1 gap-2">
           {/* اسکلتون عنوان */}
           <div className="h-4 bg-gray-200 rounded w-3/4"></div>
           {/* اسکلتون دسته‌بندی */}
           <div className="h-3 bg-gray-100 rounded w-1/2"></div>
         </div>
-        
+
         <div className="flex flex-col items-end gap-1">
           {/* اسکلتون قیمت */}
           <div className="h-4 bg-gray-200 rounded w-16"></div>
@@ -176,17 +185,16 @@ export default function Header() {
               <input
                 ref={searchInputRef}
                 type="text"
-                className={`w-full pr-2 sm:pr-4 pl-10 sm:pl-12 py-1 sm:py-2 border rounded-lg focus:outline-none text-right text-sm sm:text-base bg-transparent relative z-10 ${
-                  loading 
-                    ? "border-gray-200 cursor-not-allowed opacity-60" 
-                    : "border-gray-300 focus:ring-2 focus:ring-pink-500"
-                }`}
+                className={`w-full pr-2 sm:pr-4 pl-10 sm:pl-12 py-1 sm:py-2 border rounded-lg focus:outline-none text-right text-sm sm:text-base bg-transparent relative z-10 ${loading
+                  ? "border-gray-200 cursor-not-allowed opacity-60"
+                  : "border-gray-300 focus:ring-2 focus:ring-pink-500"
+                  }`}
                 value={searchQuery}
                 onChange={(e) => !loading && setSearchQuery(e.target.value)}
                 placeholder="جستجو در فروشگاه چرخ خیاطی ارکیده"
                 disabled={loading || isMaintenance}
               />
-              
+
               {/* آیکون جستجو با انیمیشن سه‌بعدی */}
               <motion.div
                 className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 pointer-events-none z-20"
@@ -206,10 +214,9 @@ export default function Header() {
                   duration: 0.3
                 }}
               >
-                <Search className={`w-4 h-4 sm:w-5 sm:h-5 ${
-                  isSearching ? 'text-pink-500' : 
+                <Search className={`w-4 h-4 sm:w-5 sm:h-5 ${isSearching ? 'text-pink-500' :
                   loading ? 'text-gray-300' : 'text-gray-400'
-                }`} />
+                  }`} />
               </motion.div>
             </div>
 
@@ -232,9 +239,8 @@ export default function Header() {
                     filteredProducts.map((product) => (
                       <div
                         key={product.id}
-                        className={`p-2 flex items-start gap-2 hover:bg-gray-50 transition-colors ${
-                          loading ? "cursor-not-allowed opacity-60" : "cursor-pointer"
-                        }`}
+                        className={`p-2 flex items-start gap-2 hover:bg-gray-50 transition-colors ${loading ? "cursor-not-allowed opacity-60" : "cursor-pointer"
+                          }`}
                         onClick={() => {
                           if (loading) return;
                           router.push(`/products/${product.slug}`);
@@ -287,24 +293,21 @@ export default function Header() {
             <button
               onClick={handleFavoritesClick}
               disabled={loading}
-              className={`relative transition-colors ${
-                loading 
-                  ? "cursor-not-allowed opacity-50" 
-                  : "hover:text-pink-600 cursor-pointer"
-              }`}
+              className={`relative transition-colors ${loading
+                ? "cursor-not-allowed opacity-50"
+                : "hover:text-pink-600 cursor-pointer"
+                }`}
               data-tooltip-id="favorites-tooltip"
               data-tooltip-content={loading ? "در حال بارگذاری..." : "مشاهده علاقه‌مندی‌ها"}
             >
-              <Heart className={`w-7 sm:w-6 h-7 sm:h-6 ${
-                loading ? "text-gray-400" : ""
-              }`} />
+              <Heart className={`w-7 sm:w-6 h-7 sm:h-6 ${loading ? "text-gray-400" : ""
+                }`} />
               {favoritesCount > 0 && (
                 <motion.span
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  className={`absolute -top-1 sm:-top-2 -right-1 sm:-right-2 text-white text-xs rounded-full w-4 sm:w-3 h-4 sm:h-3 flex items-center justify-center ${
-                    loading ? "bg-gray-400" : "bg-red-500"
-                  }`}
+                  className={`absolute -top-1 sm:-top-2 -right-1 sm:-right-2 text-white text-xs rounded-full w-4 sm:w-3 h-4 sm:h-3 flex items-center justify-center ${loading ? "bg-gray-400" : "bg-red-500"
+                    }`}
                   data-tooltip-id="favorites-count-tooltip"
                   data-tooltip-content={`${favoritesCount.toLocaleString("fa-IR")} محصول در علاقه‌مندی‌ها`}
                 >
@@ -331,11 +334,10 @@ export default function Header() {
                   exit={{ opacity: 0, scale: 0.9 }}
                   onClick={handleUserClick}
                   disabled={loading}
-                  className={`flex items-center gap-1 px-3 sm:px-4 py-1 sm:py-2 rounded-lg text-sm sm:text-sm transition-transform ${
-                    loading
-                      ? "bg-gray-400 text-gray-200 cursor-not-allowed"
-                      : "bg-pink-600 text-white hover:bg-pink-700 cursor-pointer"
-                  }`}
+                  className={`flex items-center gap-1 px-3 sm:px-4 py-1 sm:py-2 rounded-lg text-sm sm:text-sm transition-transform ${loading
+                    ? "bg-gray-400 text-gray-200 cursor-not-allowed"
+                    : "bg-pink-600 text-white hover:bg-pink-700 cursor-pointer"
+                    }`}
                   data-tooltip-id="login-tooltip"
                   data-tooltip-content={loading ? "در حال بارگذاری..." : "ورود به حساب کاربری یا ثبت‌نام"}
                 >
@@ -353,26 +355,23 @@ export default function Header() {
                   <button
                     onClick={handleUserClick}
                     disabled={loading}
-                    className={`transition-colors ${
-                      loading 
-                        ? "cursor-not-allowed opacity-50" 
-                        : "hover:text-pink-600 cursor-pointer"
-                    }`}
+                    className={`transition-colors ${loading
+                      ? "cursor-not-allowed opacity-50"
+                      : "hover:text-pink-600 cursor-pointer"
+                      }`}
                     data-tooltip-id="profile-tooltip"
                     data-tooltip-content={loading ? "در حال بارگذاری..." : currentUser.is_admin ? "پنل مدیریت" : "پروفایل کاربری"}
                   >
-                    <User2 className={`w-7 sm:w-6 h-7 sm:h-6 ${
-                      loading ? "text-gray-400" : ""
-                    }`} />
+                    <User2 className={`w-7 sm:w-6 h-7 sm:h-6 ${loading ? "text-gray-400" : ""
+                      }`} />
                   </button>
                   <button
                     onClick={() => !loading && logout("/")}
                     disabled={loading}
-                    className={`flex items-center gap-1 px-3 sm:px-4 py-1 sm:py-2 rounded-lg text-sm sm:text-sm transition-transform ${
-                      loading
-                        ? "bg-gray-400 text-gray-200 cursor-not-allowed"
-                        : "bg-pink-600 text-white hover:bg-pink-700 cursor-pointer"
-                    }`}
+                    className={`flex items-center gap-1 px-3 sm:px-4 py-1 sm:py-2 rounded-lg text-sm sm:text-sm transition-transform ${loading
+                      ? "bg-gray-400 text-gray-200 cursor-not-allowed"
+                      : "bg-pink-600 text-white hover:bg-pink-700 cursor-pointer"
+                      }`}
                     data-tooltip-id="logout-tooltip"
                     data-tooltip-content={loading ? "در حال بارگذاری..." : "خروج از حساب کاربری"}
                   >
@@ -387,24 +386,21 @@ export default function Header() {
             <button
               onClick={handleCartClick}
               disabled={loading}
-              className={`relative transition-colors ${
-                loading 
-                  ? "cursor-not-allowed opacity-50" 
-                  : "hover:text-pink-600 cursor-pointer"
-              }`}
+              className={`relative transition-colors ${loading
+                ? "cursor-not-allowed opacity-50"
+                : "hover:text-pink-600 cursor-pointer"
+                }`}
               data-tooltip-id="cart-tooltip"
               data-tooltip-content={loading ? "در حال بارگذاری..." : "مشاهده سبد خرید"}
             >
-              <Icon path={mdiCartOutline} className={`w-7 sm:w-6 h-7 sm:h-6 ${
-                loading ? "text-gray-400" : ""
-              }`} />
+              <Icon path={mdiCartOutline} className={`w-7 sm:w-6 h-7 sm:h-6 ${loading ? "text-gray-400" : ""
+                }`} />
               {cartCount > 0 && (
                 <motion.span
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  className={`absolute -top-1 sm:-top-2 -right-1 sm:-right-2 text-white text-xs rounded-full w-4 sm:w-3 h-4 sm:h-3 flex items-center justify-center ${
-                    loading ? "bg-gray-400" : "bg-red-500"
-                  }`}
+                  className={`absolute -top-1 sm:-top-2 -right-1 sm:-right-2 text-white text-xs rounded-full w-4 sm:w-3 h-4 sm:h-3 flex items-center justify-center ${loading ? "bg-gray-400" : "bg-red-500"
+                    }`}
                   data-tooltip-id="cart-count-tooltip"
                   data-tooltip-content={`${cartCount.toLocaleString("fa-IR")} محصول در سبد خرید`}
                 >
@@ -416,17 +412,15 @@ export default function Header() {
             {/* درباره ما */}
             <Link
               href="/about"
-              className={`transition-colors ${
-                loading 
-                  ? "cursor-not-allowed opacity-50 pointer-events-none" 
-                  : "hover:text-pink-600 cursor-pointer"
-              }`}
+              className={`transition-colors ${loading
+                ? "cursor-not-allowed opacity-50 pointer-events-none"
+                : "hover:text-pink-600 cursor-pointer"
+                }`}
               data-tooltip-id="about-tooltip"
               data-tooltip-content={loading ? "در حال بارگذاری..." : "درباره ما"}
             >
-              <Info className={`w-7 sm:w-6 h-7 sm:h-6 ${
-                loading ? "text-gray-400" : ""
-              }`} />
+              <Info className={`w-7 sm:w-6 h-7 sm:h-6 ${loading ? "text-gray-400" : ""
+                }`} />
             </Link>
           </div>
         </div>
