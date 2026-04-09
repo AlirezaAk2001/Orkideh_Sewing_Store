@@ -1,0 +1,177 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               Int                @id @default(autoincrement())
+  name             String
+  email            String             @unique
+  password_hash    String
+  is_admin         Boolean            @default(false)
+  is_verified      Boolean            @default(false)
+  created_at       DateTime           @default(now())
+  username         String             @unique
+  profileImageUrl  String?
+  updatedAt        DateTime?          @default(now()) @updatedAt @db.Timestamp(6)
+  Cart             Cart[]
+  Favorite         Favorite[]
+  VerificationCode VerificationCode[]
+  Comment          Comment[]
+  Order            Order[]
+  Address          Address[]
+  PasswordResetToken PasswordResetToken[] // اضافه شده
+}
+
+model VerificationCode {
+  id         Int      @id @default(autoincrement())
+  code       String
+  expires_at DateTime
+  created_at DateTime @default(now())
+  userId     Int
+  User       User     @relation(fields: [userId], references: [id])
+}
+
+model Product {
+  id               Int        @id @default(autoincrement())
+  name             String
+  slug             String?
+  suitableFor      String?
+  price            Float
+  finalPrice       Float?
+  stock            Int?       
+  categoryId       Int?
+  categoryName     String?
+  image            String?
+  discount         Int?
+  additionalFeatures String?
+  seller           String?
+  material         String?
+  size             String?
+  weight           String?
+  color            String?
+  voltage          String?    // فیلد جدید اختیاری
+  powerConsumption String?
+  created_at       DateTime   @default(now())
+  updated_at       DateTime   @updatedAt
+  Cart             Cart[]
+  Favorite         Favorite[]
+  Category         Category?  @relation(fields: [categoryId], references: [id])
+  Comment          Comment[]
+  OrderItems       OrderItem[]
+}
+
+model Category {
+  id      Int       @id @default(autoincrement())
+  name    String    @unique
+  slug    String    @unique
+  image   String?
+  Product Product[]
+}
+
+model Cart {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  productId Int
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  User      User     @relation(fields: [userId], references: [id])
+  Product   Product  @relation(fields: [productId], references: [id])
+  @@unique([userId, productId])
+}
+
+model Order {
+  id          Int         @id @default(autoincrement())
+  userId      Int
+  addressId   Int?
+  phoneNumber String
+  totalPrice  Float
+  status      String      @default("pending")
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  paymentTrackId  String?  @unique
+  User        User        @relation(fields: [userId], references: [id])
+  Address     Address?    @relation(fields: [addressId], references: [id])
+  OrderItems  OrderItem[]
+}
+
+model OrderItem {
+  id        Int     @id @default(autoincrement())
+  orderId   Int
+  productId Int
+  quantity  Int
+  price     Float
+  Order     Order   @relation(fields: [orderId], references: [id])
+  Product   Product @relation(fields: [productId], references: [id])
+}
+
+model Address {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  address     String
+  postalCode  String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  User        User     @relation(fields: [userId], references: [id])
+  Order       Order[]  @relation
+}
+
+model Favorite {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  productId  Int
+  created_at DateTime @default(now())
+  Product    Product  @relation(fields: [productId], references: [id])
+  User       User     @relation(fields: [userId], references: [id])
+}
+
+model Setting {
+  id               Int      @id @default(autoincrement())
+  key              String   @unique
+  value            String
+  background_image String?
+  created_at       DateTime @default(now())
+  updated_at       DateTime
+}
+
+model Banner {
+  id        Int      @id @default(autoincrement())
+  title     String
+  desc      String
+  img       String
+  link      String?  @default("/products")
+  createdAt DateTime @default(now())
+}
+
+model Comment {
+  id         Int      @id @default(autoincrement())
+  text       String
+  rating     Int      @default(0)
+  approved   Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt DateTime @default(now())
+  userId     Int
+  productId  Int
+  User       User     @relation(fields: [userId], references: [id])
+  Product    Product  @relation(fields: [productId], references: [id])
+  
+  @@unique([userId, productId])
+}
+
+model PasswordResetToken {
+  id         String   @id @default(cuid())
+  token      String   @unique
+  userId     Int
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expires_at DateTime
+  used       Boolean  @default(false)
+  created_at DateTime @default(now())
+
+  @@index([token])
+  @@index([userId])
+}
