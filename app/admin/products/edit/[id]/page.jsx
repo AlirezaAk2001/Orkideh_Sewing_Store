@@ -29,22 +29,23 @@ export default function EditProduct() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [initialData, setInitialData] = useState({ name: "", price: "", categoryId: "", image: "" });
 
   // این آبجکت را بالای کامپوننت یا قبل از return تعریف کنید
-const rtlStyles = {
-  InputLabelProps: {
+  const rtlStyles = {
+    InputLabelProps: {
+      sx: {
+        transformOrigin: "right !important",
+        left: "inherit !important",
+        right: "1.75rem !important",
+      },
+    },
     sx: {
-      transformOrigin: "right !important",
-      left: "inherit !important",
-      right: "1.75rem !important",
+      "& legend": {
+        textAlign: "right",
+      },
     },
-  },
-  sx: {
-    "& legend": {
-      textAlign: "right",
-    },
-  },
-};
+  };
 
   const router = useRouter();
   const { id } = useParams();
@@ -90,6 +91,12 @@ const rtlStyles = {
         setVoltage(data.voltage || "");
         setPowerConsumption(data.powerConsumption || "");
         setFinalPrice(data.finalPrice || data.price || "");
+        setInitialData({          // 👈 اضافه کن
+          name: data.name || "",
+          categoryId: data.categoryId || "",
+          price: data.price || "",
+          image: data.image || "",
+        });
       } catch (err) {
         toast.error("خطا در دریافت اطلاعات محصول");
       } finally {
@@ -139,20 +146,26 @@ const rtlStyles = {
 
   if (loading)
     return ( // <-- این return را اضافه کنید
-       <div className="flex flex-col items-center justify-center min-h-[60vh] fixed inset-0">
-         <Image
-           src="/image/logo.png"
-           alt="در حال بارگذاری جزئیات محصول..."
-           width={80}
-           height={80}
-           className="animate-spin object-contain"
-           priority
-         />
-         <p className="mt-4 text-gray-500 text-sm font-medium animate-pulse">
-           در حال بارگذاری جزئیات محصول...
-         </p>
-       </div>
-     ); // <-- بسته شدن return
+      <div className="flex flex-col items-center justify-center min-h-[60vh] fixed inset-0">
+        <Image
+          src="/image/logo.png"
+          alt="در حال بارگذاری جزئیات محصول..."
+          width={80}
+          height={80}
+          className="animate-spin object-contain"
+          priority
+        />
+        <p className="mt-4 text-gray-500 text-sm font-medium animate-pulse">
+          در حال بارگذاری جزئیات محصول...
+        </p>
+      </div>
+    ); // <-- بسته شدن return
+
+  const hasChanged =
+    name !== initialData.name ||
+    categoryId !== initialData.categoryId ||
+    price !== initialData.price ||
+    image !== initialData.image;
 
   return (
     <div className="p-4 max-w-lg mx-auto" dir="rtl">
@@ -161,7 +174,7 @@ const rtlStyles = {
         <Icon path={mdiStoreEditOutline} size={1.3} />
         <h1 className="text-xl font-bold mb-4">ویرایش محصول</h1>
       </div>
-      
+
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <TextField
           {...rtlStyles}
@@ -286,7 +299,7 @@ const rtlStyles = {
           variant="contained"
           color="success"
           className="gap-1 rounded-xl"
-          disabled={isSaving}
+          disabled={isSaving || !hasChanged}
         >
           {isSaving ? (
             <>

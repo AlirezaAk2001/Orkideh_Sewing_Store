@@ -27,7 +27,7 @@ export default function AboutPage() {
               className="text-base sm:text-lg md:text-xl font-semibold mb-1 sm:mb-2 flex gap-1"
             >
               <MapPinned className="w-6 h-6" />
-              نقشه محل
+              نقشه فروشگاه
             </h3>
             <div className="w-full h-48 sm:h-64 md:h-80 lg:h-96 rounded-lg overflow-hidden">
               <iframe
@@ -54,31 +54,32 @@ export default function AboutPage() {
               آدرس: {" "}
               تهران، قصرالدشت، نرسیده به بوستان سعدی، پ ۴۴۲
             </p>
-            <p className="text-sm sm:text-base text-gray-700 gap-1">
-              <p className="text-sm sm:text-base text-gray-600 flex gap-1">
+
+            {/* اصلاح شده: استفاده از div به جای p برای محتوای تو در تو */}
+            <div className="text-sm sm:text-base text-gray-700 space-y-2">
+              <div className="text-sm sm:text-base text-gray-600 flex gap-1">
                 <ContactPhoneIcon className="w-4 h-4" />
-               اطلاعات تماس: {" "}
-              </p>
-             
-              <p className="text-sm sm:text-base text-gray-600 flex">
+                <span>اطلاعات تماس:</span>
+              </div>
+
+              <div className="text-sm sm:text-base text-gray-600 flex items-center gap-1">
                 <Icon path={mdiCellphoneBasic} size={1} />
-                <p className="text-sm sm:text-base text-gray-700">تلفن همراه: {" "}
+                <span className="text-sm sm:text-base text-gray-700">تلفن همراه: {" "}
                   <a href="tel:+989122375919" className="text-blue-600 hover:underline">
                     ۰۹۱۲۲۳۷۵۹۱۹
                   </a>
-                </p>
-              </p>
+                </span>
+              </div>
 
-              <p className="text-sm sm:text-base text-gray-600 flex gap-1">
+              <div className="text-sm sm:text-base text-gray-600 flex items-center gap-1">
                 <Icon path={mdiPhoneClassic} size={0.8} />
-                <p className="text-sm sm:text-base text-gray-700">تلفن فروشگاه: {" "}
+                <span className="text-sm sm:text-base text-gray-700">تلفن فروشگاه: {" "}
                   <a href="tel:02166832625" className="text-blue-600 hover:underline">
                     ۰۲۱۶۶۸۳۲۶۲۵
                   </a>
-                </p>
-              </p>
-              
-            </p>
+                </span>
+              </div>
+            </div>
 
             <p className="text-sm sm:text-base text-gray-600 mt-1 sm:mt-2 flex gap-1">
               <Icon path={mdiEmailOutline} size={1} />
@@ -97,7 +98,7 @@ export default function AboutPage() {
         <div className="mt-4 sm:mt-6 md:mt-8 flex flex-col items-center justify-center space-y-3 sm:space-y-4">
           <h3 className="text-base sm:text-lg md:text-xl font-semibold flex gap-1">
             <UserRoundPlus className="w-6 h-6" />
-            ما را دنبال کنید
+            ما را در شبکه‌های اجتماعی دنبال کنید
           </h3>
           <div className="flex space-x-3 sm:space-x-4">
             <a

@@ -15,6 +15,8 @@ export default function AddBannerPage() {
   const [img, setImg] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
+  const isFormFilled = title.trim() || desc.trim() || img.trim();
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSaving(true);
@@ -65,6 +67,7 @@ export default function AddBannerPage() {
         <TextField
           {...rtlStyles}
           label="عنوان"
+          placeholder="مثال: چرخ خیاطی ۱"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           fullWidth
@@ -73,6 +76,7 @@ export default function AddBannerPage() {
         <TextField
           {...rtlStyles}
           label="توضیحات"
+          placeholder="مثال: هم اکنون با قیمت فوق العاده!"
           value={desc}
           onChange={(e) => setDesc(e.target.value)}
           fullWidth
@@ -81,6 +85,7 @@ export default function AddBannerPage() {
         <TextField
           {...rtlStyles}
           label="آدرس تصویر"
+          placeholder="مثال: x.png"
           value={img}
           onChange={(e) => setImg(e.target.value)}
           fullWidth
@@ -92,7 +97,7 @@ export default function AddBannerPage() {
           variant="contained"
           color="success"
           className="gap-1 rounded-xl"
-          disabled={isSaving}
+          disabled={isSaving || !isFormFilled}
         >
           {isSaving ? (
             <>

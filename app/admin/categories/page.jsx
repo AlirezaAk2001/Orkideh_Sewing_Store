@@ -69,22 +69,25 @@ export default function AdminCategories() {
   };
 
   const columns = [
-    { 
-      field: "id", 
-      headerName: "شناسه", 
+    {
+      field: "id",
+      headerName: "شناسه",
       width: 70,
       headerAlign: 'center',
       align: 'center',
+      renderCell: (params) => params.value.toLocaleString("fa-IR")
     },
-    { field: "name",
-      headerName: "نام", 
-      width: 200, 
-      headerAlign: 'center', 
-      cellClassName: 'center', 
-      align: 'center' 
+    {
+      field: "name",
+      headerName: "نام",
+      width: 200,
+      headerAlign: 'center',
+      cellClassName: 'center',
+      align: 'center'
     },
-    { field: "slug", 
-      headerName: "دسته بندی", 
+    {
+      field: "slug",
+      headerName: "دسته بندی",
       width: 200,
       headerAlign: 'center',
       cellClassName: 'center',
@@ -263,8 +266,8 @@ export default function AdminCategories() {
                 flexShrink: 0,
                 animation: 'add-category-skeleton-zoom 1.4s ease-in-out infinite',
                 '@keyframes add-category-skeleton-zoom': {
-                  '0%, 100%': { transform: 'scale(1)',    opacity: 1    },
-                  '50%':       { transform: 'scale(1.18)', opacity: 0.65 },
+                  '0%, 100%': { transform: 'scale(1)', opacity: 1 },
+                  '50%': { transform: 'scale(1.18)', opacity: 0.65 },
                 },
               }}
             >
@@ -291,9 +294,9 @@ export default function AdminCategories() {
           {loading ? (
             <Box sx={{ width: "100%", height: "100%" }}>
               {/* هدرهای واقعی جدول */}
-              <Box sx={{ 
-                display: "flex", 
-                alignItems: "center", 
+              <Box sx={{
+                display: "flex",
+                alignItems: "center",
                 height: 56,
                 backgroundColor: 'rgb(250, 250, 250)',
                 borderBottom: '1px solid rgba(224, 224, 224, 1)',
@@ -310,14 +313,14 @@ export default function AdminCategories() {
 
               {/* ردیف‌های اسکلتون */}
               {Array.from(new Array(2)).map((_, index) => (
-                <Box 
-                  key={index} 
-                  sx={{ 
-                    display: "flex", 
-                    alignItems: "center", 
+                <Box
+                  key={index}
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
                     height: 80,
                     p: 2,
-                    borderBottom: 1, 
+                    borderBottom: 1,
                     borderColor: "divider",
                     '&:hover': { backgroundColor: 'rgba(0, 0, 0, 0.04)' }
                   }}

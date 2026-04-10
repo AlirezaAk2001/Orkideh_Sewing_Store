@@ -26,6 +26,7 @@ export default function AddProduct() {
   const [powerConsumption, setPowerConsumption] = useState("");
   const [finalPrice, setFinalPrice] = useState("");
   const [categories, setCategories] = useState([]);
+  const isFormFilled = name.trim() || price.trim() || categoryId.trim() || image.trim();
 
   const [isSaving, setIsSaving] = useState(false);
 
@@ -125,26 +126,31 @@ export default function AddProduct() {
         <h1 className="text-xl font-bold mb-4">افزودن محصول جدید</h1>
       </div>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
         <TextField
           {...rtlStyles}
           label="نام محصول"
           value={name}
+          placeholder="مثال: چرخ خیاطی برادر یا لوازم جانبی محسن"
           onChange={(e) => setName(e.target.value)}
+          required
           fullWidth
         />
         <TextField
           {...rtlStyles}
-          label="قیمت"
+          label="قیمت(تومان)"
           value={price}
+          placeholder="مثال: ۱۲,۵۰۰,۰۰۰ تومان"
           onChange={(e) => setPrice(e.target.value)}
+          required
           fullWidth
           type="number"
         />
         <TextField
           {...rtlStyles}
-          label="موجودی"
+          label="موجودی(عدد)"
           value={stock}
+          placeholder="مثال: ۲ عدد: "
           onChange={(e) => setStock(e.target.value)}
           fullWidth
           type="number"
@@ -154,7 +160,9 @@ export default function AddProduct() {
           select
           label="دسته‌بندی"
           value={categoryId}
+          placeholder="مثال: چرخ خیاطی"
           onChange={(e) => setCategoryId(e.target.value)}
+          required
           fullWidth
         >
           <MenuItem value="">انتخاب دسته‌بندی</MenuItem>
@@ -168,21 +176,25 @@ export default function AddProduct() {
           {...rtlStyles}
           label="آدرس تصویر"
           value={image}
+          placeholder="z.png"
           onChange={(e) => setImage(e.target.value)}
+          required
           fullWidth
         />
         <TextField
           {...rtlStyles}
-          label="تخفیف (%)"
+          label="تخفیف(%)"
           value={discount}
+          placeholder="مثال: ۵ درصد"
           onChange={(e) => setDiscount(e.target.value)}
           fullWidth
           type="number"
         />
         <TextField
           {...rtlStyles}
-          label="قیمت نهایی (فقط خواندنی)"
+          label="قیمت نهایی(فقط خواندنی)"
           value={finalPrice}
+          placeholder="قیمت نهایی به صورت خودکار نمایش داده می شود"
           fullWidth
           InputProps={{ readOnly: true }}
         />
@@ -191,6 +203,7 @@ export default function AddProduct() {
           label="ویژگی‌های اضافی"
           value={additionalFeatures}
           onChange={(e) => setAdditionalFeatures(e.target.value)}
+          placeholder="توضیحات تکمیلی راجب محصول"
           fullWidth
           multiline
         />
@@ -198,6 +211,7 @@ export default function AddProduct() {
           {...rtlStyles}
           label="جنس"
           value={material}
+          placeholder="مثال: فولادی"
           onChange={(e) => setMaterial(e.target.value)}
           fullWidth
         />
@@ -205,6 +219,7 @@ export default function AddProduct() {
           {...rtlStyles}
           label="ابعاد"
           value={size}
+          placeholder="مثال: ۱۲ × ۱۸ × ۱۶ سانتی متر"
           onChange={(e) => setSize(e.target.value)}
           fullWidth
         />
@@ -212,27 +227,31 @@ export default function AddProduct() {
           {...rtlStyles}
           label="رنگ"
           value={color}
+          placeholder="مثال: سفید"
           onChange={(e) => setColor(e.target.value)}
           fullWidth
         />
         <TextField
           {...rtlStyles}
-          label="وزن (گرم)"
+          label="وزن(گرم)"
           value={weight}
+          placeholder="مثال: ۱۲۰ گرم"
           onChange={(e) => setWeight(e.target.value)}
           fullWidth
         />
         <TextField
           {...rtlStyles}
-          label="ولتاژ (مثل 220V)"
+          label="ولتاژ(ولت)"
           value={voltage}
+          placeholder="مثال: ۱۰ ولت"
           onChange={(e) => setVoltage(e.target.value)}
           fullWidth
         />
         <TextField
           {...rtlStyles}
-          label="توان مصرفی (مثل 500W)"
+          label="توان مصرفی(وات)"
           value={powerConsumption}
+          placeholder="مثال: ۲۲۰ وات"
           onChange={(e) => setPowerConsumption(e.target.value)}
           fullWidth
         />
@@ -240,6 +259,7 @@ export default function AddProduct() {
           {...rtlStyles}
           label="مناسب برای"
           value={suitableFor}
+          placeholder="مثال: مناسب برای دوخت و دوز خانگی"
           onChange={(e) => setSuitableFor(e.target.value)}
           fullWidth
           multiline
@@ -249,7 +269,7 @@ export default function AddProduct() {
           variant="contained"
           color="success"
           className="gap-1 rounded-xl"
-          disabled={isSaving}
+          disabled={isSaving || !isFormFilled}
         >
           {isSaving ? (
             <>

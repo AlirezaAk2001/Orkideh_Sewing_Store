@@ -74,12 +74,13 @@ export default function AdminBannersPage() {
   };
 
   const columns = [
-    { 
-      field: "id", 
-      headerName: "شناسه", 
+    {
+      field: "id",
+      headerName: "شناسه",
       width: 80,
       headerAlign: 'center',
       align: 'center',
+      renderCell: (params) => params.value.toLocaleString("fa-IR")
     },
     {
       field: "img",
@@ -101,17 +102,17 @@ export default function AdminBannersPage() {
       headerAlign: 'center',
       align: 'center',
     },
-    { 
-      field: "title", 
-      headerName: "عنوان", 
+    {
+      field: "title",
+      headerName: "عنوان",
       width: 200,
       headerAlign: 'center',
       align: 'center',
       cellClassName: 'center',
     },
-    { 
-      field: "desc", 
-      headerName: "توضیحات", 
+    {
+      field: "desc",
+      headerName: "توضیحات",
       width: 300,
       headerAlign: 'center',
       align: 'center',
@@ -273,8 +274,8 @@ export default function AdminBannersPage() {
                 flexShrink: 0,
                 animation: 'add-banner-skeleton-zoom 1.4s ease-in-out infinite',
                 '@keyframes add-banner-skeleton-zoom': {
-                  '0%, 100%': { transform: 'scale(1)',    opacity: 1    },
-                  '50%':       { transform: 'scale(1.18)', opacity: 0.65 },
+                  '0%, 100%': { transform: 'scale(1)', opacity: 1 },
+                  '50%': { transform: 'scale(1.18)', opacity: 0.65 },
                 },
               }}
             >
@@ -301,9 +302,9 @@ export default function AdminBannersPage() {
           {loading ? (
             <Box sx={{ width: "100%", height: "100%" }}>
               {/* هدرهای واقعی جدول */}
-              <Box sx={{ 
-                display: "flex", 
-                alignItems: "center", 
+              <Box sx={{
+                display: "flex",
+                alignItems: "center",
                 height: 56,
                 backgroundColor: 'rgb(250, 250, 250)',
                 borderBottom: '1px solid rgba(224, 224, 224, 1)',
@@ -320,14 +321,14 @@ export default function AdminBannersPage() {
 
               {/* ردیف‌های اسکلتون */}
               {Array.from(new Array(3)).map((_, index) => (
-                <Box 
-                  key={index} 
-                  sx={{ 
-                    display: "flex", 
-                    alignItems: "center", 
+                <Box
+                  key={index}
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
                     height: 100,
                     p: 2,
-                    borderBottom: 1, 
+                    borderBottom: 1,
                     borderColor: "divider",
                     '&:hover': { backgroundColor: 'rgba(0, 0, 0, 0.04)' }
                   }}

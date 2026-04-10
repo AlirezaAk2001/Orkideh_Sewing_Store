@@ -290,11 +290,10 @@ export default function Header() {
           {/* آیکون‌ها */}
           <div className={`flex items-center gap-3 sm:gap-4 text-gray-600 ${isMaintenance ? 'opacity-50 pointer-events-none grayscale' : ''}`}>
             {/* علاقه‌مندی‌ها */}
-            <button
-              onClick={handleFavoritesClick}
-              disabled={loading}
+            <Link
+              href={loading ? "#" : !currentUser ? "/auth?redirect=/favorites" : "/favorites"}
               className={`relative transition-colors ${loading
-                ? "cursor-not-allowed opacity-50"
+                ? "cursor-not-allowed opacity-50 pointer-events-none"
                 : "hover:text-pink-600 cursor-pointer"
                 }`}
               data-tooltip-id="favorites-tooltip"
@@ -302,19 +301,18 @@ export default function Header() {
             >
               <Heart className={`w-7 sm:w-6 h-7 sm:h-6 ${loading ? "text-gray-400" : ""
                 }`} />
-              {favoritesCount > 0 && (
+              {!loading && favoritesCount > 0 && (
                 <motion.span
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  className={`absolute -top-1 sm:-top-2 -right-1 sm:-right-2 text-white text-xs rounded-full w-4 sm:w-3 h-4 sm:h-3 flex items-center justify-center ${loading ? "bg-gray-400" : "bg-red-500"
-                    }`}
+                  className="absolute -top-1 sm:-top-2 -right-1 sm:-right-2 text-white text-xs rounded-full w-4 sm:w-3 h-4 sm:h-3 flex items-center justify-center bg-red-500"
                   data-tooltip-id="favorites-count-tooltip"
                   data-tooltip-content={`${favoritesCount.toLocaleString("fa-IR")} محصول در علاقه‌مندی‌ها`}
                 >
                   {favoritesCount.toLocaleString("fa-IR")}
                 </motion.span>
               )}
-            </button>
+            </Link>
 
             {/* ورود / پروفایل */}
             <AnimatePresence mode="wait">
@@ -327,23 +325,20 @@ export default function Header() {
                   className="w-7 sm:w-6 h-7 sm:h-6 bg-gray-300 rounded-full animate-pulse"
                 />
               ) : !currentUser ? (
-                <motion.button
-                  key="login"
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  onClick={handleUserClick}
-                  disabled={loading}
-                  className={`flex items-center gap-1 px-3 sm:px-4 py-1 sm:py-2 rounded-lg text-sm sm:text-sm transition-transform ${loading
-                    ? "bg-gray-400 text-gray-200 cursor-not-allowed"
-                    : "bg-pink-600 text-white hover:bg-pink-700 cursor-pointer"
-                    }`}
-                  data-tooltip-id="login-tooltip"
-                  data-tooltip-content={loading ? "در حال بارگذاری..." : "ورود به حساب کاربری یا ثبت‌نام"}
-                >
-                  <LogIn className="w-4 h-4 sm:w-5 sm:h-5" />
-                  ورود / ثبت‌نام
-                </motion.button>
+                <motion.div key="login" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}>
+                  <Link
+                    href="/auth"
+                    className={`flex items-center gap-1 px-3 sm:px-4 py-1 sm:py-2 rounded-lg text-sm sm:text-sm transition-transform ${loading
+                      ? "bg-gray-400 text-gray-200 cursor-not-allowed pointer-events-none"
+                      : "bg-pink-600 text-white hover:bg-pink-700 cursor-pointer"
+                      }`}
+                    data-tooltip-id="login-tooltip"
+                    data-tooltip-content={loading ? "در حال بارگذاری..." : "ورود به حساب کاربری یا ثبت‌نام"}
+                  >
+                    <LogIn className="w-4 h-4 sm:w-5 sm:h-5" />
+                    ورود / ثبت‌نام
+                  </Link>
+                </motion.div>
               ) : (
                 <motion.div
                   key="user"
@@ -352,11 +347,10 @@ export default function Header() {
                   exit={{ opacity: 0, scale: 0.9 }}
                   className="flex items-center gap-2"
                 >
-                  <button
-                    onClick={handleUserClick}
-                    disabled={loading}
+                  <Link
+                    href={currentUser.is_admin ? "/admin" : "/profile"}
                     className={`transition-colors ${loading
-                      ? "cursor-not-allowed opacity-50"
+                      ? "cursor-not-allowed opacity-50 pointer-events-none"
                       : "hover:text-pink-600 cursor-pointer"
                       }`}
                     data-tooltip-id="profile-tooltip"
@@ -364,7 +358,7 @@ export default function Header() {
                   >
                     <User2 className={`w-7 sm:w-6 h-7 sm:h-6 ${loading ? "text-gray-400" : ""
                       }`} />
-                  </button>
+                  </Link>
                   <button
                     onClick={() => !loading && logout("/")}
                     disabled={loading}
@@ -383,11 +377,10 @@ export default function Header() {
             </AnimatePresence>
 
             {/* سبد خرید */}
-            <button
-              onClick={handleCartClick}
-              disabled={loading}
+            <Link
+              href={loading ? "#" : !currentUser ? "/auth?redirect=/cart" : "/cart"}
               className={`relative transition-colors ${loading
-                ? "cursor-not-allowed opacity-50"
+                ? "cursor-not-allowed opacity-50 pointer-events-none"
                 : "hover:text-pink-600 cursor-pointer"
                 }`}
               data-tooltip-id="cart-tooltip"
@@ -395,19 +388,19 @@ export default function Header() {
             >
               <Icon path={mdiCartOutline} className={`w-7 sm:w-6 h-7 sm:h-6 ${loading ? "text-gray-400" : ""
                 }`} />
-              {cartCount > 0 && (
+              {/* جایگزین کد قبلی سبد خرید */}
+              {!loading && cartCount > 0 && (
                 <motion.span
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  className={`absolute -top-1 sm:-top-2 -right-1 sm:-right-2 text-white text-xs rounded-full w-4 sm:w-3 h-4 sm:h-3 flex items-center justify-center ${loading ? "bg-gray-400" : "bg-red-500"
-                    }`}
+                  className="absolute -top-1 sm:-top-2 -right-1 sm:-right-2 text-white text-xs rounded-full w-4 sm:w-3 h-4 sm:h-3 flex items-center justify-center bg-red-500"
                   data-tooltip-id="cart-count-tooltip"
                   data-tooltip-content={`${cartCount.toLocaleString("fa-IR")} محصول در سبد خرید`}
                 >
                   {cartCount.toLocaleString("fa-IR")}
                 </motion.span>
               )}
-            </button>
+            </Link>
 
             {/* درباره ما */}
             <Link

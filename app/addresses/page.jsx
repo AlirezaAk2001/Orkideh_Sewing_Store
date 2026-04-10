@@ -11,7 +11,7 @@ import {
   MapPinHouse,
   Milestone
 } from "lucide-react";
-import { CircularProgress } from "@mui/material";
+import { CircularProgress, TextField } from "@mui/material";
 import Icon from '@mdi/react';
 import { mdiHomePlusOutline } from '@mdi/js';
 import { mdiHomeOutline } from '@mdi/js';
@@ -67,6 +67,21 @@ export default function AddressesPage() {
 
   // ✨ لرزش فیلدهای خطادار
   const [shakeFields, setShakeFields] = useState({});
+
+  const rtlStyles = {
+    InputLabelProps: {
+      sx: {
+        transformOrigin: "right !important",
+        left: "inherit !important",
+        right: "1.75rem !important",
+      },
+    },
+    sx: {
+      "& legend": {
+        textAlign: "right",
+      },
+    },
+  };
 
   const triggerShake = (fieldNames) => {
     const effects = {};
@@ -216,7 +231,7 @@ export default function AddressesPage() {
 
   return (
     <>
-      <Toaster 
+      <Toaster
         position="top-center"
         reverseOrder={false}
         toastOptions={{
@@ -227,7 +242,7 @@ export default function AddressesPage() {
           },
         }}
       />
-      
+
       <div
         className="max-w-4xl mx-auto p-4 sm:p-6 bg-white dark:bg-gray-800 shadow rounded-lg mt-4 sm:mt-6"
         dir="rtl"
@@ -241,10 +256,12 @@ export default function AddressesPage() {
 
         {/* فرم افزودن آدرس */}
         <form onSubmit={handleAddAddress} noValidate className="mb-6 p-4 border rounded-lg bg-gray-50">
-          <h2 className="text-lg font-semibold mb-2 flex gap-1">
+          <h2 className="text-lg font-semibold mb-4 flex gap-1">
             <Icon path={mdiHomePlusOutline} size={1.2} />
             افزودن آدرس جدید
           </h2>
+
+          {/* فیلد آدرس با استفاده از TextField */}
           <label className="block mb-2 font-semibold flex gap-1">
             <Icon path={mdiHomeOutline} size={1} />
             آدرس:
@@ -252,22 +269,29 @@ export default function AddressesPage() {
           <motion.div
             animate={shakeFields.newAddress ? { x: [0, -10, 10, -8, 8, -5, 5, 0] } : {}}
             transition={{ duration: 0.4 }}
+            className="mb-4"
           >
-            <textarea
+            <TextField
+              {...rtlStyles}
+              fullWidth
+              multiline
+              minRows={3}
+              label="آدرس کامل"
+              placeholder="مثال: تهران، خ مولوی، پ ۱۰"
               value={newAddress}
               onChange={(e) => {
                 setNewAddress(e.target.value);
                 if (e.target.value.trim()) setAddressError("");
               }}
-              placeholder="آدرس کامل خود را وارد کنید"
-              className={`border p-2 w-full mb-1 rounded-lg focus:outline-none focus:ring-2 ${
-                addressError ? "border-red-500 focus:ring-red-400" : "focus:ring-pink-500"
-              }`}
+              error={!!addressError}
+              className="bg-white rounded-lg"
             />
           </motion.div>
           {addressError && (
-            <p className="text-red-500 text-sm mb-2">{addressError}</p>
+            <p className="text-red-500 text-sm mb-4 -mt-2">{addressError}</p>
           )}
+
+          {/* فیلد کد پستی با استفاده از TextField */}
           <label className="block mb-2 font-semibold flex gap-1">
             <Milestone className="w-5 h-5" />
             کد پستی:
@@ -275,25 +299,28 @@ export default function AddressesPage() {
           <motion.div
             animate={shakeFields.newPostalCode ? { x: [0, -10, 10, -8, 8, -5, 5, 0] } : {}}
             transition={{ duration: 0.4 }}
+            className="mb-4"
           >
-            <input
-              type="text"
+            <TextField
+              {...rtlStyles}
+              fullWidth
+              label="کد پستی"
+              placeholder="مثال: 1234567890"
               value={newPostalCode}
               onChange={handlePostalChange}
-              placeholder="مثال: 1234567890"
-              maxLength={10}
-              className={`border p-2 w-full mb-1 rounded-lg focus:outline-none focus:ring-2 ${
-                postalCodeError ? "border-red-500 focus:ring-red-400" : "focus:ring-pink-500"
-              }`}
+              error={!!postalCodeError}
+              inputProps={{ maxLength: 10 }}
+              className="bg-white rounded-lg"
             />
           </motion.div>
           {postalCodeError && (
-            <p className="text-red-500 text-sm mb-2">{postalCodeError}</p>
+            <p className="text-red-500 text-sm mb-4 -mt-2">{postalCodeError}</p>
           )}
+
           <button
             type="submit"
             disabled={formLoading}
-            className="flex items-center justify-center gap-1 px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition disabled:opacity-50 cursor-pointer mt-3"
+            className="flex items-center justify-center gap-1 px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition disabled:opacity-50 cursor-pointer mt-2"
           >
             {formLoading ? (
               <>
@@ -316,61 +343,65 @@ export default function AddressesPage() {
             noValidate
             className={`mb-6 p-4 border rounded-lg bg-gray-50 ${showEditForm ? "bubble-in" : "bubble-out"}`}
           >
-            <h2 className="text-lg font-semibold mb-2 flex gap-1">
+            <h2 className="text-lg font-semibold mb-4 flex gap-1">
               <Icon path={mdiHomeEditOutline} size={1.2} />
               ویرایش آدرس
             </h2>
-            <label className="block mb-2 font-semibold flex gap-1">
-              <Icon path={mdiHomeOutline} size={1} />
-              آدرس:
-            </label>
+
+            {/* فیلد آدرس با استفاده از TextField */}
             <motion.div
               animate={shakeFields.editAddress ? { x: [0, -10, 10, -8, 8, -5, 5, 0] } : {}}
               transition={{ duration: 0.4 }}
+              className="mb-4"
             >
-              <textarea
+              <TextField
+                {...rtlStyles}
+                fullWidth
+                multiline
+                minRows={3}
+                label="آدرس کامل"
+                placeholder="آدرس کامل را وارد کنید"
                 value={editAddress}
                 onChange={(e) => {
                   setEditAddress(e.target.value);
                   if (e.target.value.trim()) setEditAddressError("");
                 }}
-                placeholder="آدرس کامل را وارد کنید"
-                className={`border p-2 w-full mb-1 rounded-lg focus:outline-none focus:ring-2 ${
-                  editAddressError ? "border-red-500 focus:ring-red-400" : "focus:ring-pink-500"
-                }`}
+                error={!!editAddressError}
+                className="bg-white rounded-lg"
               />
             </motion.div>
             {editAddressError && (
-              <p className="text-red-500 text-sm mb-2">{editAddressError}</p>
+              <p className="text-red-500 text-sm mb-4 -mt-2">{editAddressError}</p>
             )}
-            <label className="block mb-2 font-semibold flex gap-1">
-              <Milestone className="w-5 h-5" />
-              کد پستی:
-            </label>
+
+            {/* فیلد کد پستی با استفاده از TextField */}
             <motion.div
               animate={shakeFields.editPostalCode ? { x: [0, -10, 10, -8, 8, -5, 5, 0] } : {}}
               transition={{ duration: 0.4 }}
+              className="mb-4"
             >
-              <input
-                type="text"
+              <TextField
+                {...rtlStyles}
+                fullWidth
+                label="کد پستی"
+                placeholder="مثال: 1234567890"
                 value={editPostalCode}
                 onChange={handleEditPostalChange}
-                placeholder="مثال: 1234567890"
-                maxLength={10}
-                className={`border p-2 w-full mb-1 rounded-lg focus:outline-none focus:ring-2 ${
-                  editPostalCodeError ? "border-red-500 focus:ring-red-400" : "focus:ring-pink-500"
-                }`}
+                error={!!editPostalCodeError}
+                inputProps={{ maxLength: 10 }}
+                className="bg-white rounded-lg"
               />
             </motion.div>
             {editPostalCodeError && (
-              <p className="text-red-500 text-sm mb-2">{editPostalCodeError}</p>
+              <p className="text-red-500 text-sm mb-4 -mt-2">{editPostalCodeError}</p>
             )}
 
-            <div className="flex gap-2">
+            {/* دکمه‌های فرم */}
+            <div className="flex gap-2 mt-2">
               <button
                 type="submit"
                 disabled={formLoading}
-                className="flex items-center justify-center gap-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition disabled:opacity-50 cursor-pointer mt-3"
+                className="flex items-center justify-center gap-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition disabled:opacity-50 cursor-pointer"
               >
                 {formLoading ? (
                   <>
@@ -387,7 +418,7 @@ export default function AddressesPage() {
               <button
                 type="button"
                 onClick={cancelEditing}
-                className="flex items-center gap-1 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition disabled:opacity-50 cursor-pointer mt-3"
+                className="flex items-center gap-1 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition disabled:opacity-50 cursor-pointer"
               >
                 <XCircle className="w-5 h-5" />
                 لغو
@@ -404,9 +435,8 @@ export default function AddressesPage() {
             {addresses.map((addr) => (
               <li
                 key={addr.id.toLocaleString('fa-IR')}
-                className={`p-4 border rounded-lg bg-white shadow-sm flex justify-between items-center ${
-                  rotatingId === addr.id ? "spin-fade-out" : ""
-                }`}
+                className={`p-4 border rounded-lg bg-white shadow-sm flex justify-between items-center ${rotatingId === addr.id ? "spin-fade-out" : ""
+                  }`}
               >
                 <div>
                   <p className="font-semibold text-gray-600 flex gap-1">

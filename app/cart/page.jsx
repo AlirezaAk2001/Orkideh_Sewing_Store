@@ -15,7 +15,7 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import { Trash2, ClipboardList, CreditCard } from "lucide-react";
 import Icon from '@mdi/react';
-import { mdiCartOutline, mdiCartMinus, mdiCloseCircleOutline, mdiDeleteCircleOutline } from '@mdi/js';
+import { mdiCartOutline, mdiCartMinus, mdiCloseCircleOutline, mdiDeleteCircleOutline, mdiDeleteSweepOutline } from '@mdi/js';
 import { TextField } from "@mui/material";
 
 const animationStyles = `
@@ -54,27 +54,36 @@ const animationStyles = `
 `;
 
 export default function CartPage() {
-  const { cartItems, removeFromCart } = useCart();
+  const { cartItems, removeFromCart, clearCart } = useCart();
   const { currentUser } = useAuth();
   const router = useRouter();
   const [phoneNumber, setPhoneNumber] = useState("");
   const [loading, setLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [clearLoading, setClearLoading] = useState(false);
 
-  // ✨ انیمیشن — دقیقاً همان منطق addresses/page.jsx
-  // summarySpinning: باکس خلاصه (مجموع + دکمه ثبت سفارش) داره می‌چرخه و محو می‌شه
-  // showForm: فرم نمایش داده بشه (با bubble-in) یا نه
+  const isPhoneValid = /^09[0-9]{9}$/.test(phoneNumber);
+
   const [summarySpinning, setSummarySpinning] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [formVisible, setFormVisible] = useState(false);
 
-  // Dialog تأییدیه حذف
+  // Dialog تأییدیه حذف تکی
   const [dialog, setDialog] = useState({ open: false, id: null, name: "" });
   const [shake, setShake] = useState(false);
   const handleCloseDialog = () => setDialog({ open: false, id: null, name: "" });
   const handleBackdropClick = () => {
     setShake(true);
     setTimeout(() => setShake(false), 500);
+  };
+
+  // Dialog تأییدیه حذف همه
+  const [clearDialog, setClearDialog] = useState(false);
+  const [shakeClear, setShakeClear] = useState(false);
+  const handleCloseClearDialog = () => setClearDialog(false);
+  const handleClearBackdropClick = () => {
+    setShakeClear(true);
+    setTimeout(() => setShakeClear(false), 500);
   };
 
   const rtlStyles = {
@@ -87,7 +96,7 @@ export default function CartPage() {
     },
     sx: {
       "& legend": {
-      textAlign: "right",
+        textAlign: "right",
       },
     },
   };
@@ -139,11 +148,40 @@ export default function CartPage() {
     }
   };
 
-  // ✨ کلیک روی دکمه ثبت سفارش:
-  // ۱. باکس خلاصه (مجموع + دکمه) می‌چرخه و محو می‌شه
-  // ۲. فرم با حالت حبابی جایگزینش می‌شه
+  const confirmClearAll = async () => {
+    handleCloseClearDialog();
+    setClearLoading(true);
+
+    try {
+      const token = localStorage.getItem("token");
+
+      if (token) {
+        const ordersRes = await fetch("/api/orders", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const ordersData = await ordersRes.json();
+
+        if (ordersRes.ok && ordersData.orders) {
+          const pendingOrder = ordersData.orders.find(o => o.status === "pending");
+          if (pendingOrder) {
+            await fetch(`/api/orders/${pendingOrder.id}`, {
+              method: "DELETE",
+              headers: { Authorization: `Bearer ${token}` },
+            });
+          }
+        }
+      }
+    } catch (err) {
+      console.error("خطا در حذف سفارش:", err);
+    }
+
+    clearCart();
+    toast.success("تمام محصولات از سبد خرید شما حذف شدند.", { icon: "🗑️" });
+    setClearLoading(false);
+  };
+
   const handleOpenForm = () => {
-    if (summarySpinning) return; // جلوگیری از کلیک مجدد حین انیمیشن
+    if (summarySpinning) return;
     setSummarySpinning(true);
 
     setTimeout(() => {
@@ -155,7 +193,6 @@ export default function CartPage() {
     }, 650);
   };
 
-  // ✨ بستن فرم با انیمیشن bubble-out و نمایش دوباره باکس خلاصه
   const handleCloseForm = () => {
     setFormVisible(false);
     setTimeout(() => {
@@ -241,7 +278,7 @@ export default function CartPage() {
         }}
       />
 
-      {/* Dialog تأییدیه حذف */}
+      {/* Dialog تأییدیه حذف تکی */}
       <Dialog
         open={dialog.open}
         onClose={handleBackdropClick}
@@ -290,13 +327,125 @@ export default function CartPage() {
         </DialogActions>
       </Dialog>
 
-      <h1 className="text-xl sm:text-2xl font-bold mb-4 text-gray-700 dark:text-gray-200 flex gap-1">
-        <Icon path={mdiCartOutline} size={1.3} />
-        سبد خرید
-      </h1>
+      {/* Dialog تأییدیه حذف همه */}
+      <Dialog
+        open={clearDialog}
+        onClose={handleClearBackdropClick}
+        dir="rtl"
+        PaperProps={{
+          sx: {
+            animation: shakeClear ? "dialogShake 0.5s ease" : "none",
+            borderRadius: "12px",
+            minWidth: "320px",
+          }
+        }}
+      >
+        <DialogTitle sx={{
+          fontFamily: "Vazirmatn, sans-serif",
+          display: "flex",
+          alignItems: "center",
+          gap: 1,
+          backgroundColor: "#3b82f6",
+          color: "#ffffff",
+          borderBottom: "3px solid",
+          borderColor: "#1d4ed8",
+          px: 3,
+          py: 1.5,
+        }}>
+          <Icon path={mdiDeleteSweepOutline} size={1} color="#ffffff" />
+          خالی کردن سبد خرید
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ fontFamily: "Vazirmatn, sans-serif", marginTop: "8px", marginBottom: "4px" }}>
+            آیا مطمئن هستید که می‌خواهید تمام محصولات زیر را از سبد خرید خود حذف کنید؟
+          </DialogContentText>
+          <ul style={{
+            marginTop: "10px",
+            paddingRight: "8px",
+            display: "flex",
+            flexDirection: "column",
+            gap: "6px",
+          }}>
+            {cartItems.map((item, index) => (
+              <li key={item.id} style={{
+                fontFamily: "Vazirmatn, sans-serif",
+                fontSize: "13px",
+                color: "#374151",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+              }}>
+                <span style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: "20px",
+                  height: "20px",
+                  borderRadius: "50%",
+                  backgroundColor: "#3b82f6",
+                  color: "#fff",
+                  fontSize: "11px",
+                  fontWeight: "bold",
+                  flexShrink: 0,
+                }}>
+                  {(index + 1).toLocaleString("fa-IR")}
+                </span>
+                {item.name || item.Product?.name}
+                {item.quantity > 1 && (
+                  <span style={{ color: "#6b7280", fontSize: "12px" }}>
+                    (×{item.quantity.toLocaleString("fa-IR")})
+                  </span>
+                )}
+              </li>
+            ))}
+          </ul>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseClearDialog} sx={{ fontFamily: "Vazirmatn, sans-serif" }}>
+            <Icon path={mdiCloseCircleOutline} size={1} />
+            لغو
+          </Button>
+          <Button
+            onClick={confirmClearAll}
+            color="error"
+            variant="contained"
+            sx={{ fontFamily: "Vazirmatn, sans-serif" }}
+          >
+            <Icon path={mdiDeleteSweepOutline} size={1} />
+            بله، همه را حذف کن
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* هدر صفحه */}
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-700 dark:text-gray-200 flex gap-1">
+          <Icon path={mdiCartOutline} size={1.3} />
+          سبد خرید
+        </h1>
+
+        {/* دکمه حذف همه — فقط وقتی بیش از یک محصول وجود داشته باشد */}
+        {cartItems.length > 1 && (
+          <button
+            className="delete-btn flex items-center gap-1 text-red-500 hover:text-red-700 transition cursor-pointer disabled:opacity-50"
+            onClick={() => setClearDialog(true)}
+            disabled={clearLoading}
+          >
+            <div className="trash-container">
+              <Trash2 className="trash-body w-5 h-5" />
+              <div className="trash-lid-wrapper">
+                <Trash2 className="w-5 h-5" />
+              </div>
+            </div>
+            <span className="text-sm font-medium">
+              {clearLoading ? "در حال حذف همه..." : "حذف همه"}
+            </span>
+          </button>
+        )}
+      </div>
 
       {cartItems.length === 0 ? (
-        <p className="text-gray-600 dark:text-gray-400">سبد خرید شما خالی است.</p>
+        <p className="text-gray-600 dark:text-gray-400">هیچ محصولی به سبد خرید شما اضافه نشده است.</p>
       ) : (
         <>
           <ul className="space-y-2">
@@ -353,29 +502,25 @@ export default function CartPage() {
             ))}
           </ul>
 
-          {/* ✨ باکس خلاصه — وقتی showForm نیست نمایش داده می‌شه */}
+          {/* باکس خلاصه */}
           {!showForm && (
             <div className="text-right mt-6 mb-[-1] rounded-xl">
               <button
                 onClick={handleOpenForm}
                 disabled={summarySpinning}
-                className={`px-4 py-2 flex items-center justify-center gap-1 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition cursor-pointer disabled:opacity-50 ${
-                  summarySpinning ? "spin-fade-out" : ""
-                }`}
+                className={`px-4 py-2 flex items-center justify-center gap-1 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition cursor-pointer disabled:opacity-50 ${summarySpinning ? "spin-fade-out" : ""}`}
               >
-              <ClipboardList className="w-5 h-5" />
-               ثبت سفارش
+                <ClipboardList className="w-5 h-5" />
+                ثبت سفارش
               </button>
             </div>
           )}
 
-          {/* ✨ فرم — با انیمیشن حبابی جایگزین باکس خلاصه می‌شه */}
+          {/* فرم با انیمیشن حبابی */}
           {showForm && (
             <form
               onSubmit={handleSubmit}
-              className={`mt-4 p-4 border rounded-lg bg-gray-50 ${
-                formVisible ? "bubble-in" : "bubble-out"
-              }`}
+              className={`mt-4 p-4 border rounded-lg bg-gray-50 ${formVisible ? "bubble-in" : "bubble-out"}`}
             >
               <TextField
                 {...rtlStyles}
@@ -383,14 +528,14 @@ export default function CartPage() {
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
                 label="شماره تلفن"
+                placeholder="مثال: 09124567891"
                 className="border p-2 w-full mb-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500"
-                required
               />
               <div className="flex gap-2 mt-3">
                 <button
                   type="submit"
-                  disabled={loading}
-                  className="flex items-center justify-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition disabled:opacity-50 cursor-pointer"
+                  disabled={loading || !isPhoneValid}
+                  className="flex items-center justify-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 >
                   {loading ? (
                     <svg className="animate-spin w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

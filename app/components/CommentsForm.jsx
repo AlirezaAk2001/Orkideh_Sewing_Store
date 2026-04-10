@@ -9,6 +9,8 @@ import { useAuth } from "@/lib/context";
 import { MessageCircle, MessageSquareHeart } from "lucide-react";
 import Icon from '@mdi/react';
 import { mdiCommentEditOutline } from '@mdi/js';
+import { TextField } from "@mui/material";
+import Image from "next/image";
 
 export default function CommentsForm({ productId, onSubmit }) {
   const { currentUser } = useAuth();
@@ -18,6 +20,21 @@ export default function CommentsForm({ productId, onSubmit }) {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [canComment, setCanComment] = useState(false);
   const [checkingPermission, setCheckingPermission] = useState(true);
+
+  const rtlStyles = {
+    InputLabelProps: {
+      sx: {
+        transformOrigin: "right !important",
+        left: "inherit !important",
+        right: "1.75rem !important",
+      },
+    },
+    sx: {
+      "& legend": {
+        textAlign: "right",
+      },
+    },
+  };
 
   // بررسی آیا کاربر محصول را خریداری کرده و تحویل گرفته است
   useEffect(() => {
@@ -101,7 +118,21 @@ export default function CommentsForm({ productId, onSubmit }) {
   };
 
   if (checkingPermission) {
-    return <div className="p-4 text-center">در حال بررسی مجوز...</div>;
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[20vh]">
+        <Image
+          src="/image/logo.png"
+          alt="در حال بررسی مجوز..."
+          width={80}
+          height={80}
+          className="animate-spin object-contain"
+          priority
+        />
+        <p className="mt-4 text-gray-500 text-sm font-medium animate-pulse">
+          در حال بررسی مجوز...
+        </p>
+      </div>
+    );
   }
 
   return (
@@ -110,7 +141,7 @@ export default function CommentsForm({ productId, onSubmit }) {
         <Icon path={mdiCommentEditOutline} size={1.1} />
         ثبت نظر
       </h3>
-      
+
       {!currentUser ? (
         <div className="text-red-500 mb-4">
           برای ثبت نظر، لطفاً ابتدا وارد حساب کاربری خود شوید
@@ -128,22 +159,38 @@ export default function CommentsForm({ productId, onSubmit }) {
             </label>
             <StarRating rating={rating} setRating={setRating} />
           </div>
-          <div className="relative">
-            <textarea
+          <div className="relative mb-4">
+            <TextField
+              {...rtlStyles}
+              fullWidth
+              multiline
+              rows={4}
+              label="نظر خود را بنویسید"
+              placeholder="تجربه خود را از خرید این محصول به اشتراک بگذارید..."
               value={text}
               onChange={(e) => setText(e.target.value)}
-              placeholder="نظر خود را بنویسید"
-              className="border p-2 w-full mb-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500"
-              rows={4}
               required
+              className="bg-white rounded-lg"
+              // استفاده از sx برای تنظیم فاصله و فوکوس هماهنگ با تم سایت
+              sx={{
+                ...rtlStyles.sx,
+                "& .MuiOutlinedInput-root": {
+                  "&.Mui-focused fieldset": {
+                    borderColor: "#ec4899", // رنگ صورتی (pink-500) مشابه دکمه‌ها
+                  },
+                },
+              }}
             />
+
+            {/* دکمه ایموجی - موقعیت آن را کمی تنظیم می‌کنیم تا با TextField تداخل نداشته باشد */}
             <button
               type="button"
               onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-              className="absolute top-2 left-2 text-xl cursor-pointer"
+              className="absolute top-3 left-3 text-xl cursor-pointer z-10"
             >
               😊
             </button>
+
             {showEmojiPicker && (
               <div className="absolute bottom-full left-0 mb-2 z-20">
                 <EmojiPicker onEmojiClick={handleEmojiClick} />

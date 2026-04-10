@@ -19,7 +19,9 @@ export default function EditBannerPage() {
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
-    // این آبجکت را بالای کامپوننت یا قبل از return تعریف کنید
+  const [initialData, setInitialData] = useState({ title: "", desc: "", img: "" });
+
+  // این آبجکت را بالای کامپوننت یا قبل از return تعریف کنید
   const rtlStyles = {
     InputLabelProps: {
       sx: {
@@ -30,7 +32,7 @@ export default function EditBannerPage() {
     },
     sx: {
       "& legend": {
-      textAlign: "right",
+        textAlign: "right",
       },
     },
   };
@@ -46,6 +48,11 @@ export default function EditBannerPage() {
         setTitle(data.title || "");
         setDesc(data.desc || "");
         setImg(data.img || "");
+        setInitialData({          // 👈 اضافه کن
+          title: data.title || "",
+          desc: data.desc || "",
+          img: data.img || "",
+        });
       } catch (err) {
         toast.error("خطا در دریافت اطلاعات بنر");
       } finally {
@@ -54,6 +61,11 @@ export default function EditBannerPage() {
     };
     fetchBanner();
   }, [id]);
+
+  const hasChanged =
+    title !== initialData.title ||
+    desc !== initialData.desc ||
+    img !== initialData.img;
 
   // 💾 ذخیره تغییرات
   const handleSubmit = async (e) => {
@@ -91,7 +103,7 @@ export default function EditBannerPage() {
           priority
         />
         <p className="mt-4 text-gray-500 text-sm font-medium animate-pulse">
-           در حال بارگذاری جزئیات بنر محصول...
+          در حال بارگذاری جزئیات بنر محصول...
         </p>
       </div>
     ); // <-- بسته شدن return
@@ -104,13 +116,14 @@ export default function EditBannerPage() {
         <Icon path={mdiImageEditOutline} size={1.3} />
         <h1 className="text-xl font-bold mb-4">ویرایش بنر</h1>
       </div>
-      
+
 
       <form onSubmit={handleSubmit}>
         <TextField
           {...rtlStyles}
           label="عنوان"
           value={title}
+          placeholder="مثال: چرخ خیاطی ۱"
           onChange={(e) => setTitle(e.target.value)}
           fullWidth
           margin="normal"
@@ -119,6 +132,7 @@ export default function EditBannerPage() {
           {...rtlStyles}
           label="توضیحات"
           value={desc}
+          placeholder="مثال: هم اکنون با قیمت فوق العاده!"
           onChange={(e) => setDesc(e.target.value)}
           fullWidth
           margin="normal"
@@ -127,6 +141,7 @@ export default function EditBannerPage() {
           {...rtlStyles}
           label="آدرس تصویر"
           value={img}
+          placeholder="مثال: x.png"
           onChange={(e) => setImg(e.target.value)}
           fullWidth
           margin="normal"
@@ -137,7 +152,7 @@ export default function EditBannerPage() {
           variant="contained"
           color="success"
           className="gap-1 mt-2 rounded-xl"
-          disabled={isSaving}
+          disabled={isSaving || !hasChanged}
         >
           {isSaving ? (
             <>

@@ -158,7 +158,7 @@ if (!product) {
 
   const handleAddToCart = () => {
     if (!currentUser) {
-      toast("برای افزودن به سبد خرید، لطفاً ابتدا وارد حساب کاربری خود شوید.", { icon: "⚠️" });
+      toast("برای افزودن محصول موردنظر به سبد خرید، لطفاً ابتدا وارد حساب کاربری خود شوید.", { icon: "⚠️" });
       setTimeout(() => router.push("/auth"), 2000);
       return;
     }
@@ -195,12 +195,12 @@ if (!product) {
     setIsInCart(false);
     setQuantity(1);
     handleCloseDialog();
-    toast("محصول از سبد خرید شما حذف شد.", { icon: "🗑️" });
+    toast("محصول موردنظر از سبد خرید شما حذف شد.", { icon: "🗑️" });
   };
 
   const handleFavoriteToggle = () => {
     if (!currentUser) {
-      toast("برای افزودن به علاقه‌مندی‌ها، ابتدا وارد حساب کاربری خود شوید.", { icon: "⚠️" });
+      toast("برای افزودن محصول موردنظر به علاقه‌مندی‌ها، ابتدا وارد حساب کاربری خود شوید.", { icon: "⚠️" });
       setTimeout(() => router.push("/auth"), 2000);
       return;
     }
@@ -223,7 +223,7 @@ if (!product) {
     removeFromFavorites(product.id);
     setIsFavorite(false);
     handleCloseDialog();
-    toast("محصول از علاقه‌مندی‌های شما حذف شد.", { icon: "🗑️" });
+    toast("محصول موردنظر از علاقه‌مندی‌های شما حذف شد.", { icon: "🗑️" });
   };
 
   return (

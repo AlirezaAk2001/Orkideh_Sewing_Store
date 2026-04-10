@@ -297,6 +297,7 @@ export default function SettingsPage() {
                 {...rtlStyles}
                 fullWidth
                 label="نام کاربری جدید"
+                placeholder="مثال: aaa_123"
                 value={username}
                 onChange={(e) => handleUsernameChange(e.target.value)}
                 error={!!usernameError}
@@ -383,6 +384,7 @@ export default function SettingsPage() {
             {...rtlStyles}
             fullWidth
             label="رمز عبور فعلی"
+            placeholder="مثال: A@123456"
             type={showCurrentPassword ? "text" : "password"}
             value={currentPassword}
             onChange={(e) => setCurrentPassword(e.target.value)}
@@ -416,6 +418,7 @@ export default function SettingsPage() {
               {...rtlStyles}
               fullWidth
               label="رمز عبور جدید"
+              placeholder="مثال: S@13800"
               type={showNewPassword ? "text" : "password"}
               value={newPassword}
               onChange={(e) => handleNewPasswordChange(e.target.value)}
@@ -451,6 +454,7 @@ export default function SettingsPage() {
               {...rtlStyles}
               fullWidth
               label="تکرار رمز عبور جدید"
+              placeholder="مثال: S@13800"
               type={showConfirmPassword ? "text" : "password"}
               value={confirmPassword}
               onChange={(e) => handleConfirmPasswordChange(e.target.value)}

@@ -15,6 +15,7 @@ export default function EditCategory() {
   const [image, setImage] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [initialData, setInitialData] = useState({ name: "", slug: "", image: "" });
 
   const router = useRouter();
   const { id } = useParams();
@@ -29,7 +30,7 @@ export default function EditCategory() {
     },
     sx: {
       "& legend": {
-      textAlign: "right",
+        textAlign: "right",
       },
     },
   };
@@ -45,6 +46,11 @@ export default function EditCategory() {
           setName(data.name || "");
           setSlug(data.slug || "");
           setImage(data.image || "");
+          setInitialData({          // 👈 اضافه کن
+            name: data.name || "",
+            slug: data.slug || "",
+            image: data.image || "",
+          });
         }
       } catch (err) {
         console.error("Error fetching category:", err.response?.data || err.message);
@@ -83,7 +89,7 @@ export default function EditCategory() {
       console.error("Error updating category:", err.response?.data || err.message);
       toast.error(
         "خطا در ویرایش دسته‌بندی: " +
-          (err.response?.data?.error || err.message)
+        (err.response?.data?.error || err.message)
       );
     } finally {
       setSaving(false);
@@ -102,11 +108,16 @@ export default function EditCategory() {
           priority
         />
         <p className="mt-4 text-gray-500 text-sm font-medium animate-pulse">
-         در حال بارگذاری جزئیات دسته بندی...
+          در حال بارگذاری جزئیات دسته بندی...
         </p>
       </div>
     ); // <-- بسته شدن return
   }
+
+  const hasChanged =
+    name !== initialData.name ||
+    slug !== initialData.slug ||
+    image !== initialData.image;
 
   return (
     <Box sx={{ p: 2 }}>
@@ -115,12 +126,13 @@ export default function EditCategory() {
         <Boxes className="w-7 h-7" />
         <h1 className="text-xl font-bold mb-4">ویرایش دسته‌بندی</h1>
       </div>
-      
+
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <TextField
           {...rtlStyles}
           type="text"
           label="نام دسته‌بندی"
+          placeholder="مثال: لامپ‌ها"
           value={name}
           onChange={(e) => setName(e.target.value)}
           className="border p-2 rounded"
@@ -131,6 +143,7 @@ export default function EditCategory() {
           {...rtlStyles}
           type="text"
           label="اسلاگ دسته‌بندی"
+          placeholder="مثال: lamps"
           value={slug}
           onChange={(e) => setSlug(e.target.value)}
           className="border p-2 rounded"
@@ -141,6 +154,7 @@ export default function EditCategory() {
           {...rtlStyles}
           type="text"
           label="آدرس تصویر (اختیاری)"
+          placeholder="مثال: y.png"
           value={image}
           onChange={(e) => setImage(e.target.value)}
           className="border p-2 rounded"
@@ -151,7 +165,7 @@ export default function EditCategory() {
           type="submit"
           variant="contained"
           color="success"
-          disabled={saving}
+          disabled={saving || !hasChanged}
           className="gap-1 rounded-xl"
         >
           <Save className="w-5 h-5" />

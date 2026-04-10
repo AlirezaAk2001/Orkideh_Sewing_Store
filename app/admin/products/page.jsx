@@ -32,20 +32,20 @@ export default function AdminProducts() {
       });
       const validProducts = Array.isArray(data)
         ? data.filter(
-            (product, index) => {
-              if (
-                !product ||
-                typeof product !== "object" ||
-                !product.id ||
-                typeof product.name !== "string" ||
-                typeof product.price !== "number"
-              ) {
-                console.warn(`Invalid product at index ${index}:`, product);
-                return false;
-              }
-              return true;
+          (product, index) => {
+            if (
+              !product ||
+              typeof product !== "object" ||
+              !product.id ||
+              typeof product.name !== "string" ||
+              typeof product.price !== "number"
+            ) {
+              console.warn(`Invalid product at index ${index}:`, product);
+              return false;
             }
-          )
+            return true;
+          }
+        )
         : [];
       setProducts(validProducts);
     } catch (err) {
@@ -86,19 +86,22 @@ export default function AdminProducts() {
   };
 
   const columns = [
-    { field: "id", 
+    {
+      field: "id",
       headerName: "شناسه",
       headerAlign: "center",
       align: "center",
-      cellClassName: "center", 
-      width: 70 
+      cellClassName: "center",
+      width: 70,
+      renderCell: (params) => params.value.toLocaleString("fa-IR")
     },
-    { field: "name", 
+    {
+      field: "name",
       headerName: "نام محصول",
       headerAlign: "center",
       align: "center",
-      cellClassName: "center", 
-      minWidth: 150, 
+      cellClassName: "center",
+      minWidth: 150,
       flex: 1,
       renderCell: (params) => (
         <span>{params.value}</span>
@@ -110,8 +113,8 @@ export default function AdminProducts() {
       width: 100,
       headerAlign: "center",
       align: "center",
-      cellClassName: "center", 
-      renderCell: (params) => `${params.value.toLocaleString()}`,
+      cellClassName: "center",
+      renderCell: (params) => params.value.toLocaleString("fa-IR").replace(/٬/g, ","),
     },
     {
       field: "finalPrice",
@@ -119,25 +122,30 @@ export default function AdminProducts() {
       width: 100,
       headerAlign: "center",
       align: "center",
-      cellClassName: "center", 
+      cellClassName: "center",
       renderCell: (params) => {
         const finalPrice =
           params.row.finalPrice != null && !isNaN(params.row.finalPrice)
             ? params.row.finalPrice
             : params.row.discount != null && !isNaN(params.row.discount)
-            ? params.row.price * (1 - params.row.discount / 100)
-            : params.row.price;
-        return <span>{`${finalPrice.toLocaleString()}`}</span>;
+              ? params.row.price * (1 - params.row.discount / 100)
+              : params.row.price;
+        return <span>{finalPrice.toLocaleString("fa-IR").replace(/٬/g, ",")}</span>;
       },
     },
-    { field: "stock", 
-      headerName: "موجودی", 
+    {
+      field: "stock",
+      headerName: "موجودی",
       headerAlign: "center",
       align: "center",
       cellClassName: "center",
       width: 80,
       renderCell: (params) => (
-        <span>{params.value}</span>
+        <span>
+          {params.value != null
+            ? params.value.toLocaleString("fa-IR").replace(/٬/g, ",")
+            : "—"}
+        </span>
       ),
     },
     {
@@ -160,11 +168,11 @@ export default function AdminProducts() {
       headerName: "تخفیف",
       headerAlign: "center",
       align: "center",
-      cellClassName: "center", 
+      cellClassName: "center",
       width: 100,
       renderCell: (params) => {
         const discount =
-          params.row.discount != null ? `${params.row.discount}%` : "—";
+          params.row.discount != null ? `${params.row.discount.toLocaleString("fa-IR")}%` : "—";
         return <span>{discount}</span>;
       },
     },
@@ -468,8 +476,8 @@ export default function AdminProducts() {
                   flexShrink: 0,
                   animation: 'search-skeleton-zoom 1.4s ease-in-out infinite',
                   '@keyframes search-skeleton-zoom': {
-                    '0%, 100%': { transform: 'scale(1)',    opacity: 1    },
-                    '50%':       { transform: 'scale(1.18)', opacity: 0.65 },
+                    '0%, 100%': { transform: 'scale(1)', opacity: 1 },
+                    '50%': { transform: 'scale(1.18)', opacity: 0.65 },
                   },
                 }}
               >
@@ -516,8 +524,8 @@ export default function AdminProducts() {
                 flexShrink: 0,
                 animation: 'add-btn-skeleton-zoom 1.4s ease-in-out infinite',
                 '@keyframes add-btn-skeleton-zoom': {
-                  '0%, 100%': { transform: 'scale(1)',    opacity: 1    },
-                  '50%':       { transform: 'scale(1.18)', opacity: 0.65 },
+                  '0%, 100%': { transform: 'scale(1)', opacity: 1 },
+                  '50%': { transform: 'scale(1.18)', opacity: 0.65 },
                 },
               }}
             >
@@ -544,9 +552,9 @@ export default function AdminProducts() {
           {loading ? (
             <Box sx={{ width: "100%" }}>
               {/* هدرهای واقعی جدول */}
-              <Box sx={{ 
-                display: "flex", 
-                alignItems: "center", 
+              <Box sx={{
+                display: "flex",
+                alignItems: "center",
                 height: 56,
                 backgroundColor: '#f3f4f6',
                 borderBottom: '2px solid #e5e7eb',
@@ -568,11 +576,11 @@ export default function AdminProducts() {
 
               {/* ردیف‌های اسکلتون */}
               {Array.from(new Array(6)).map((_, index) => (
-                <Box 
-                  key={index} 
-                  sx={{ 
-                    display: "flex", 
-                    alignItems: "center", 
+                <Box
+                  key={index}
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
                     height: 70,
                     p: 2,
                     borderBottom: '1px solid #e5e7eb',
@@ -614,9 +622,9 @@ export default function AdminProducts() {
               ))}
 
               {/* فوتر اسکلتون */}
-              <Box sx={{ 
-                display: "flex", 
-                alignItems: "center", 
+              <Box sx={{
+                display: "flex",
+                alignItems: "center",
                 justifyContent: "space-between",
                 height: 52,
                 borderTop: '1px solid #e5e7eb',

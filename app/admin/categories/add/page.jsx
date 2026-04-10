@@ -12,6 +12,7 @@ export default function AddCategory() {
   const [slug, setSlug] = useState("");
   const [image, setImage] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const isFormFilled = name.trim() || slug.trim() || image.trim();
 
   const router = useRouter();
 
@@ -65,6 +66,7 @@ export default function AddCategory() {
           {...rtlStyles}
           type="text"
           label="نام دسته‌بندی"
+          placeholder="مثال: لامپ‌ها"
           value={name}
           onChange={(e) => setName(e.target.value)}
           className="border p-2 rounded"
@@ -73,6 +75,7 @@ export default function AddCategory() {
           {...rtlStyles}
           type="text"
           label="اسلاگ دسته‌بندی"
+          placeholder="مثال: lamps"
           value={slug}
           onChange={(e) => setSlug(e.target.value)}
           className="border p-2 rounded"
@@ -81,6 +84,7 @@ export default function AddCategory() {
           {...rtlStyles}
           type="text"
           label="آدرس تصویر (اختیاری)"
+          placeholder="مثال: y.png"
           value={image}
           onChange={(e) => setImage(e.target.value)}
           className="border p-2 rounded"
@@ -91,7 +95,7 @@ export default function AddCategory() {
           variant="contained"
           color="success"
           className="gap-1 rounded-xl"
-          disabled={isSaving}
+          disabled={isSaving || !isFormFilled}
         >
           {isSaving ? (
             <>
