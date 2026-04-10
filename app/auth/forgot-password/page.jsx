@@ -140,6 +140,7 @@ export default function ForgotPasswordPage() {
                 label="ایمیل"
                 className="w-full p-3 sm:p-4 border rounded text-sm sm:text-base"
                 value={email}
+                placeholder="example@gmail.com"
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>

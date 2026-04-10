@@ -233,6 +233,7 @@ export default function ResetPasswordPage() {
                 label="رمز عبور جدید"
                 className="w-full p-3 sm:p-4 border rounded text-sm sm:text-base"
                 value={newPassword}
+                placeholder="مثال: A@12865"
                 onChange={(e) => setNewPassword(e.target.value)}
               />
               {errors.newPassword && (
@@ -247,6 +248,7 @@ export default function ResetPasswordPage() {
                 label="تأیید رمز عبور جدید"
                 className="w-full p-3 sm:p-4 border rounded text-sm sm:text-base"
                 value={confirmPassword}
+                placeholder="مثال: A@12865"
                 onChange={(e) => setConfirmPassword(e.target.value)}
               />
               {errors.confirmPassword && (
