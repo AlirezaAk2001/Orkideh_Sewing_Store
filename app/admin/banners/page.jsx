@@ -12,18 +12,19 @@ import {
   DialogContentText,
   DialogActions,
   Button,
+  Tooltip,
+  IconButton
 } from "@mui/material";
 import toast, { Toaster } from "react-hot-toast";
 import Link from "next/link";
-import { Edit, Trash2 } from "lucide-react";
 import { getImagePath } from "@/app/utils/getImagePath";
 import Icon from '@mdi/react';
-import { mdiImageSearchOutline, mdiImagePlusOutline, mdiDeleteCircleOutline, mdiCloseCircleOutline, mdiTrashCanOutline } from '@mdi/js';
+import { mdiImageSearchOutline, mdiImagePlusOutline, mdiDeleteCircleOutline, mdiCloseCircleOutline, mdiTrashCanOutline, mdiPen } from '@mdi/js';
 
 export default function AdminBannersPage() {
   const [banners, setBanners] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [deleteDialog, setDeleteDialog] = useState({ open: false, id: null });
+  const [deleteDialog, setDeleteDialog] = useState({ open: false, id: null, title: "" });
   const isMounted = useRef(true);
 
   useEffect(() => {
@@ -57,7 +58,7 @@ export default function AdminBannersPage() {
 
   const confirmDelete = async () => {
     const id = deleteDialog.id;
-    setDeleteDialog({ open: false, id: null });
+    setDeleteDialog({ open: false, id: null, title: ""});
 
     try {
       const res = await fetch(`/api/admin/banners/${id}`, { method: "DELETE" });
@@ -105,7 +106,7 @@ export default function AdminBannersPage() {
     {
       field: "title",
       headerName: "عنوان",
-      width: 200,
+      width: 300,
       headerAlign: 'center',
       align: 'center',
       cellClassName: 'center',
@@ -118,26 +119,68 @@ export default function AdminBannersPage() {
       align: 'center',
       cellClassName: 'center',
     },
+    // داخل آرایه columns، آبجکت مربوط به actions رو با این کد جایگزین کن:
     {
       field: "actions",
       headerName: "عملیات",
       width: 180,
       renderCell: (params) => (
-        <div className="flex gap-2 mr-2">
-          <Link
-            href={`/admin/banners/edit/${params.row.id}`}
-            className="flex items-center gap-1 px-2 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition cursor-pointer rounded-xl"
+        <div className="flex items-center justify-center gap-2 w-full h-full">
+          <Tooltip title="ویرایش بنر" placement="top" arrow
+            slotProps={{
+              popper: {
+                modifiers: [
+                  {
+                    name: 'offset',
+                    options: {
+                      // عدد اول: جابجایی افقی | عدد دوم: فاصله عمودی از دکمه
+                      // برای نزدیک‌تر شدن، عدد دوم را به سمت 0 یا اعداد منفی ببرید
+                      offset: [0, -8],
+                    },
+                  },
+                ],
+              },
+            }}
           >
-            <Edit size={16} />
-            ویرایش
-          </Link>
-          <button
-            onClick={() => handleDelete(params.row.id)}
-            className="flex items-center gap-1 px-2 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 transition cursor-pointer rounded-xl"
+            <Link href={`/admin/banners/edit/${params.row.id}`} style={{
+              display: 'inline-flex', // باعث می‌شود لینک فقط به اندازه محتوا فضا بگیرد
+              borderRadius: '50%',    // محدوده هاور را دایره‌ای می‌کند
+              textDecoration: 'none'
+            }}>
+              <IconButton size="small" sx={{ color: '#F57C00' }} className="item-edit">
+                <span className="icon-edit-wrapper">
+                  <Icon path={mdiPen} size={0.8} className="icon-edit" />
+                </span>
+              </IconButton>
+            </Link>
+          </Tooltip>
+
+          <Tooltip title="حذف بنر" placement="top" arrow
+            slotProps={{
+              popper: {
+                modifiers: [
+                  {
+                    name: 'offset',
+                    options: {
+                      // عدد اول: جابجایی افقی | عدد دوم: فاصله عمودی از دکمه
+                      // برای نزدیک‌تر شدن، عدد دوم را به سمت 0 یا اعداد منفی ببرید
+                      offset: [0, -8],
+                    },
+                  },
+                ],
+              },
+            }}
           >
-            <Trash2 size={16} className="mb-1" />
-            حذف
-          </button>
+            <IconButton
+              size="small"
+              sx={{ color: '#E53935' }}
+              className="item-delete"
+              onClick={() => handleDelete(params.row.id, params.row.title)}
+            >
+              {/* برای آیکون سطل زباله، از همون ترفند CSS Mask خودت استفاده می‌کنیم */}
+              <span className="icon-delete"></span>
+            </IconButton>
+          </Tooltip>
         </div>
       ),
       headerAlign: 'center',
@@ -203,6 +246,98 @@ export default function AdminBannersPage() {
           opacity: 1;
           transform: translateX(-50%) scale(1);
         }
+
+        /* --- انیمیشن ویرایش اصلاح شده --- */
+        .icon-edit-wrapper {
+          position: relative;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .item-edit:hover .icon-edit-wrapper {
+          animation: writing 0.6s infinite alternate;
+        }
+
+        /* ساخت خط زیر مداد روی span */
+        .icon-edit-wrapper::after {
+          content: '';
+          position: absolute;
+          bottom: 0; /* تنظیم فاصله خط از نوک مداد */
+          right: 6px;
+          width: 0;
+          height: 2px;
+          background: currentColor;
+          transition: width 0.3s ease;
+          border-radius: 2px;
+          pointer-events: none;
+        }
+
+        .item-edit:hover .icon-edit-wrapper::after {
+          width: 12px; /* طول خط هنگام هاور */
+        }
+
+        @keyframes writing {
+          0% { transform: translate(0, 0) rotate(0deg); }
+          25% { transform: translate(-2px, -3px) rotate(-10deg); }
+          50% { transform: translate(0, 0) rotate(0deg); }
+          75% { transform: translate(2px, -1px) rotate(5deg); }
+          100% { transform: translate(0, 0) rotate(0deg); }
+        }
+
+        /* --- انیمیشن حذف --- */
+        .icon-delete {
+          position: relative;
+          display: inline-block;
+          width: 20px;
+          height: 20px;
+          overflow: visible;
+        }
+
+        .icon-delete::after {
+          content: "";
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background-color: currentColor;
+          -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z'/%3E%3C/svg%3E");
+          mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z'/%3E%3C/svg%3E");
+          clip-path: polygon(0 0, 100% 0, 100% 25%, 0 25%);
+          transform-origin: center 20%;
+          transition: transform 0.2s;
+        }
+
+        .icon-delete::before {
+          content: "";
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background-color: currentColor;
+          -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z'/%3E%3C/svg%3E");
+          mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z'/%3E%3C/svg%3E");
+          clip-path: polygon(0 25%, 100% 25%, 100% 100%, 0 100%);
+        }
+
+        .item-delete:hover .icon-delete::after {
+          animation: lid-swing 1s infinite alternate ease-in-out;
+          color: #ff5252;
+        }
+
+        .item-delete:hover .icon-delete::before {
+          color: #ff5252;
+        }
+
+        @keyframes lid-swing {
+          0% { transform: translateY(0) rotate(0); }
+          25% { transform: translateY(-3px) rotate(-5deg); }
+          50% { transform: translateY(-3px) rotate(5deg); }
+          75% { transform: translateY(-3px) rotate(-5deg); }
+          100% { transform: translateY(0) rotate(0); }
+        }
       `}</style>
 
       <Box sx={{ p: 2 }}>
@@ -211,7 +346,7 @@ export default function AdminBannersPage() {
         {/* ===== دیالوگ تأیید حذف بنر ===== */}
         <Dialog
           open={deleteDialog.open}
-          onClose={() => setDeleteDialog({ open: false, id: null })}
+          onClose={() => setDeleteDialog({ open: false, id: null, title: "" })}
           dir="rtl"
           PaperProps={{
             sx: { borderRadius: "12px" },
@@ -236,12 +371,16 @@ export default function AdminBannersPage() {
           </DialogTitle>
           <DialogContent>
             <DialogContentText sx={{ fontFamily: "Vazirmatn, sans-serif", marginTop: "6px" }}>
-              آیا مطمئن هستید که می‌خواهید این بنر را حذف کنید؟
+              آیا مطمئن هستید که می‌خواهید بنر
+              <strong style={{ color: '#E53935', margin: '0 4px' }}>
+                «{deleteDialog.title}»
+              </strong>
+              را حذف کنید؟
             </DialogContentText>
           </DialogContent>
           <DialogActions>
             <Button
-              onClick={() => setDeleteDialog({ open: false, id: null })}
+              onClick={() => setDeleteDialog({ open: false, id: null, title: "" })}
               sx={{ fontFamily: "Vazirmatn, sans-serif" }}
             >
               <Icon path={mdiCloseCircleOutline} size={1} />

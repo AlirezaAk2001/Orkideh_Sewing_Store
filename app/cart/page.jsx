@@ -307,7 +307,9 @@ export default function CartPage() {
         </DialogTitle>
         <DialogContent>
           <DialogContentText sx={{ fontFamily: "Vazirmatn, sans-serif", marginTop: "6px" }}>
-            محصول «{dialog.name}» از سبد خرید شما حذف خواهد شد. آیا مطمئن هستید؟
+            محصول 
+            <strong style={{ color: '#E53935', margin: '0 4px' }}>«{dialog.name}»</strong>
+            از سبد خرید شما حذف خواهد شد. آیا مطمئن هستید؟
           </DialogContentText>
         </DialogContent>
         <DialogActions>

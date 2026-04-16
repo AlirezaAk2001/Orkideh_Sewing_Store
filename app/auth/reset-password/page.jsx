@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Button, CircularProgress, TextField } from "@mui/material";
 import { RotateCcwKey, IterationCcw } from "lucide-react";
-import Swal from "sweetalert2";
+import toast from "react-hot-toast";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 
@@ -32,11 +32,12 @@ export default function ResetPasswordPage() {
     },
     sx: {
       "& legend": {
-      textAlign: "right",
+        textAlign: "right",
       },
     },
   };
 
+  // در قسمت useEffect برای fetchBackground:
   useEffect(() => {
     const fetchBackground = async () => {
       try {
@@ -46,8 +47,10 @@ export default function ResetPasswordPage() {
         setBackgroundImage(data.data?.background_image || "/image/logo.png");
       } catch (err) {
         console.error("خطا در لود تصویر پس‌زمینه:", err);
+        // در صورت خطا از تصویر پیش‌فرض استفاده کن
+        setBackgroundImage("/image/back-auth.png");
       } finally {
-        setIsBgLoaded(true); // ✅ اینجا اضافه کن
+        setIsBgLoaded(true);
       }
     };
     fetchBackground();
@@ -60,9 +63,8 @@ export default function ResetPasswordPage() {
       validateToken(tokenParam);
     } else {
       setIsValidating(false);
-      Swal.fire("خطا", "لینک بازیابی معتبر نیست.", "error").then(() => {
-        router.push("/auth/forgot-password");
-      });
+      toast.error("لینک بازیابی معتبر نیست.");
+      router.push("/auth/forgot-password");
     }
   }, [searchParams, router]);
 
@@ -78,9 +80,8 @@ export default function ResetPasswordPage() {
       setIsTokenValid(true);
       setEmail(data.email);
     } catch (error) {
-      Swal.fire("خطا", error.message || "لینک بازیابی منقضی شده یا نامعتبر است.", "error").then(() => {
-        router.push("/auth/forgot-password");
-      });
+      toast.error(error.message || "لینک بازیابی منقضی شده یا نامعتبر است.");
+      router.push("/auth/forgot-password");
     } finally {
       setIsValidating(false);
     }
@@ -108,10 +109,10 @@ export default function ResetPasswordPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
     if (!isTokenValid) {
-      Swal.fire("خطا", "لینک بازیابی معتبر نیست.", "error");
+      toast.error("لینک بازیابی معتبر نیست.");
       return;
     }
 
@@ -121,30 +122,30 @@ export default function ResetPasswordPage() {
       const resp = await fetch("/api/auth/change-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          token, 
-          newPassword, 
-          confirmPassword 
+        body: JSON.stringify({
+          token,
+          newPassword,
+          confirmPassword
         }),
       });
 
       const data = await resp.json();
-      
+
       if (!resp.ok) {
         throw new Error(data.error || "عملیات ناموفق بود");
       }
 
-      Swal.fire({
-        title: "موفق",
-        text: "رمز عبور شما با موفقیت تغییر کرد.",
-        icon: "success",
-        confirmButtonText: "ورود به سایت",
-      }).then(() => {
-        router.push("/auth");
+      toast.success("رمز عبور شما با موفقیت تغییر کرد. در حال انتقال به صفحه ورود...", {
+        duration: 3000,
       });
+      
+      // تأخیر کوتاه برای نمایش toast قبل از ریدایرکت
+      setTimeout(() => {
+        router.push("/auth");
+      }, 1500);
 
     } catch (error) {
-      Swal.fire("خطا", error.message || "عملیات شکست خورد", "error");
+      toast.error(error.message || "عملیات شکست خورد");
     } finally {
       setIsSubmitting(false);
     }
@@ -154,18 +155,18 @@ export default function ResetPasswordPage() {
     return (
       <div className="h-screen flex flex-col items-center justify-center bg-gray-100">
         <div className="flex flex-col items-center justify-center min-h-[60vh]">
-        <Image
-          src="/image/logo.png"
-          alt="در حال بارگذاری..."
-          width={80}
-          height={80}
-          className="animate-spin object-contain"
-          priority
-        />
-        <p className="mt-4 text-gray-600 text-base sm:text-lg font-medium animate-pulse">
-          {isValidating ? "در حال بررسی لینک بازیابی..." : "در حال بارگذاری..."}
-        </p>
-      </div>
+          <Image
+            src="/image/logo.png"
+            alt="در حال بارگذاری..."
+            width={80}
+            height={80}
+            className="animate-spin object-contain"
+            priority
+          />
+          <p className="mt-4 text-gray-600 text-base sm:text-lg font-medium animate-pulse">
+            {isValidating ? "در حال بررسی لینک بازیابی..." : "در حال بارگذاری..."}
+          </p>
+        </div>
       </div>
     );
   }
@@ -175,22 +176,22 @@ export default function ResetPasswordPage() {
   }
 
   if (!isBgLoaded) {
-      return (
-          <div className="flex flex-col items-center justify-center min-h-[60vh]">
-            <Image
-              src="/image/logo.png"
-              alt="در حال بارگذاری..."
-              width={80}
-              height={80}
-              className="animate-spin object-contain"
-              priority
-            />
-            <p className="mt-4 text-gray-500 text-sm font-medium animate-pulse">
-              در حال بارگذاری...
-            </p>
-          </div>
-        );
-    }
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh]">
+        <Image
+          src="/image/logo.png"
+          alt="در حال بارگذاری..."
+          width={80}
+          height={80}
+          className="animate-spin object-contain"
+          priority
+        />
+        <p className="mt-4 text-gray-500 text-sm font-medium animate-pulse">
+          در حال بارگذاری...
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 flex items-start justify-center overflow-y-auto py-6">
@@ -217,14 +218,14 @@ export default function ResetPasswordPage() {
             <RotateCcwKey className="w-10 h-10" />
             تغییر رمز عبور
           </h2>
-          
+
           <p className="text-center text-gray-600 mb-4 text-sm sm:text-base">
             برای حساب کاربری با ایمیل: <strong>{email}</strong>
           </p>
           <p className="text-center text-gray-500 mb-6 text-xs sm:text-sm">
             لطفاً رمز عبور جدید خود را وارد کنید.
           </p>
-          
+
           <form onSubmit={handleSubmit} className="space-y-4" dir="rtl">
             <div>
               <TextField
@@ -240,7 +241,7 @@ export default function ResetPasswordPage() {
                 <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.newPassword}</p>
               )}
             </div>
-            
+
             <div>
               <TextField
                 {...rtlStyles}
@@ -255,7 +256,7 @@ export default function ResetPasswordPage() {
                 <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.confirmPassword}</p>
               )}
             </div>
-            
+
             <Button
               type="submit"
               variant="contained"
@@ -284,18 +285,18 @@ export default function ResetPasswordPage() {
                 </>
               )}
             </Button>
-            
-          <div className="text-center mt-4">
-            <button
-              type="button"
-              onClick={() => router.push("/auth")}
-              className="text-blue-600 hover:text-blue-800 transition-colors font-medium text-sm sm:text-base cursor-pointer inline-flex items-center gap-1"
-            >
-              <IterationCcw className="w-5 h-5" />
-             بازگشت به صفحه ورود
-            </button>
-          </div>
-        </form>
+
+            <div className="text-center mt-4">
+              <button
+                type="button"
+                onClick={() => router.push("/auth")}
+                className="text-blue-600 hover:text-blue-800 transition-colors font-medium text-sm sm:text-base cursor-pointer inline-flex items-center gap-1"
+              >
+                <IterationCcw className="w-5 h-5" />
+                بازگشت به صفحه ورود
+              </button>
+            </div>
+          </form>
         </motion.div>
       </div>
     </div>

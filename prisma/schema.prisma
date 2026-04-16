@@ -11,7 +11,7 @@ model User {
   id               Int                @id @default(autoincrement())
   name             String
   email            String             @unique
-  password_hash    String
+  password_hash    String?
   is_admin         Boolean            @default(false)
   is_verified      Boolean            @default(false)
   created_at       DateTime           @default(now())
@@ -149,16 +149,18 @@ model Banner {
 }
 
 model Comment {
-  id         Int      @id @default(autoincrement())
-  text       String
-  rating     Int      @default(0)
-  approved   Boolean  @default(false)
-  createdAt  DateTime @default(now())
-  updatedAt DateTime @default(now())
-  userId     Int
-  productId  Int
-  User       User     @relation(fields: [userId], references: [id])
-  Product    Product  @relation(fields: [productId], references: [id])
+  id            Int      @id @default(autoincrement())
+  text          String
+  rating        Int      @default(0)
+  approved      Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  adminReply    String?
+  adminReplyAt  DateTime?   // ← فیلد جدید
+  updatedAt     DateTime @default(now()) @updatedAt
+  userId        Int
+  productId     Int
+  User          User     @relation(fields: [userId], references: [id])
+  Product       Product  @relation(fields: [productId], references: [id])
   
   @@unique([userId, productId])
 }

@@ -98,7 +98,9 @@ export default function FavoritesPage() {
         </DialogTitle>
         <DialogContent>
           <DialogContentText sx={{ fontFamily: "Vazirmatn, sans-serif", marginTop: "6px" }}>
-            محصول «{dialog.name}» از علاقه‌مندی‌های شما حذف خواهد شد. آیا مطمئن هستید؟
+            محصول 
+            <strong style={{ color: '#E53935', margin: '0 4px' }}>«{dialog.name}»</strong>
+            از علاقه‌مندی‌های شما حذف خواهد شد. آیا مطمئن هستید؟
           </DialogContentText>
         </DialogContent>
         <DialogActions>

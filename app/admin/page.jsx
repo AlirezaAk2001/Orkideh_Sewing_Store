@@ -22,12 +22,20 @@ export default function AdminHome() {
   const router = useRouter();
 
   useEffect(() => {
+    const name = sessionStorage.getItem("welcomeMessage");
+    if (name) {
+      toast.success(`خوش آمدید مدیر عزیز 🎉`, { position: "top-center" });
+      sessionStorage.removeItem("welcomeMessage");
+    }
+  }, []);
+
+  useEffect(() => {
     const fetchStats = async () => {
       try {
         const token = localStorage.getItem("token");
         if (!token) {
           toast.error("لطفاً ابتدا وارد شوید");
-          router.push("/admin/login");
+          router.push("/auth");
           return;
         }
 
@@ -68,11 +76,11 @@ export default function AdminHome() {
         if (err.message.includes("دسترسی غیرمجاز")) {
           toast.error("شما دسترسی ادمین ندارید");
           localStorage.removeItem("token");
-          router.push("/admin/login");
+          router.push("/auth");
         } else if (err.response?.status === 401) {
           toast.error("دسترسی غیرمجاز. لطفاً دوباره وارد شوید");
           localStorage.removeItem("token");
-          router.push("/admin/login");
+          router.push("/auth");
         } else {
           toast.error(err.response?.data?.error || "خطا در دریافت آمار");
         }
@@ -102,24 +110,24 @@ export default function AdminHome() {
   // کامپوننت اسکلتون لودر
   const SkeletonLoader = () => (
     <Box sx={{ width: "100%" }}>
-      
+
       {/* کارت‌های اسکلتون */}
-      <Box sx={{ 
-        display: "grid", 
-        gridTemplateColumns: { 
-          xs: "1fr", 
-          sm: "repeat(2, 1fr)", 
-          lg: "repeat(5, 1fr)" 
-        }, 
-        gap: 4 
+      <Box sx={{
+        display: "grid",
+        gridTemplateColumns: {
+          xs: "1fr",
+          sm: "repeat(2, 1fr)",
+          lg: "repeat(5, 1fr)"
+        },
+        gap: 4
       }}>
         {Array.from(new Array(5)).map((_, index) => (
-          <Box 
+          <Box
             key={index}
-            sx={{ 
-              bgcolor: 'white', 
-              p: 3, 
-              borderRadius: 2, 
+            sx={{
+              bgcolor: 'white',
+              p: 3,
+              borderRadius: 2,
               boxShadow: 1,
               display: "flex",
               flexDirection: "column",
@@ -131,10 +139,10 @@ export default function AdminHome() {
           >
             {/* آیکون اسکلتون */}
             <Skeleton variant="circular" width={48} height={48} />
-            
+
             {/* عنوان اسکلتون */}
             <Skeleton variant="text" width="80%" height={30} />
-            
+
             {/* مقدار اسکلتون */}
             <Skeleton variant="text" width={60} height={40} />
           </Box>
@@ -146,10 +154,10 @@ export default function AdminHome() {
   return (
     <div className="p-4" dir="rtl">
       <Toaster position="top-right" />
-      
+
       <h1 className="text-2xl font-bold mb-6 flex gap-1">
         <Icon path={mdiMonitorDashboard} size={1.2} />
-         داشبورد مدیریت
+        داشبورد مدیریت
       </h1>
 
       {loading ? (
@@ -158,8 +166,8 @@ export default function AdminHome() {
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
             {cards.map((card) => (
-              <div 
-                key={card.name} 
+              <div
+                key={card.name}
                 className="bg-white p-4 rounded shadow flex flex-col items-center justify-center gap-2 hover:shadow-md transition-shadow"
                 style={{ height: '180px' }}
               >

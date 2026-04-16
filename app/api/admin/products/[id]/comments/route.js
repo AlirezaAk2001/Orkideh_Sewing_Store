@@ -4,14 +4,13 @@ import jwt from "jsonwebtoken";
 
 const prisma = new PrismaClient();
 
-// GET: دریافت کامنت‌های تأیید شده محصول
+// GET: دریافت کامنت‌های تأیید شده محصول (همراه با adminReply)
 export async function GET(req, { params }) {
   try {
     const { id } = params;
     const productIdNum = parseInt(id, 10);
 
     if (isNaN(productIdNum)) {
-      console.warn("شناسه محصول نامعتبر است:", id);
       return NextResponse.json({ error: "شناسه محصول نامعتبر است" }, { status: 400 });
     }
 
@@ -19,7 +18,7 @@ export async function GET(req, { params }) {
       where: { productId: productIdNum, approved: true },
       orderBy: { createdAt: "desc" },
       include: {
-        User: { select: { id: true, name: true } },
+        User: { select: { id: true, name: true, username: true } },
         Product: { select: { id: true, name: true } },
       },
     });
@@ -43,7 +42,6 @@ export async function POST(req, { params }) {
     const productIdNum = parseInt(id, 10);
 
     if (isNaN(productIdNum)) {
-      console.warn("شناسه محصول نامعتبر است:", id);
       return NextResponse.json({ error: "شناسه محصول نامعتبر است" }, { status: 400 });
     }
 
@@ -61,8 +59,7 @@ export async function POST(req, { params }) {
     }
 
     const { text, rating } = await req.json();
-    
-    // اعتبارسنجی داده‌های ورودی
+
     if (!text || !text.trim() || text.trim().length < 3) {
       return NextResponse.json(
         { error: "متن نظر باید حداقل ۳ کاراکتر باشد" },
@@ -77,73 +74,53 @@ export async function POST(req, { params }) {
       );
     }
 
-    // بررسی وجود محصول
-    const product = await prisma.product.findUnique({
-      where: { id: productIdNum },
-    });
+    const product = await prisma.product.findUnique({ where: { id: productIdNum } });
     if (!product) {
       return NextResponse.json({ error: "محصول یافت نشد" }, { status: 404 });
     }
 
-    // 🔍 **بررسی جدید: آیا کاربر محصول را خریداری کرده و تحویل گرفته است؟**
     const deliveredOrder = await prisma.order.findFirst({
       where: {
         userId: parseInt(userId),
-        status: "delivered", // فقط سفارش‌های تحویل شده
-        OrderItems: {
-          some: {
-            productId: productIdNum,
-          },
-        },
+        status: "delivered",
+        OrderItems: { some: { productId: productIdNum } },
       },
       include: {
-        OrderItems: {
-          where: {
-            productId: productIdNum,
-          },
-        },
+        OrderItems: { where: { productId: productIdNum } },
       },
     });
 
     if (!deliveredOrder) {
       return NextResponse.json(
-        { 
+        {
           error: "شما فقط می‌توانید روی محصولاتی که خریداری کرده‌ید و تحویل گرفته‌ید نظر دهید",
-          code: "PURCHASE_REQUIRED"
+          code: "PURCHASE_REQUIRED",
         },
         { status: 403 }
       );
     }
 
-    // بررسی آیا کاربر قبلاً برای این محصول کامنت گذاشته است
     const existingComment = await prisma.comment.findFirst({
-      where: {
-        userId: parseInt(userId),
-        productId: productIdNum,
-      },
+      where: { userId: parseInt(userId), productId: productIdNum },
     });
 
     if (existingComment) {
       return NextResponse.json(
-        { 
-          error: "شما قبلاً برای این محصول نظر داده‌اید",
-          code: "ALREADY_COMMENTED"
-        },
+        { error: "شما قبلاً برای این محصول نظر داده‌اید", code: "ALREADY_COMMENTED" },
         { status: 400 }
       );
     }
 
-    // ثبت کامنت جدید
     const comment = await prisma.comment.create({
       data: {
         text: text.trim(),
         rating: parseInt(rating),
         productId: productIdNum,
         userId: parseInt(userId),
-        approved: false, // کامنت جدید ابتدا تأیید نشده است
+        approved: false,
       },
       include: {
-        User: { select: { id: true, name: true } },
+        User: { select: { id: true, name: true, username: true } },
         Product: { select: { id: true, name: true } },
       },
     });
@@ -151,8 +128,7 @@ export async function POST(req, { params }) {
     return NextResponse.json({
       comment,
       message: "نظر شما با موفقیت ثبت شد و پس از تأیید مدیریت نمایش داده خواهد شد",
-      location: top,
-      orderId: deliveredOrder.id, // شناسه سفارش برای ردیابی
+      orderId: deliveredOrder.id,
     });
   } catch (error) {
     console.error("خطا در ثبت نظر:", error);
@@ -197,16 +173,12 @@ export async function DELETE(req, { params }) {
       return NextResponse.json({ error: "شناسه نظر الزامی است" }, { status: 400 });
     }
 
-    const comment = await prisma.comment.findUnique({
-      where: { id: parseInt(commentId) },
-    });
+    const comment = await prisma.comment.findUnique({ where: { id: parseInt(commentId) } });
     if (!comment || comment.productId !== productIdNum) {
       return NextResponse.json({ error: "نظر یافت نشد یا متعلق به این محصول نیست" }, { status: 404 });
     }
 
-    await prisma.comment.delete({
-      where: { id: parseInt(commentId) },
-    });
+    await prisma.comment.delete({ where: { id: parseInt(commentId) } });
 
     return NextResponse.json({ message: "نظر با موفقیت حذف شد" });
   } catch (error) {

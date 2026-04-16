@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/context";
 import toast, { Toaster } from "react-hot-toast";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Dialog,
@@ -55,6 +56,14 @@ export default function ProfilePage() {
     }
   };
 
+  useEffect(() => {
+    const name = sessionStorage.getItem("welcomeMessage");
+    if (name) {
+      toast.success(`خوش آمدید ${name} عزیز 🎉`, { position: "top-center" });
+      sessionStorage.removeItem("welcomeMessage");
+    }
+  }, []);
+
   // مدیریت اندازه صفحه
   useEffect(() => {
     const handleResize = () => {
@@ -80,7 +89,21 @@ export default function ProfilePage() {
 
   // منتظر بارگذاری کامل
   if (loading || !currentUser) {
-    return <div className="text-center py-10">در حال بارگذاری اطلاعات کاربر...</div>;
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh]">
+        <Image
+          src="/image/logo.png"
+          alt="در حال بارگذاری اطلاعات کاربر..."
+          width={80}
+          height={80}
+          className="animate-spin object-contain"
+          priority
+        />
+        <p className="mt-4 text-gray-500 text-sm font-medium animate-pulse">
+         در حال بارگذاری اطلاعات کاربر...
+        </p>
+      </div>
+    );
   }
 
   return (
@@ -156,49 +179,48 @@ export default function ProfilePage() {
           <div>
             <p className="text-sm sm:text-base flex items-center gap-1">
               <Icon path={mdiCardAccountDetailsOutline} size={0.8} />
-             نام و نام خانوادگی: {currentUser?.name || "کاربر مهمان"}
+              نام و نام خانوادگی: {currentUser?.name || "کاربر مهمان"}
             </p>
             <p className="text-sm sm:text-base flex items-center gap-1">
               <Icon path={mdiAccountBoxEditOutline} size={0.8} />
-             نام کاربری: {currentUser?.username || "نام کاربری تنظیم نشده"}
+              نام کاربری: {currentUser?.username || "نام کاربری تنظیم نشده"}
             </p>
             <p className="text-sm sm:text-base flex items-center gap-1">
               <Icon path={mdiEmailOutline} size={0.8} />
-             ایمیل: {currentUser?.email || "ایمیل ثبت نشده"}
+              ایمیل: {currentUser?.email || "ایمیل ثبت نشده"}
             </p>
           </div>
         </div>
 
-      <nav className={`${isMobile ? "flex-row justify-around" : "flex-col space-y-2 sm:space-y-3"} flex`}>
-        {[
-          { key: "orders", icon: <ShoppingBagOutlinedIcon />, label: "سفارش‌های من" },
-          { key: "addresses", icon: <MapPinHouse />, label: "آدرس‌های من" },
-          { key: "cart", icon: <ShoppingCartOutlinedIcon />, label: "سبد خرید" },
-          { key: "favorites", icon: <FavoriteBorderOutlinedIcon />, label: "علاقه‌مندی‌های من" },
-          { key: "settings", icon: <Icon path={mdiAccountCogOutline} size={1} />, label: "تنظیمات حساب کاربری" },
-        ].map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
-            className={`flex items-center gap-2 p-2 rounded-lg text-sm sm:text-base cursor-pointer transition-all duration-300 
-            ${
-              activeTab === tab.key
-              ? "bg-blue-100 text-blue-600 font-semibold"
-              : "hover:bg-gray-100 text-gray-700"
-            }`}
+        <nav className={`${isMobile ? "flex-row justify-around" : "flex-col space-y-2 sm:space-y-3"} flex`}>
+          {[
+            { key: "orders", icon: <ShoppingBagOutlinedIcon />, label: "سفارش‌های من" },
+            { key: "addresses", icon: <MapPinHouse />, label: "آدرس‌های من" },
+            { key: "cart", icon: <ShoppingCartOutlinedIcon />, label: "سبد خرید" },
+            { key: "favorites", icon: <FavoriteBorderOutlinedIcon />, label: "علاقه‌مندی‌های من" },
+            { key: "settings", icon: <Icon path={mdiAccountCogOutline} size={1} />, label: "تنظیمات حساب کاربری" },
+          ].map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={`flex items-center gap-2 p-2 rounded-lg text-sm sm:text-base cursor-pointer transition-all duration-300 
+            ${activeTab === tab.key
+                  ? "bg-blue-100 text-blue-600 font-semibold"
+                  : "hover:bg-gray-100 text-gray-700"
+                }`}
             >
-            {tab.icon}
-            {tab.label}
-          </button>
-        ))}
+              {tab.icon}
+              {tab.label}
+            </button>
+          ))}
 
-        <button
-          onClick={handleLogout}
-          className="flex items-center gap-2 bg-red-50 text-red-600 hover:bg-red-100 p-2 rounded-lg text-sm sm:text-base cursor-pointer"
-        >
-          <LogoutOutlinedIcon /> خروج از حساب
-        </button>
-      </nav>
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 bg-red-50 text-red-600 hover:bg-red-100 p-2 rounded-lg text-sm sm:text-base cursor-pointer"
+          >
+            <LogoutOutlinedIcon /> خروج از حساب
+          </button>
+        </nav>
       </motion.div>
 
       {/* محتوای تب‌ها */}
@@ -210,17 +232,16 @@ export default function ProfilePage() {
             animate={{ opacity: 1, x: isMobile ? 0 : "-5%" }}
             exit={{ opacity: 0, x: isMobile ? 0 : "-100%" }}
             transition={{ duration: 0.6, ease: "easeInOut" }}
-            className={`${
-              isMobile ? "relative mt-4 w-full flex-1" : "absolute left-0 z-10 w-[95%] sm:w-[80%] md:w-[40%] max-h-[90%]"
-            } bg-white shadow-2xl rounded-xl p-4 sm:p-6 md:p-8 overflow-y-auto`}
+            className={`${isMobile ? "relative mt-4 w-full flex-1" : "absolute left-0 z-10 w-[95%] sm:w-[80%] md:w-[40%] max-h-[90%]"
+              } bg-white shadow-2xl rounded-xl p-4 sm:p-6 md:p-8 overflow-y-auto`}
           >
             {tabContent[activeTab]}
             <button
               onClick={() => setActiveTab(null)}
               className="mt-6 flex items-center gap-1 px-3 sm:px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 text-sm sm:text-base cursor-pointer transition-all"
             >
-            <IterationCcw className="text-gray-700" />
-            بازگشت
+              <IterationCcw className="text-gray-700" />
+              بازگشت
             </button>
 
           </motion.div>

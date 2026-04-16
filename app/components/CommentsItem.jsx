@@ -4,6 +4,7 @@ import { useAuth } from "@/lib/context";
 import axios from "axios";
 import toast from "react-hot-toast";
 import StarRating from "./StarRating";
+import moment from 'moment-jalaali';
 
 export default function CommentsItem({ comment, onDelete }) {
   const { currentUser } = useAuth();
@@ -18,7 +19,7 @@ export default function CommentsItem({ comment, onDelete }) {
   // تابع برای تولید رنگ بر اساس حرف اول
   const getAvatarColor = (name) => {
     if (!name) return "bg-gray-500";
-    
+
     const colors = [
       "bg-blue-500",
       "bg-green-500",
@@ -29,7 +30,7 @@ export default function CommentsItem({ comment, onDelete }) {
       "bg-indigo-500",
       "bg-teal-500",
     ];
-    
+
     const charCode = name.charCodeAt(0);
     return colors[charCode % colors.length];
   };
@@ -61,6 +62,17 @@ export default function CommentsItem({ comment, onDelete }) {
     );
   };
 
+  function formatDateTime(dateStr) {
+    if (!dateStr) return "";
+    const date = moment(dateStr);
+    const formatted = date.format('HH:mm:ss - jYYYY/jMM/jDD');
+
+    // تبدیل اعداد انگلیسی به فارسی
+    return formatted.replace(/\d/g, (digit) => {
+      return String.fromCharCode(parseInt(digit) + 1776);
+    });
+  }
+
   const userName = comment.User?.name || "کاربر ناشناس";
   const userInitial = getInitial(userName);
   const avatarColor = getAvatarColor(userName);
@@ -73,7 +85,7 @@ export default function CommentsItem({ comment, onDelete }) {
           <div className={`flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 ${avatarColor} text-white rounded-full`}>
             <span className="text-sm sm:text-base font-bold">{userInitial}</span>
           </div>
-          
+
           <div>
             <strong className="text-sm sm:text-base md:text-lg">{userName}</strong>
             <div className="mt-1 sm:mt-2">
@@ -81,7 +93,10 @@ export default function CommentsItem({ comment, onDelete }) {
             </div>
           </div>
         </div>
-        
+        <p className="text-xs sm:text-sm md:text-base text-gray-500 mt-1 sm:mt-2">
+          {formatDateTime(comment.createdAt)}
+        </p>
+
         {isAdmin && (
           <button
             onClick={handleDelete}
@@ -93,9 +108,6 @@ export default function CommentsItem({ comment, onDelete }) {
       </div>
       <p className="mt-1 sm:mt-2 whitespace-pre-line text-gray-700 text-sm sm:text-base md:text-lg">
         {comment.text}
-      </p>
-      <p className="text-xs sm:text-sm md:text-base text-gray-500 mt-1 sm:mt-2">
-        {new Date(comment.createdAt).toLocaleDateString("fa-IR")}
       </p>
     </div>
   );
