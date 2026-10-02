@@ -6,6 +6,7 @@ import Image from "next/image";
 import { ChevronDown, BaggageClaim } from "lucide-react";
 import { Tooltip } from 'react-tooltip';
 import { useCart, useFavorites, useAuth } from "@/lib/context";
+import { isSoldOut, maxPurchasable } from "@/lib/stock";
 import SellerBox from "./SellerBox";
 import ProductComments from "./ProductComments";
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
@@ -125,25 +126,21 @@ if (!product) {
       ? (approvedComments.reduce((acc, comment) => acc + (comment.rating || 0), 0) / totalVotes).toFixed(1)
       : 0;
 
-  // موجودی کالا
+  // موجودی کالا؛ قاعده همان lib/stock.js است (null = پیگیری نمی‌شود، «لوازم جانبی» معاف است)
   const stock = product?.stock;
-  const hasStockValue = stock !== null && stock !== undefined && stock !== "";
-  const stockNumber = hasStockValue ? Number(stock) : null;
   const isAccessories = product.Category?.name === "لوازم جانبی";
-  const isOutOfStock = hasStockValue && stockNumber <= 0;
+  const isOutOfStock = isSoldOut(product);
+  const maxQuantity = maxPurchasable(product);
 
   const renderInventory = () => {
-    if (isAccessories) {
-      if (stock === 0) return "ناموجود";
-      return "موجود";
-    }
-    if (stock === 0) return "ناموجود";
+    if (isOutOfStock) return "ناموجود";
+    if (isAccessories) return "موجود";
     if (stock == null || stock === "") return "نامشخص";
-    return `${stock.toLocaleString("fa-IR")} عدد`;
+    return `${Number(stock).toLocaleString("fa-IR")} عدد`;
   };
 
   const increaseQuantity = () => {
-    if (!isAccessories && quantity >= stockNumber) {
+    if (quantity >= maxQuantity) {
       toast("تعداد درخواستی بیش از موجودی است!", { icon: "⚠️" });
       return;
     }
@@ -287,7 +284,7 @@ if (!product) {
                 <button
                   onClick={increaseQuantity}
                   className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center hover:bg-gray-300 transition cursor-pointer"
-                  disabled={!isAccessories && quantity >= stockNumber}
+                  disabled={quantity >= maxQuantity}
                   data-tooltip-id="increase-tooltip"
                   data-tooltip-content="افزایش تعداد"
                 >

@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useCart, useAuth } from "@/lib/context";
+import { isSoldOut } from "@/lib/stock";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import StarRating from "./StarRating";
@@ -28,10 +29,8 @@ export default function ProductCard({ product }) {
     ? Math.round(price - (price * discount) / 100)
     : price;
 
-  const stock = product?.stock != null ? Number(product.stock) : 0;
-
-  const isAccessories = product.Category?.name === "لوازم جانبی";
-  const isOutOfStock = !isAccessories && stock <= 0;
+  // همان قاعدهٔ سرور (lib/stock.js): موجودی خالی (null) یعنی پیگیری نمی‌شود، نه ناموجود
+  const isOutOfStock = isSoldOut(product);
 
   const toLatinSlug = (name) => {
     const persianToLatin = {

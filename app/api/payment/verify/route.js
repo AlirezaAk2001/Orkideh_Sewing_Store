@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { tracksStock } from "@/lib/stock";
 import { getMerchant, zibalVerify } from "@/lib/zibal";
+import { limitByIp, tooManyRequests } from "@/lib/rateLimit";
 
 /**
  * POST /api/payment/verify  { trackId }
@@ -12,6 +13,10 @@ import { getMerchant, zibalVerify } from "@/lib/zibal";
  * رفرش صفحه یا درخواست هم‌زمان دوباره چیزی را عوض نمی‌کند.
  */
 export async function POST(req) {
+  // این route عمومی است و برای سفارش‌های pending به زیبال می‌رود؛ سقف سخاوتمندانه (پشت NAT چند مشتری یک IP دارند)
+  const limited = limitByIp(req, "pay-verify", 120, 10 * 60);
+  if (limited) return tooManyRequests(limited.retryAfter);
+
   let body;
   try {
     body = await req.json();

@@ -1,8 +1,12 @@
 import { NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 import prisma from "@/lib/prisma";
+import { limitByIp, tooManyRequests } from "@/lib/rateLimit";
 
 export async function POST(req) {
+  const limited = limitByIp(req, "google", 20, 15 * 60);
+  if (limited) return tooManyRequests(limited.retryAfter);
+
   try {
     const { code } = await req.json();
 
@@ -28,6 +32,11 @@ export async function POST(req) {
     });
     const googleUser = await userRes.json();
 
+    // ایمیلی که Google تأیید نکرده نباید جای تأیید مالکیت ایمیل را بگیرد
+    if (googleUser.verified_email === false) {
+      return NextResponse.json({ error: "ایمیل حساب Google شما تأیید نشده است." }, { status: 403 });
+    }
+
     const email = googleUser.email.toLowerCase();
 
     // پیدا کردن یا ساختن کاربر در دیتابیس
@@ -46,6 +55,9 @@ export async function POST(req) {
           is_verified: true,
         },
       });
+    } else if (!user.is_verified) {
+      // Google مالکیت این ایمیل را تأیید کرده؛ حسابی که با رمز ساخته شده و هنوز تأیید نشده بود هم تأیید می‌شود
+      user = await prisma.user.update({ where: { id: user.id }, data: { is_verified: true } });
     }
 
     // ساخت JWT

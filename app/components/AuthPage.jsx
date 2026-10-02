@@ -342,7 +342,16 @@ export default function AuthPage() {
           body: JSON.stringify({ identifier: formData.email, password: formData.password }),
         });
         const data = await resp.json();
-        if (!resp.ok) throw new Error(data.error || "Login failed");
+        if (!resp.ok) {
+          // رمز درست است ولی ایمیل تأیید نشده: به صفحهٔ تأیید می‌رویم و یک کد تازه فرستاده می‌شود
+          if (data.code === "EMAIL_NOT_VERIFIED") {
+            localStorage.setItem("signupEmail", data.email || formData.email);
+            toast.error(data.error);
+            setTimeout(() => router.push("/verify?resend=1"), 1500);
+            return;
+          }
+          throw new Error(data.error || "Login failed");
+        }
 
         login(data.user, data.token);
         const userName = data.user.name || data.user.firstName + " " + data.user.lastName || "کاربر";

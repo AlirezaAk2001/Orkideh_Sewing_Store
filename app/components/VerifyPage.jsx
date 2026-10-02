@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import toast, { Toaster } from "react-hot-toast";
 import { useRouter } from "next/navigation";
@@ -8,11 +8,28 @@ import { Button, CircularProgress, TextField } from "@mui/material";
 import { CheckCircle } from "lucide-react";
 import Image from "next/image";
 
+// حداقل فاصلهٔ دو بار ارسال کد (سرور هم همین‌قدر فاصله می‌خواهد)
+const RESEND_COOLDOWN_SEC = 60;
+
 export default function VerifyPage({ tempAuth }) {
   const [verificationCode, setVerificationCode] = useState("");
   const [codeError, setCodeError] = useState("");
   const [email, setEmail] = useState(tempAuth?.email || "");
   const [isVerifying, setIsVerifying] = useState(false);
+  const [isResending, setIsResending] = useState(false);
+  // زمان پایان فاصلهٔ ارسال مجدد؛ ثانیه‌های باقی‌مانده از ساعت محاسبه می‌شود (نه با کم‌کردن در هر تیک)،
+  // چون وقتی کاربر برای دیدن ایمیل به تب دیگری می‌رود تایمر این تب کند می‌شود
+  const [cooldownEnd, setCooldownEnd] = useState(0);
+  const [now, setNow] = useState(() => Date.now());
+  const cooldown = Math.max(0, Math.ceil((cooldownEnd - now) / 1000));
+  const counting = cooldown > 0;
+  const autoResendStarted = useRef(false);
+
+  const startCooldown = useCallback((seconds) => {
+    const t = Date.now();
+    setNow(t);
+    setCooldownEnd(t + seconds * 1000);
+  }, []);
   const [backgroundImage, setBackgroundImage] = useState("/image/logo.png");
   const [isBgLoaded, setIsBgLoaded] = useState(false);
   const [shakeCode, setShakeCode] = useState(false); // برای لرزش فیلد کد
@@ -68,9 +85,54 @@ export default function VerifyPage({ tempAuth }) {
     }
   }, [tempAuth]);
 
+  // درخواست کد تأیید تازه (کد قبلی باطل می‌شود)
+  const sendNewCode = useCallback(async () => {
+    if (!email) {
+      toast.error("ایمیل کاربر یافت نشد. لطفاً دوباره ثبت‌نام کنید");
+      return;
+    }
+
+    setIsResending(true);
+    try {
+      const resp = await fetch("/api/auth/resend-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const data = await resp.json().catch(() => ({}));
+
+      if (resp.ok) {
+        toast.success(data.message || "کد تأیید جدید ارسال شد.");
+        startCooldown(RESEND_COOLDOWN_SEC);
+      } else {
+        toast.error(data.error || "ارسال کد ناموفق بود.");
+        if (data.retryAfter) startCooldown(Math.min(data.retryAfter, RESEND_COOLDOWN_SEC));
+      }
+    } catch {
+      toast.error("ارتباط با سرور برقرار نشد.");
+    } finally {
+      setIsResending(false);
+    }
+  }, [email, startCooldown]);
+
+  // بعد از رد شدن ورود به‌خاطر ایمیل تأییدنشده (/verify?resend=1) خودکار یک کد تازه می‌فرستیم
+  useEffect(() => {
+    if (!email || autoResendStarted.current) return;
+    if (new URLSearchParams(window.location.search).get("resend") !== "1") return;
+    autoResendStarted.current = true;
+    window.history.replaceState(null, "", "/verify"); // رفرش صفحه دوباره کد نفرستد
+    sendNewCode();
+  }, [email, sendNewCode]);
+
+  useEffect(() => {
+    if (!counting) return;
+    const timer = setInterval(() => setNow(Date.now()), 500);
+    return () => clearInterval(timer);
+  }, [counting]);
+
   const handleVerifyCode = async (e) => {
     e.preventDefault();
-    
+
     // اعتبارسنجی کد تأیید
     if (!verificationCode.trim()) {
       setCodeError("کد تأیید نمی‌تواند خالی باشد");
@@ -274,6 +336,19 @@ export default function VerifyPage({ tempAuth }) {
                       تأیید
                     </>
                   )}
+                </Button>
+
+                <Button
+                  type="button"
+                  variant="text"
+                  fullWidth
+                  onClick={sendNewCode}
+                  disabled={isResending || cooldown > 0}
+                  sx={{ fontSize: "0.9rem", "&.Mui-disabled": { color: "text.secondary" } }}
+                >
+                  {cooldown > 0
+                    ? `ارسال مجدد کد (${cooldown.toLocaleString("fa-IR")} ثانیه)`
+                    : "ارسال مجدد کد"}
                 </Button>
               </form>
             </motion.div>

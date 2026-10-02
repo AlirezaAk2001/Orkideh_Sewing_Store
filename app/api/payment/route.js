@@ -3,6 +3,7 @@ import prisma from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
 import { tracksStock } from "@/lib/stock";
 import { getMerchant, siteUrl, payUrl, zibalRequest } from "@/lib/zibal";
+import { hit, tooManyRequests } from "@/lib/rateLimit";
 
 /**
  * POST /api/payment  { orderId }
@@ -13,6 +14,10 @@ import { getMerchant, siteUrl, payUrl, zibalRequest } from "@/lib/zibal";
 export async function POST(req) {
   const auth = await requireUser(req);
   if (auth.error) return auth.error;
+
+  // هر درخواست یک تماس با درگاه است؛ برای هر کاربر ۱۰ بار در ۱۰ دقیقه کافی است
+  const rl = hit(`payment:${auth.user.id}`, 10, 10 * 60);
+  if (rl.limited) return tooManyRequests(rl.retryAfter, "تعداد درخواست‌های پرداخت زیاد است.");
 
   let body;
   try {

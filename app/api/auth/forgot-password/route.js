@@ -3,17 +3,26 @@ import bcrypt from "bcrypt";
 import prisma from "@/lib/prisma";
 import nodemailer from "nodemailer";
 import { v4 as uuidv4 } from "uuid";
+import { hit, limitByIp, tooManyRequests } from "@/lib/rateLimit";
 
 export async function POST(req) {
   try {
     const { email } = await req.json();
 
-    if (!email) {
+    if (!email || typeof email !== "string") {
       return NextResponse.json(
         { error: "ایمیل الزامی است." },
         { status: 400 }
       );
     }
+
+    // جلوی ایمیل‌ریزی: ۳ بار در ساعت برای هر ایمیل و ۱۰ بار در ساعت برای هر IP (چه حساب وجود داشته باشد چه نه)
+    const byEmail = hit(`forgot:${email.trim().toLowerCase().slice(0, 200)}`, 3, 60 * 60);
+    if (byEmail.limited) {
+      return tooManyRequests(byEmail.retryAfter, "تعداد درخواست بازیابی رمز برای این ایمیل زیاد است.");
+    }
+    const byIp = limitByIp(req, "forgot", 10, 60 * 60);
+    if (byIp) return tooManyRequests(byIp.retryAfter, "تعداد درخواست بازیابی رمز از این شبکه زیاد است.");
 
     // بررسی وجود کاربر
     const user = await prisma.user.findUnique({

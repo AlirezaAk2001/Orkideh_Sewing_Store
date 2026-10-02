@@ -2,7 +2,12 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
 import { isAcceptablePassword, PASSWORD_RULE_MESSAGE } from "@/lib/validation";
+import { hit, peek, reset, tooManyRequests } from "@/lib/rateLimit";
 import bcrypt from "bcryptjs";
+
+// جلوی حدس‌زدن رمز فعلی با یک توکن دزدیده‌شده: فقط ۵ رمز اشتباه در ۱۵ دقیقه برای هر کاربر
+const MAX_FAILS = 5;
+const FAIL_WINDOW_SEC = 15 * 60;
 
 export async function PUT(req) {
   const auth = await requireUser(req);
@@ -11,6 +16,12 @@ export async function PUT(req) {
   try {
     // شناسهٔ کاربر از توکن می‌آید؛ userId داخل body نادیده گرفته می‌شود
     const userId = auth.user.id;
+    const failKey = `change-password:${userId}`;
+    const lock = peek(failKey, MAX_FAILS);
+    if (lock.limited) {
+      return tooManyRequests(lock.retryAfter, "تعداد تلاش‌های ناموفق برای تغییر رمز زیاد است.");
+    }
+
     const { currentPassword, newPassword } = await req.json();
 
     if (!currentPassword || !newPassword) {
@@ -33,8 +44,10 @@ export async function PUT(req) {
     // بررسی پسورد فعلی
     const isValid = await bcrypt.compare(currentPassword, user.password_hash);
     if (!isValid) {
+      hit(failKey, MAX_FAILS, FAIL_WINDOW_SEC);
       return NextResponse.json({ error: "پسورد فعلی اشتباه است" }, { status: 400 });
     }
+    reset(failKey);
 
     // هش کردن پسورد جدید
     const hashedPassword = await bcrypt.hash(newPassword, 10);

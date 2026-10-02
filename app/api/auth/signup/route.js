@@ -1,10 +1,15 @@
 import { NextResponse } from 'next/server'; 
 import bcrypt from 'bcrypt';
 import prisma from '@/lib/prisma';
-import nodemailer from 'nodemailer';
 import { isAcceptablePassword, PASSWORD_RULE_MESSAGE } from '@/lib/validation';
+import { issueVerificationCode, sendVerificationEmail } from '@/lib/verification';
+import { limitByIp, tooManyRequests } from '@/lib/rateLimit';
 
 export async function POST(req) {
+  // هر ثبت‌نام یک ایمیل از طرف سایت می‌فرستد؛ جلوی استفاده از سایت برای ایمیل‌ریزی گرفته می‌شود
+  const limited = limitByIp(req, 'signup', 10, 60 * 60);
+  if (limited) return tooManyRequests(limited.retryAfter, 'تعداد درخواست‌های ثبت‌نام از این شبکه زیاد است.');
+
   try {
     const body = await req.json();
     const { email, username, password, firstName, lastName } = body;
@@ -41,37 +46,9 @@ export async function POST(req) {
       },
     });
 
-    // ساخت کد تأیید ۶ رقمی + زمان انقضا (۵ دقیقه)
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
-
-    await prisma.verificationCode.create({
-      data: {
-        code,
-        expires_at: expiresAt,
-        userId: newUser.id,
-      },
-    });
-
-    // ارسال ایمیل
-    const transporter = nodemailer.createTransport({
-      service: 'Gmail',
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
-
-    await transporter.sendMail({
-      from: `"پشتیبانی سایت" <${process.env.EMAIL_USER}>`,
-      to: email,
-      subject: 'کد تأیید حساب کاربری',
-      text: `کد تأیید شما: ${code}`,
-      html: `<p>سلام ${firstName} عزیز،</p>
-             <p>کد تأیید شما:</p>
-             <h2>${code}</h2>
-             <p>این کد فقط ۵ دقیقه اعتبار دارد.</p>`,
-    });
+    // ساخت کد تأیید ۶ رقمی (اعتبار ۵ دقیقه) و ارسال ایمیل؛ اگر ایمیل نرسید، کاربر از «ارسال مجدد کد» استفاده می‌کند
+    const code = await issueVerificationCode(newUser.id);
+    await sendVerificationEmail({ to: email, name: firstName, code });
 
     return NextResponse.json(
       {
