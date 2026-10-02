@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useCart, useAuth } from "lib/context";
+import { useCart, useAuth } from "@/lib/context";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import StarRating from "./StarRating";

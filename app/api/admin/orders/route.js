@@ -1,27 +1,12 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
-import jwt from "jsonwebtoken";
-
-const prisma = new PrismaClient();
+import prisma from "@/lib/prisma";
+import { requireAdmin } from "@/lib/auth";
 
 export async function GET(req) {
   try {
-    const token = req.headers.get("authorization")?.replace("Bearer ", "");
-    if (!token) {
-      return NextResponse.json({ error: "توکن الزامی است" }, { status: 401 });
-    }
-
-    let decoded;
-    try {
-      decoded = jwt.verify(token, process.env.JWT_SECRET);
-    } catch (err) {
-      console.error("Invalid or expired token:", err.message);
-      return NextResponse.json({ error: "توکن نامعتبر یا منقضی شده" }, { status: 401 });
-    }
-
-    if (!decoded.is_admin) {
-      return NextResponse.json({ error: "دسترسی غیرمجاز" }, { status: 403 });
-    }
+    // نقش ادمین از دیتابیس خوانده می‌شود، نه از ادعای داخل توکن
+    const auth = await requireAdmin(req);
+    if (auth.error) return auth.error;
 
     const orders = await prisma.order.findMany({
   // where رو کامل حذف کن
@@ -69,29 +54,14 @@ export async function GET(req) {
   } catch (error) {
     console.error("Error fetching orders:", { message: error.message, stack: error.stack });
     return NextResponse.json({ error: "خطا در دریافت سفارش‌ها: " + error.message }, { status: 500 });
-  } finally {
-    await prisma.$disconnect();
   }
 }
 
 export async function PUT(req) {
   try {
-    const token = req.headers.get("authorization")?.replace("Bearer ", "");
-    if (!token) {
-      return NextResponse.json({ error: "توکن الزامی است" }, { status: 401 });
-    }
-
-    let decoded;
-    try {
-      decoded = jwt.verify(token, process.env.JWT_SECRET);
-    } catch (err) {
-      console.error("Invalid or expired token:", err.message);
-      return NextResponse.json({ error: "توکن نامعتبر یا منقضی شده" }, { status: 401 });
-    }
-
-    if (!decoded.is_admin) {
-      return NextResponse.json({ error: "دسترسی غیرمجاز" }, { status: 403 });
-    }
+    // نقش ادمین از دیتابیس خوانده می‌شود، نه از ادعای داخل توکن
+    const auth = await requireAdmin(req);
+    if (auth.error) return auth.error;
 
     const { orderId, status } = await req.json();
     if (!orderId || !status || !["processing", "delivered", "returned"].includes(status)) {
@@ -130,7 +100,5 @@ export async function PUT(req) {
   } catch (error) {
     console.error("Error updating order status:", { message: error.message, stack: error.stack });
     return NextResponse.json({ error: "خطا در به‌روزرسانی وضعیت سفارش: " + error.message }, { status: 500 });
-  } finally {
-    await prisma.$disconnect();
   }
 }

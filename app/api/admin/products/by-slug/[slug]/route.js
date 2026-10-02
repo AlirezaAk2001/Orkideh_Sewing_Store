@@ -1,7 +1,5 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import prisma from "@/lib/prisma";
 
 function toLatinSlug(input) {
   const persianToLatin = {
@@ -84,7 +82,5 @@ export async function GET(req, { params }) {
       { error: "خطا در دریافت محصول", details: error.message || "خطای ناشناخته" },
       { status: error.code === 'P2025' ? 404 : 500 }
     );
-  } finally {
-    await prisma.$disconnect();
   }
 }

@@ -12,7 +12,6 @@ import DialogActions from "@mui/material/DialogActions";
 import Button from "@mui/material/Button";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import axios from "axios";
 import { Trash2, ClipboardList, CreditCard } from "lucide-react";
 import Icon from '@mdi/react';
 import { mdiCartOutline, mdiCartMinus, mdiCloseCircleOutline, mdiDeleteCircleOutline, mdiDeleteSweepOutline } from '@mdi/js';
@@ -99,10 +98,6 @@ export default function CartPage() {
         textAlign: "right",
       },
     },
-  };
-
-  const calculateTotal = () => {
-    return cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   };
 
   const handleRemove = (id, name) => {
@@ -222,7 +217,6 @@ export default function CartPage() {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const callbackUrl = `${window.location.origin}/payment-result`;
 
       const orderRes = await fetch("/api/orders", {
         method: "POST",
@@ -235,22 +229,21 @@ export default function CartPage() {
       const orderData = await orderRes.json();
       if (!orderRes.ok) throw new Error(orderData.error || "خطا در ثبت سفارش");
 
-      const orderId = orderData.order.id;
-      const amount = calculateTotal() * 10;
-
-      const paymentRes = await axios.post("/api/payment", { amount, orderId, callbackUrl });
-      const data = paymentRes.data;
-
-      if (data.result === 100) {
-        await fetch(`/api/orders/${orderId}/track`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-          body: JSON.stringify({ paymentTrackId: String(data.trackId) }),
-        });
-        window.location.href = `https://gateway.zibal.ir/start/${data.trackId}`;
-      } else {
-        toast.error(`خطا در پرداخت. کد خطا: ${data.result}`);
+      // مبلغ و آدرس برگشت از درگاه را سرور تعیین می‌کند؛ فقط شناسهٔ سفارش را می‌فرستیم
+      const paymentRes = await fetch("/api/payment", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ orderId: orderData.order.id }),
+      });
+      const data = await paymentRes.json();
+      if (!paymentRes.ok || data.result !== 100) {
+        throw new Error(data.error || `خطا در پرداخت. کد خطا: ${data.result}`);
       }
+
+      window.location.href = data.payUrl;
     } catch (err) {
       toast.error(err.message);
     } finally {

@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import prisma from "@/lib/prisma";
 import jwt from "jsonwebtoken";
-
-const prisma = new PrismaClient();
+import { tracksStock } from "@/lib/stock";
+import { isValidPhone } from "@/lib/validation";
 
 export async function GET(req) {
   try {
@@ -59,8 +59,6 @@ export async function GET(req) {
       { error: "خطای داخلی سرور", details: error.message },
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
   }
 }
 
@@ -83,6 +81,9 @@ export async function POST(req) {
     if (!phoneNumber) {
       return NextResponse.json({ error: "شماره تلفن لازم است" }, { status: 400 });
     }
+    if (!isValidPhone(phoneNumber)) {
+      return NextResponse.json({ error: "شماره تلفن نامعتبر است" }, { status: 400 });
+    }
 
     // بررسی وجود آدرس
     const address = await prisma.address.findFirst({
@@ -98,13 +99,25 @@ export async function POST(req) {
     // گرفتن آیتم‌های سبد خرید کاربر
     const cartItems = await prisma.cart.findMany({
       where: { userId },
-      include: { Product: true },
+      include: { Product: { include: { Category: true } } },
     });
-
-    console.log("Cart items for userId", userId, ":", cartItems);
 
     if (!cartItems.length) {
       return NextResponse.json({ error: "سبد خرید شما خالی است" }, { status: 400 });
+    }
+
+    // کنترل موجودی (فقط محصولاتی که موجودی‌شان پیگیری می‌شود)
+    const short = cartItems.find(
+      (item) => tracksStock(item.Product) && item.quantity > item.Product.stock
+    );
+    if (short) {
+      return NextResponse.json(
+        {
+          error: `موجودی «${short.Product.name}» کافی نیست (موجودی: ${short.Product.stock})`,
+          code: "OUT_OF_STOCK",
+        },
+        { status: 409 }
+      );
     }
 
     // محاسبه قیمت کل
@@ -161,7 +174,5 @@ export async function POST(req) {
       { error: "خطا در ثبت سفارش", details: err.message },
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
   }
 }

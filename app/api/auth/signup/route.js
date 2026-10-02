@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import bcrypt from 'bcrypt';
 import prisma from '@/lib/prisma';
 import nodemailer from 'nodemailer';
+import { isAcceptablePassword, PASSWORD_RULE_MESSAGE } from '@/lib/validation';
 
 export async function POST(req) {
   try {
@@ -10,6 +11,10 @@ export async function POST(req) {
 
     if (!email || !username || !password || !firstName || !lastName) {
       return NextResponse.json({ error: 'تمامی فیلدها الزامی است.' }, { status: 400 });
+    }
+
+    if (!isAcceptablePassword(password)) {
+      return NextResponse.json({ error: PASSWORD_RULE_MESSAGE }, { status: 400 });
     }
 
     // بررسی کاربر تکراری
@@ -31,8 +36,7 @@ export async function POST(req) {
         username,
         name: `${firstName} ${lastName}`,
         password_hash: hashedPassword,
-        is_admin: email === "poshtibani.orkideh@gmail.com" ? true : false, // ایمیل ادمین
-        is_verified: false,
+        is_verified: false, // ادمین‌شدنِ ایمیل‌های مجاز بعد از تأیید ایمیل انجام می‌شود (api/auth/verify)
         profileImageUrl: '', // مقدار پیش‌فرض
       },
     });

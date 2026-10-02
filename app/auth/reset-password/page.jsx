@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { motion } from "framer-motion";
 import { Button, CircularProgress, TextField } from "@mui/material";
 import { RotateCcwKey, IterationCcw } from "lucide-react";
@@ -8,7 +8,7 @@ import toast from "react-hot-toast";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 
-export default function ResetPasswordPage() {
+function ResetPasswordContent() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -197,21 +197,24 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center overflow-hidden">
-      {/* پس‌زمینه با blur و opacity */}
-      <div
-        className="absolute inset-0 z-0"
-        style={{
-          backgroundImage: `url(/image/back-auth.png)`,
-          backgroundRepeat: "no-repeat",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          filter: "blur(6px)",
-          opacity: 0.45,
-          transform: "scale(1.05)",
-        }}
-      />
-      <div className="relative z-20 w-full max-w-md sm:max-w-lg md:max-w-xl backdrop-blur-md bg-white/20 border border-white/30 p-4 sm:p-6 md:p-8 rounded-xl shadow-lg my-auto">
+    <div className="fixed inset-0 flex overflow-y-auto px-4 py-6 [@media(max-height:680px)]:pt-36">
+      {/* پس‌زمینه با blur و opacity (overflow-hidden برای مخفی‌کردن لبه‌های scale) */}
+      <div className="fixed inset-0 z-0 overflow-hidden">
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `url(/image/back-auth.png)`,
+            backgroundRepeat: "no-repeat",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            filter: "blur(6px)",
+            opacity: 0.45,
+            transform: "scale(1.05)",
+          }}
+        />
+      </div>
+      {/* m-auto + اسکرول والد: در صفحه‌های کوتاه فرم بریده نمی‌شود؛ pt-36 جا را برای هدر sticky باز می‌کند */}
+      <div className="relative z-20 m-auto w-full max-w-md sm:max-w-lg md:max-w-xl backdrop-blur-md bg-white/20 border border-white/30 p-4 sm:p-6 md:p-8 rounded-xl shadow-lg">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -303,5 +306,14 @@ export default function ResetPasswordPage() {
         </motion.div>
       </div>
     </div>
+  );
+}
+
+// useSearchParams باید داخل Suspense باشد، وگرنه build این صفحه شکست می‌خورد
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={null}>
+      <ResetPasswordContent />
+    </Suspense>
   );
 }

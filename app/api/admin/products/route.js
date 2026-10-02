@@ -1,29 +1,7 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
-import jwt from "jsonwebtoken";
-
-const prisma = new PrismaClient();
-
-const verifyAdmin = async (req) => {
-  const authHeader = req.headers.get("authorization");
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    console.error("No token provided in authorization header");
-    return { error: "توکن ارائه نشده است", status: 401 };
-  }
-  try {
-    const token = authHeader.split(" ")[1];
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await prisma.user.findUnique({ where: { id: decoded.id } });
-    if (!user || !user.is_admin) {
-      console.error("Unauthorized access: User is not admin or not found", { userId: decoded.id });
-      return { error: "دسترسی غیرمجاز", status: 403 };
-    }
-    return { user };
-  } catch (error) {
-    console.error("Token verification failed:", error.message);
-    return { error: "توکن نامعتبر یا منقضی شده", status: 401 };
-  }
-};
+import prisma from "@/lib/prisma";
+import { requireAdmin } from "@/lib/auth";
+import { parseStock } from "@/lib/stock";
 
 function toLatinSlug(name) {
   const persianToLatin = {
@@ -101,28 +79,23 @@ export async function GET(req) {
       { error: "خطا در دریافت محصولات", details: error.message },
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
   }
 }
 
 export async function POST(req) {
-  const auth = await verifyAdmin(req);
-  if (auth.error) {
-    console.error("Authentication error in POST:", auth.error);
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
-  }
+  const auth = await requireAdmin(req);
+  if (auth.error) return auth.error;
 
   const body = await req.json();
   console.log("Received payload for POST:", body);
   const { name, price, stock, categoryId, image, additionalFeatures, material, size, weight, color, suitableFor, discount, voltage, powerConsumption } = body;
-  const latinSlug = toLatinSlug(name);
-  const slug = `${latinSlug}-${Date.now()}`;
 
   if (!name || !price || isNaN(parseFloat(price))) {
     console.warn("Invalid input in POST:", { name, price });
     return NextResponse.json({ error: "نام و قیمت محصول الزامی و معتبر هستند" }, { status: 400 });
   }
+
+  const slug = `${toLatinSlug(name)}-${Date.now()}`;
 
   if (categoryId && isNaN(parseInt(categoryId))) {
     console.warn("Invalid categoryId in POST:", categoryId);
@@ -146,7 +119,7 @@ export async function POST(req) {
       data: {
         name,
         price: parsedPrice,
-        stock: stock ? parseInt(stock) : null,
+        stock: parseStock(stock),
         categoryId: categoryId ? parseInt(categoryId) : null,
         categoryName: categoryId ? (await prisma.category.findUnique({ where: { id: parseInt(categoryId) } }))?.name : null,
         image: image ? image.replace(/\/$/, '') : null,
@@ -168,17 +141,12 @@ export async function POST(req) {
   } catch (error) {
     console.error("Error creating product:", { message: error.message, stack: error.stack, code: error.code });
     return NextResponse.json({ error: "خطا در افزودن محصول", details: error.message }, { status: 500 });
-  } finally {
-    await prisma.$disconnect();
   }
 }
 
 export async function PUT(req) {
-  const auth = await verifyAdmin(req);
-  if (auth.error) {
-    console.error("Authentication error in PUT:", auth.error);
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
-  }
+  const auth = await requireAdmin(req);
+  if (auth.error) return auth.error;
 
   try {
     const body = await req.json();
@@ -190,15 +158,21 @@ export async function PUT(req) {
 
     const { name, price, stock, categoryId, image, additionalFeatures, material, size, weight, color, suitableFor, discount, voltage, powerConsumption } = body;
     const parsedPrice = parseFloat(price);
+    if (!name || isNaN(parsedPrice)) {
+      return NextResponse.json({ error: "نام و قیمت محصول الزامی و معتبر هستند" }, { status: 400 });
+    }
     const parsedDiscount = discount && !isNaN(parseInt(discount)) ? parseInt(discount) : null;
     const finalPrice = parsedDiscount ? parsedPrice * (1 - parsedDiscount / 100) : parsedPrice;
-    const latinSlug = toLatinSlug(name);
-    const slug = `${latinSlug}-${Date.now()}`;
+
+    const existing = await prisma.product.findUnique({ where: { id: productId }, select: { slug: true } });
+    if (!existing) {
+      return NextResponse.json({ error: "محصول یافت نشد" }, { status: 404 });
+    }
 
     const updateData = {
       name,
       price: parsedPrice,
-      stock: stock ? parseInt(stock) : null,
+      stock: parseStock(stock),
       image: image ? image.replace(/\/$/, '') : null,
       additionalFeatures,
       material,
@@ -210,7 +184,8 @@ export async function PUT(req) {
       voltage: voltage || null,
       powerConsumption: powerConsumption || null, // اضافه کردن توان مصرفی
       finalPrice,
-      slug,
+      // آدرس (slug) محصول با ویرایش عوض نمی‌شود تا لینک‌ها و نتایج جست‌وجو از کار نیفتند
+      slug: existing.slug || `${toLatinSlug(name)}-${Date.now()}`,
     };
 
     if (categoryId) {
@@ -231,17 +206,12 @@ export async function PUT(req) {
       { error: "خطا در بروزرسانی محصول", details: error.message },
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
   }
 }
 
 export async function DELETE(req) {
-  const auth = await verifyAdmin(req);
-  if (auth.error) {
-    console.error("Authentication error in DELETE:", auth.error);
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
-  }
+  const auth = await requireAdmin(req);
+  if (auth.error) return auth.error;
 
   const body = await req.json();
   console.log("Received payload for DELETE:", body);
@@ -259,7 +229,23 @@ export async function DELETE(req) {
       return NextResponse.json({ error: "محصول یافت نشد" }, { status: 404 });
     }
 
-    await prisma.product.delete({ where: { id: parseInt(id) } });
+    // محصولی که در سفارش‌های ثبت‌شده آمده را نمی‌شود حذف کرد (تاریخچهٔ سفارش‌ها خراب می‌شود)
+    const productId = parseInt(id);
+    const usedInOrders = await prisma.orderItem.count({ where: { productId } });
+    if (usedInOrders > 0) {
+      return NextResponse.json(
+        { error: "این محصول در سفارش‌های ثبت‌شده استفاده شده و قابل حذف نیست. برای فروش‌نرفتن آن، موجودی را روی ۰ بگذارید." },
+        { status: 409 }
+      );
+    }
+
+    // سبد خرید، علاقه‌مندی‌ها و نظرات این محصول هم با آن پاک می‌شوند (بدون این، کلید خارجی حذف را رد می‌کرد)
+    await prisma.$transaction([
+      prisma.cart.deleteMany({ where: { productId } }),
+      prisma.favorite.deleteMany({ where: { productId } }),
+      prisma.comment.deleteMany({ where: { productId } }),
+      prisma.product.delete({ where: { id: productId } }),
+    ]);
     console.log("Deleted product with id:", id);
     return NextResponse.json({ message: "محصول حذف شد" });
   } catch (error) {
@@ -272,7 +258,5 @@ export async function DELETE(req) {
       { error: "خطا در حذف محصول", details: error.message || "خطای ناشناخته" },
       { status: error.code === 'P2025' ? 404 : 500 }
     );
-  } finally {
-    await prisma.$disconnect();
   }
 }

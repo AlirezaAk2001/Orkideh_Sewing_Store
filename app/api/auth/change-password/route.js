@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcrypt";
 import prisma from "@/lib/prisma";
+import { isAcceptablePassword, PASSWORD_RULE_MESSAGE } from "@/lib/validation";
 
 export async function POST(req) {
   try {
@@ -18,6 +19,10 @@ export async function POST(req) {
         { error: "رمز عبور و تأیید رمز عبور مطابقت ندارند." },
         { status: 400 }
       );
+    }
+
+    if (!isAcceptablePassword(newPassword)) {
+      return NextResponse.json({ error: PASSWORD_RULE_MESSAGE }, { status: 400 });
     }
 
     // بررسی وجود توکن

@@ -36,12 +36,7 @@ export default function EditProduct() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [initialData, setInitialData] = useState({
-    name: "",
-    price: "",
-    categoryId: "",
-    image: "",
-  });
+  const [initialData, setInitialData] = useState({});
   const debounceRef = useRef(null);
 
   // rtlStyles کامل مثل بنرها
@@ -134,28 +129,40 @@ export default function EditProduct() {
     const fetchProduct = async () => {
       try {
         const { data } = await axios.get(`/api/admin/products/${id}`);
-        setName(data.name || "");
-        setPrice(data.price || "");
-        setStock(data.stock || "");
-        setCategoryId(data.categoryId || "");
-        setImage(data.image || "");
-        setPreviewImg(data.image || "");
-        setAdditionalFeatures(data.additionalFeatures || "");
-        setMaterial(data.material || "");
-        setSize(data.size || "");
-        setColor(data.color || "");
-        setSuitableFor(data.suitableFor || "");
-        setDiscount(data.discount || "");
-        setWeight(data.weight || "");
-        setVoltage(data.voltage || "");
-        setPowerConsumption(data.powerConsumption || "");
-        setFinalPrice(data.finalPrice || data.price || "");
-        setInitialData({
+        // صفر یعنی «ناموجود» و باید به‌صورت ۰ نمایش داده شود؛ فقط null خالی است
+        const loaded = {
           name: data.name || "",
-          categoryId: data.categoryId || "",
           price: data.price || "",
+          stock: data.stock ?? "",
+          categoryId: data.categoryId || "",
           image: data.image || "",
-        });
+          additionalFeatures: data.additionalFeatures || "",
+          material: data.material || "",
+          size: data.size || "",
+          color: data.color || "",
+          suitableFor: data.suitableFor || "",
+          discount: data.discount || "",
+          weight: data.weight || "",
+          voltage: data.voltage || "",
+          powerConsumption: data.powerConsumption || "",
+        };
+        setName(loaded.name);
+        setPrice(loaded.price);
+        setStock(loaded.stock);
+        setCategoryId(loaded.categoryId);
+        setImage(loaded.image);
+        setPreviewImg(loaded.image);
+        setAdditionalFeatures(loaded.additionalFeatures);
+        setMaterial(loaded.material);
+        setSize(loaded.size);
+        setColor(loaded.color);
+        setSuitableFor(loaded.suitableFor);
+        setDiscount(loaded.discount);
+        setWeight(loaded.weight);
+        setVoltage(loaded.voltage);
+        setPowerConsumption(loaded.powerConsumption);
+        setFinalPrice(data.finalPrice || data.price || "");
+        setInitialData(loaded);
       } catch (err) {
         toast.error("خطا در دریافت اطلاعات محصول");
       } finally {
@@ -165,11 +172,14 @@ export default function EditProduct() {
     fetchProduct();
   }, [id]);
 
-  const hasChanged =
-    name !== initialData.name ||
-    String(categoryId) !== String(initialData.categoryId) ||
-    String(price) !== String(initialData.price) ||
-    image !== initialData.image;
+  // اگر هر فیلد قابل‌ویرایشی عوض شده باشد دکمهٔ ذخیره فعال می‌شود (قبلاً فقط نام، قیمت، دسته و تصویر حساب می‌شد)
+  const current = {
+    name, price, stock, categoryId, image, additionalFeatures, material,
+    size, color, suitableFor, discount, weight, voltage, powerConsumption,
+  };
+  const hasChanged = Object.keys(initialData).some(
+    (key) => String(current[key] ?? "") !== String(initialData[key] ?? "")
+  );
 
   // Debounce برای پیش‌نمایش تصویر (بدون تغییر)
   const handleImgChange = (val) => {
@@ -204,7 +214,7 @@ export default function EditProduct() {
         id: parseInt(id),
         name,
         price: parseFloat(price),
-        stock: parseInt(stock) || 0,
+        stock: stock === "" ? null : parseInt(stock),
         categoryId: categoryId ? parseInt(categoryId) : null,
         image,
         additionalFeatures,
@@ -222,7 +232,9 @@ export default function EditProduct() {
             : parseFloat(price),
       };
 
-      await axios.put("/api/admin/products", payload);
+      await axios.put("/api/admin/products", payload, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
       toast.success("محصول با موفقیت ویرایش شد");
       router.push("/admin/products");
     } catch (err) {

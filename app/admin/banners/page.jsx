@@ -202,7 +202,10 @@ export default function AdminBannersPage() {
     const id = deleteDialog.id;
     setDeleteDialog({ open: false, id: null, title: "" });
     try {
-      const res = await fetch(`/api/admin/banners/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/admin/banners/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
       if (!res.ok) throw new Error();
       toast.success("بنر با موفقیت حذف گردید.");
       const newTotal = total - 1;

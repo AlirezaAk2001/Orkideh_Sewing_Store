@@ -5,7 +5,7 @@ import prisma from "@/lib/prisma";
 // دریافت دسته‌بندی بر اساس Slug
 export async function GET(req, { params }) {
   try {
-    const { slug } = params;
+    const { slug } = await params;
 
     if (!slug) {
       return NextResponse.json(

@@ -1,30 +1,12 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
-import jwt from "jsonwebtoken";
-
-const prisma = new PrismaClient();
-
-// تابع کمکی: بررسی توکن ادمین
-async function verifyAdmin(req) {
-  const token = req.headers.get("authorization")?.split(" ")[1];
-  if (!token) return null;
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await prisma.user.findUnique({ where: { id: decoded.id } });
-    if (!user || !user.is_admin) return null;
-    return user;
-  } catch {
-    return null;
-  }
-}
+import prisma from "@/lib/prisma";
+import { requireAdmin } from "@/lib/auth";
 
 // 📌 GET → گرفتن همه‌ی کامنت‌ها
 export async function GET(req) {
   try {
-    const admin = await verifyAdmin(req);
-    if (!admin) {
-      return NextResponse.json({ error: "دسترسی غیرمجاز" }, { status: 403 });
-    }
+    const auth = await requireAdmin(req);
+    if (auth.error) return auth.error;
 
     const comments = await prisma.comment.findMany({
       orderBy: { createdAt: "desc" },
@@ -37,18 +19,14 @@ export async function GET(req) {
   } catch (error) {
     console.error("❌ Error fetching comments:", error);
     return NextResponse.json({ error: "مشکل در گرفتن لیست نظرات" }, { status: 500 });
-  } finally {
-    await prisma.$disconnect();
   }
 }
 
 // 📌 PUT → تأیید یا رد تأیید یا پاسخ ادمین
 export async function PUT(req) {
   try {
-    const admin = await verifyAdmin(req);
-    if (!admin) {
-      return NextResponse.json({ error: "دسترسی غیرمجاز" }, { status: 403 });
-    }
+    const auth = await requireAdmin(req);
+    if (auth.error) return auth.error;
 
     const body = await req.json();
     const { id, approved, adminReply } = body;
@@ -101,7 +79,5 @@ export async function PUT(req) {
   } catch (error) {
     console.error("❌ Error updating comment:", error);
     return NextResponse.json({ error: "مشکل در به‌روزرسانی نظر" }, { status: 500 });
-  } finally {
-    await prisma.$disconnect();
   }
 }

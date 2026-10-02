@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import prisma from "@/lib/prisma";
+import { requireAdmin } from "@/lib/auth";
 
 // GET → لیست بنرها
 export async function GET() {
@@ -14,13 +13,14 @@ export async function GET() {
   } catch (error) {
     console.error("Error fetching banners:", error);
     return NextResponse.json({ error: "خطا در دریافت بنرها", details: error.message }, { status: 500 });
-  } finally {
-    await prisma.$disconnect();
   }
 }
 
 // POST → افزودن بنر جدید
 export async function POST(req) {
+  const auth = await requireAdmin(req);
+  if (auth.error) return auth.error;
+
   try {
     const { title, desc, img, link } = await req.json();
     if (!title || !desc || !img) {
@@ -40,13 +40,14 @@ export async function POST(req) {
   } catch (error) {
     console.error("Error creating banner:", error);
     return NextResponse.json({ error: "خطا در افزودن بنر", details: error.message }, { status: 500 });
-  } finally {
-    await prisma.$disconnect();
   }
 }
 
 // PUT → ویرایش بنر
 export async function PUT(req) {
+  const auth = await requireAdmin(req);
+  if (auth.error) return auth.error;
+
   try {
     const { id, title, desc, img, link } = await req.json();
     if (!id || !title || !desc || !img) {
@@ -67,13 +68,14 @@ export async function PUT(req) {
   } catch (error) {
     console.error("Error updating banner:", error);
     return NextResponse.json({ error: "خطا در ویرایش بنر", details: error.message }, { status: 500 });
-  } finally {
-    await prisma.$disconnect();
   }
 }
 
 // DELETE → حذف بنر
 export async function DELETE(req) {
+  const auth = await requireAdmin(req);
+  if (auth.error) return auth.error;
+
   try {
     const { id } = await req.json();
     if (!id) return NextResponse.json({ error: "id الزامی است" }, { status: 400 });
@@ -84,7 +86,5 @@ export async function DELETE(req) {
   } catch (error) {
     console.error("Error deleting banner:", error);
     return NextResponse.json({ error: "خطا در حذف بنر", details: error.message }, { status: 500 });
-  } finally {
-    await prisma.$disconnect();
   }
 }

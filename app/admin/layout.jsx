@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import Image from "next/image";
+import { usePathname, useRouter } from "next/navigation";
 import toast, { Toaster } from "react-hot-toast";
 import Icon from '@mdi/react';
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
@@ -29,8 +30,11 @@ import {
 } from "@mui/material";
 
 export default function AdminLayout({ children }) {
-  const { logout } = useAuth();
+  const { currentUser, loading: authLoading, logout } = useAuth();
+  const router = useRouter();
   const pathname = usePathname();
+  const isAdminUser = Boolean(currentUser?.is_admin);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -64,7 +68,18 @@ export default function AdminLayout({ children }) {
     };
   }, []);
 
+  // گارد ادمین: فقط برای تجربهٔ کاربری است؛ امنیت واقعی را خود APIها تأمین می‌کنند
+  useEffect(() => {
+    if (authLoading || isAdminUser || isLoggingOut) return;
+    toast.error(currentUser ? "شما دسترسی ادمین ندارید" : "لطفاً ابتدا وارد شوید", {
+      id: "admin-guard",
+      position: "top-center",
+    });
+    router.replace(currentUser ? "/" : "/auth");
+  }, [authLoading, isAdminUser, isLoggingOut, currentUser, router]);
+
   const confirmLogout = () => {
+    setIsLoggingOut(true); // تا گارد بالا وسط خروج، ریدایرکت دومی نکند
     logout("/");
     toast.success("شما با موفقیت از حساب خارج شدید.", {
       duration: 2000,
@@ -85,6 +100,25 @@ export default function AdminLayout({ children }) {
     { href: "/admin/orders", icon: <Icon path={mdiAccountFileText} size={1} />, label: "سفارش‌های کاربران" },
   ];
 
+  // تا مشخص نشدن دسترسی، پنل نمایش داده نمی‌شود (غیرادمین پنل را حتی لحظه‌ای نمی‌بیند)
+  if (!isLoggingOut && (authLoading || !isAdminUser)) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen" dir="rtl">
+        <Image
+          src="/image/logo.png"
+          alt="در حال بررسی دسترسی..."
+          width={80}
+          height={80}
+          className="animate-spin object-contain"
+          priority
+        />
+        <p className="mt-4 text-gray-500 text-sm font-medium animate-pulse">
+          در حال بررسی دسترسی...
+        </p>
+      </div>
+    );
+  }
+
   return (
     <>
       <Toaster
@@ -104,7 +138,7 @@ export default function AdminLayout({ children }) {
         <div
           className="absolute inset-0 z-0"
           style={{
-            backgroundImage: `url(/image/back-admin.png)`,
+            backgroundImage: `url(/image/back-admin.webp)`,
             backgroundRepeat: "no-repeat",
             backgroundSize: "cover",
             backgroundPosition: "center",

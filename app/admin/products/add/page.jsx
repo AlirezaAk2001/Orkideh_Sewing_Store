@@ -134,7 +134,7 @@ export default function AddProduct() {
         {
           name,
           price: parseFloat(price),
-          stock: parseInt(stock) || 0,
+          stock: stock === "" ? null : parseInt(stock),
           categoryId: categoryId ? parseInt(categoryId) : null,
           image,
           additionalFeatures,

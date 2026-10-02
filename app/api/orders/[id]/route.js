@@ -1,10 +1,8 @@
 // مسیر: app/api/orders/[id]/route.js
 
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import prisma from "@/lib/prisma";
 import jwt from "jsonwebtoken";
-
-const prisma = new PrismaClient();
 
 export async function DELETE(req, { params }) {
   try {
@@ -20,7 +18,7 @@ export async function DELETE(req, { params }) {
       return NextResponse.json({ error: "توکن نامعتبر" }, { status: 401 });
     }
 
-    const orderId = parseInt(params.id);
+    const orderId = parseInt((await params).id);
 
     // بررسی اینکه سفارش متعلق به این کاربر باشه و pending باشه
     const order = await prisma.order.findFirst({
@@ -48,7 +46,5 @@ export async function DELETE(req, { params }) {
   } catch (error) {
     console.error("DELETE Order Error:", error);
     return NextResponse.json({ error: "خطا در حذف سفارش" }, { status: 500 });
-  } finally {
-    await prisma.$disconnect();
   }
 }

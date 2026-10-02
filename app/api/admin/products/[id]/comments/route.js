@@ -1,13 +1,12 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import prisma from "@/lib/prisma";
 import jwt from "jsonwebtoken";
-
-const prisma = new PrismaClient();
+import { requireAdmin } from "@/lib/auth";
 
 // GET: دریافت کامنت‌های تأیید شده محصول (همراه با adminReply)
 export async function GET(req, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const productIdNum = parseInt(id, 10);
 
     if (isNaN(productIdNum)) {
@@ -30,15 +29,13 @@ export async function GET(req, { params }) {
       { error: "مشکل در دریافت نظرات", details: error.message },
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
   }
 }
 
 // POST: ثبت کامنت جدید با بررسی خرید محصول
 export async function POST(req, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const productIdNum = parseInt(id, 10);
 
     if (isNaN(productIdNum)) {
@@ -136,37 +133,21 @@ export async function POST(req, { params }) {
       { error: "مشکل در ثبت نظر", details: error.message },
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
   }
 }
 
 // DELETE: حذف کامنت (فقط توسط ادمین)
 export async function DELETE(req, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const productIdNum = parseInt(id, 10);
 
     if (isNaN(productIdNum)) {
       return NextResponse.json({ error: "شناسه محصول نامعتبر است" }, { status: 400 });
     }
 
-    const token = req.headers.get("authorization")?.split(" ")[1];
-    if (!token) {
-      return NextResponse.json({ error: "توکن موجود نیست" }, { status: 401 });
-    }
-
-    let userId;
-    try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      userId = decoded.id;
-      const user = await prisma.user.findUnique({ where: { id: userId } });
-      if (!user || !user.is_admin) {
-        return NextResponse.json({ error: "دسترسی غیرمجاز" }, { status: 403 });
-      }
-    } catch {
-      return NextResponse.json({ error: "توکن نامعتبر" }, { status: 401 });
-    }
+    const auth = await requireAdmin(req);
+    if (auth.error) return auth.error;
 
     const { commentId } = await req.json();
     if (!commentId) {
@@ -187,7 +168,5 @@ export async function DELETE(req, { params }) {
       { error: "مشکل در حذف نظر", details: error.message },
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
   }
 }

@@ -113,7 +113,7 @@ export default function ProfilePage() {
       <div
         className="absolute inset-0 z-0"
         style={{
-          backgroundImage: `url(/image/back-user.png)`,
+          backgroundImage: `url(/image/back-user.webp)`,
           backgroundRepeat: "no-repeat",
           backgroundSize: "cover",
           backgroundPosition: "center",

@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import prisma from "@/lib/prisma";
+import { isAdminEmail } from "@/lib/auth";
 
 export async function POST(req) {
   try {
@@ -34,7 +33,7 @@ export async function POST(req) {
 
     await prisma.user.update({
       where: { id: user.id },
-      data: { is_verified: true },
+      data: { is_verified: true, ...(isAdminEmail(user.email) ? { is_admin: true } : {}) },
     });
 
     return NextResponse.json({ message: "ایمیل با موفقیت تأیید شد" }, { status: 200 });

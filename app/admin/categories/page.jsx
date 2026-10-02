@@ -212,7 +212,10 @@ export default function AdminCategories() {
     setDeleteDialog({ open: false, id: null, name: "" });
 
     try {
-      await axios.delete("/api/admin/categories", { data: { id } });
+      await axios.delete("/api/admin/categories", {
+        data: { id },
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
       toast.success("دسته‌بندی با موفقیت حذف گردید.");
       fetchCategories(page, pageSize);
     } catch (err) {

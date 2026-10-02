@@ -51,8 +51,8 @@ export default function PaymentResultPage() {
 
         // در غیر این صورت خطای واقعی است
         console.error("Verify error:", err);
-        setStatus(`پرداخت ناموفق ❌ سفارش شما ذخیره شده، می‌توانید بعداً تکمیل کنید.`);
-        setTimeout(() => router.push("/orders"), 2500); // ← به orders نه cart
+        setStatus(`پرداخت ناموفق ❌ ${respData?.error || "سفارش شما ذخیره شده، می‌توانید بعداً تکمیل کنید."}`);
+        setTimeout(() => router.push("/orders"), 4000); // ← به orders نه cart
       }
     };
 

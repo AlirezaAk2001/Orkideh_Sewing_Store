@@ -53,10 +53,16 @@ export default function AddBannerPage() {
     try {
       const res = await fetch("/api/admin/banners", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
         body: JSON.stringify({ title, desc, img }),
       });
-      if (!res.ok) throw new Error("خطا در ذخیره بنر");
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "خطا در ذخیره بنر");
+      }
       toast.success("بنر با موفقیت اضافه شد");
       router.push("/admin/banners");
     } catch (err) {

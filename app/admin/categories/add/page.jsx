@@ -86,12 +86,16 @@ export default function AddCategory() {
     }
 
     try {
-      await axios.post("/api/admin/categories", { name, slug, image });
+      await axios.post(
+        "/api/admin/categories",
+        { name, slug, image },
+        { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
+      );
       toast.success("دسته‌بندی با موفقیت اضافه شد");
       router.push("/admin/categories");
     } catch (err) {
       console.error(err);
-      toast.error("خطا در افزودن دسته‌بندی");
+      toast.error(err.response?.data?.error || "خطا در افزودن دسته‌بندی");
     } finally {
       setIsSaving(false);
     }

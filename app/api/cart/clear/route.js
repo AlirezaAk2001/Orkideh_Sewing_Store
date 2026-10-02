@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import prisma from "@/lib/prisma";
 import jwt from "jsonwebtoken";
-
-const prisma = new PrismaClient();
 
 export async function DELETE(req) {
   try {
@@ -34,7 +32,5 @@ export async function DELETE(req) {
   } catch (error) {
     console.error("Error clearing cart:", error);
     return NextResponse.json({ error: "خطا در خالی کردن سبد خرید" }, { status: 500 });
-  } finally {
-    await prisma.$disconnect();
   }
 }

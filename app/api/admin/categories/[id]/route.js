@@ -5,7 +5,7 @@ import prisma from "@/lib/prisma";
 // دریافت دسته‌بندی بر اساس ID
 export async function GET(req, { params }) {
   try {
-    const id = Number(params.id);
+    const id = Number((await params).id);
 
     if (isNaN(id)) {
       return NextResponse.json(

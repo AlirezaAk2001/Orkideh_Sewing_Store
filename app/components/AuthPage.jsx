@@ -398,7 +398,6 @@ export default function AuthPage() {
       if (!resp.ok) throw new Error(data.error || "Verification failed");
 
       setIsVerifying(false);
-      updateUser({ verified: true });
       toast.success("ایمیل شما تأیید شد");
       setTimeout(() => {
         router.push("/auth");

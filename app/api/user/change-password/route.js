@@ -1,18 +1,29 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireUser } from "@/lib/auth";
+import { isAcceptablePassword, PASSWORD_RULE_MESSAGE } from "@/lib/validation";
 import bcrypt from "bcryptjs";
 
 export async function PUT(req) {
-  try {
-    const { userId, currentPassword, newPassword } = await req.json();
+  const auth = await requireUser(req);
+  if (auth.error) return auth.error;
 
-    if (!userId || !currentPassword || !newPassword) {
+  try {
+    // شناسهٔ کاربر از توکن می‌آید؛ userId داخل body نادیده گرفته می‌شود
+    const userId = auth.user.id;
+    const { currentPassword, newPassword } = await req.json();
+
+    if (!currentPassword || !newPassword) {
       return NextResponse.json({ error: "اطلاعات ناقص است" }, { status: 400 });
     }
+    if (!isAcceptablePassword(newPassword)) {
+      return NextResponse.json({ error: PASSWORD_RULE_MESSAGE }, { status: 400 });
+    }
 
-    // پیدا کردن کاربر
+    // پیدا کردن کاربر (فقط هش رمز لازم است)
     const user = await prisma.user.findUnique({
       where: { id: userId },
+      select: { password_hash: true },
     });
 
     if (!user) {

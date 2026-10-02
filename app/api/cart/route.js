@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import jwt from "jsonwebtoken";
+import { tracksStock } from "@/lib/stock";
 
 // 🟢 GET: دریافت سبد خرید کاربر
 export async function GET(req) {
@@ -64,12 +65,8 @@ export async function POST(req) {
     if (!product)
       return NextResponse.json({ error: "محصول یافت نشد" }, { status: 404 });
 
-    // بررسی موجودی (فقط برای محصولات اصلی)
-    if (
-      product.Category?.name !== "لوازم جانبی" &&
-      product.stock !== null &&
-      product.stock !== undefined
-    ) {
+    // بررسی موجودی (فقط برای محصولاتی که موجودی‌شان پیگیری می‌شود)
+    if (tracksStock(product)) {
       const currentCartItem = await prisma.cart.findFirst({
         where: { userId, productId: parseInt(productId) },
       });

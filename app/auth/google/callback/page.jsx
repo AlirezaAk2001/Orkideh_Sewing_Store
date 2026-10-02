@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "../../../../lib/context";
 import toast, { Toaster } from "react-hot-toast";
 
-export default function GoogleCallback() {
+function GoogleCallbackContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const { login } = useAuth();
@@ -61,5 +61,14 @@ export default function GoogleCallback() {
                 </div>
             </div>
         </div>
+    );
+}
+
+// useSearchParams باید داخل Suspense باشد، وگرنه build این صفحه شکست می‌خورد
+export default function GoogleCallback() {
+    return (
+        <Suspense fallback={null}>
+            <GoogleCallbackContent />
+        </Suspense>
     );
 }

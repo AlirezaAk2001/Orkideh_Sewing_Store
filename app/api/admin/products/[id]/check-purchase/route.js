@@ -1,12 +1,10 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import prisma from "@/lib/prisma";
 import jwt from "jsonwebtoken";
-
-const prisma = new PrismaClient();
 
 export async function GET(req, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const productId = parseInt(id, 10);
 
     if (isNaN(productId)) {
@@ -85,7 +83,5 @@ export async function GET(req, { params }) {
       message: "خطا در بررسی مجوز",
       error: error.message
     }, { status: 500 });
-  } finally {
-    await prisma.$disconnect();
   }
 }

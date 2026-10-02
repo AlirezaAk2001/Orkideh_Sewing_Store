@@ -1,11 +1,9 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import prisma from "@/lib/prisma";
 
 export async function GET(req, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const productId = parseInt(id, 10);
     if (isNaN(productId)) {
       console.warn("Invalid product id:", id);
@@ -65,7 +63,5 @@ export async function GET(req, { params }) {
       { error: "خطا در دریافت محصول", details: error.message || "خطای ناشناخته" },
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
   }
 }

@@ -108,28 +108,22 @@ export default function OrdersPage() {
     setRetryLoading(order.id);
     try {
       const token = localStorage.getItem("token");
-      const amount = order.totalPrice * 10;
-      const callbackUrl = `${window.location.origin}/payment-result`;
 
+      // مبلغ و آدرس برگشت از درگاه را سرور تعیین می‌کند؛ فقط شناسهٔ سفارش را می‌فرستیم
       const paymentRes = await fetch("/api/payment", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount, orderId: order.id, callbackUrl }),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ orderId: order.id }),
       });
       const data = await paymentRes.json();
 
-      if (data.result === 100) {
-        await fetch(`/api/orders/${order.id}/track`, {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ paymentTrackId: String(data.trackId) }),
-        });
-        window.location.href = `https://gateway.zibal.ir/start/${data.trackId}`;
+      if (paymentRes.ok && data.result === 100) {
+        window.location.href = data.payUrl;
       } else {
-        toast.error(`مشکل در اتصال به درگاه پرداخت (کد: ${data.result})`);
+        toast.error(data.error || `مشکل در اتصال به درگاه پرداخت (کد: ${data.result})`);
       }
     } catch (err) {
       toast.error("مشکلی پیش آمد. دوباره تلاش کنید.");

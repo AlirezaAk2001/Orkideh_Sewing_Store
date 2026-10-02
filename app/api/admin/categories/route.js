@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { requireAdmin } from "@/lib/auth";
 
 /**
  * 📘 GET /api/admin/categories
@@ -28,6 +29,9 @@ export async function GET() {
  * ایجاد یک دسته‌بندی جدید
  */
 export async function POST(req) {
+  const auth = await requireAdmin(req);
+  if (auth.error) return auth.error;
+
   try {
     const { name, slug, image } = await req.json();
 
@@ -72,6 +76,9 @@ export async function POST(req) {
  * ویرایش دسته‌بندی موجود
  */
 export async function PUT(req) {
+  const auth = await requireAdmin(req);
+  if (auth.error) return auth.error;
+
   try {
     const { id, name, slug, image } = await req.json();
 
@@ -114,6 +121,9 @@ export async function PUT(req) {
  * حذف دسته‌بندی بر اساس id
  */
 export async function DELETE(req) {
+  const auth = await requireAdmin(req);
+  if (auth.error) return auth.error;
+
   try {
     const { id } = await req.json();
 

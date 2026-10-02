@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import prisma from "@/lib/prisma";
 import jwt from "jsonwebtoken";
-
-const prisma = new PrismaClient();
 
 export async function GET(req) {
   try {
@@ -27,8 +25,6 @@ export async function GET(req) {
   } catch (error) {
     console.error("Error fetching addresses:", error);
     return NextResponse.json({ error: "خطا در دریافت آدرس‌ها", details: error.message }, { status: 500 });
-  } finally {
-    await prisma.$disconnect();
   }
 }
 
@@ -64,8 +60,6 @@ export async function POST(req) {
   } catch (error) {
     console.error("Error adding address:", error);
     return NextResponse.json({ error: "خطا در افزودن آدرس", details: error.message }, { status: 500 });
-  } finally {
-    await prisma.$disconnect();
   }
 }
 
@@ -108,7 +102,5 @@ export async function PUT(req) {
   } catch (error) {
     console.error("Error updating address:", error);
     return NextResponse.json({ error: "خطا در به‌روزرسانی آدرس", details: error.message }, { status: 500 });
-  } finally {
-    await prisma.$disconnect();
   }
 }

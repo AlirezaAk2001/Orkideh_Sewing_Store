@@ -1,11 +1,10 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import prisma from "@/lib/prisma";
+import { requireAdmin } from "@/lib/auth";
 
 // GET: دریافت یک بنر با id
 export async function GET(req, { params }) {
-  const { id } = params;
+  const { id } = await params;
   try {
     const banner = await prisma.banner.findUnique({
       where: { id: parseInt(id) },
@@ -18,14 +17,15 @@ export async function GET(req, { params }) {
   } catch (error) {
     console.error("Error fetching banner:", error);
     return NextResponse.json({ error: "خطا در دریافت بنر", details: error.message }, { status: 500 });
-  } finally {
-    await prisma.$disconnect();
   }
 }
 
 // PUT: ویرایش بنر
 export async function PUT(req, { params }) {
-  const { id } = params;
+  const auth = await requireAdmin(req);
+  if (auth.error) return auth.error;
+
+  const { id } = await params;
   try {
     const { title, desc, img, link } = await req.json();
     if (!title || !desc || !img) {
@@ -41,14 +41,15 @@ export async function PUT(req, { params }) {
   } catch (error) {
     console.error("Error updating banner:", error);
     return NextResponse.json({ error: "خطا در ویرایش بنر", details: error.message }, { status: 500 });
-  } finally {
-    await prisma.$disconnect();
   }
 }
 
 // DELETE: حذف بنر
 export async function DELETE(req, { params }) {
-  const { id } = params;
+  const auth = await requireAdmin(req);
+  if (auth.error) return auth.error;
+
+  const { id } = await params;
   try {
     await prisma.banner.delete({
       where: { id: parseInt(id) },
@@ -57,7 +58,5 @@ export async function DELETE(req, { params }) {
   } catch (error) {
     console.error("Error deleting banner:", error);
     return NextResponse.json({ error: "خطا در حذف بنر", details: error.message }, { status: 500 });
-  } finally {
-    await prisma.$disconnect();
   }
 }

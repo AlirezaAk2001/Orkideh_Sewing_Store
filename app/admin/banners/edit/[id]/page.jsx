@@ -88,10 +88,16 @@ export default function EditBannerPage() {
     try {
       const res = await fetch(`/api/admin/banners/${id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
         body: JSON.stringify({ title, desc, img }),
       });
-      if (!res.ok) throw new Error("خطا در ویرایش بنر");
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "خطا در ویرایش بنر");
+      }
       toast.success("بنر با موفقیت ویرایش شد");
       router.push("/admin/banners");
     } catch (err) {

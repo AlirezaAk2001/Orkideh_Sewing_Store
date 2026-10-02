@@ -270,7 +270,7 @@ export default function AdminProducts() {
       fetchProducts(categoryFilter);
     } catch (err) {
       console.error("Error deleting product:", err);
-      toast.error("مشکلی در حذف محصول به‌وجود آمد.");
+      toast.error(err.response?.data?.error || "مشکلی در حذف محصول به‌وجود آمد.");
     }
   };
 
