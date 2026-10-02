@@ -100,14 +100,28 @@ export default function ProfilePage() {
           priority
         />
         <p className="mt-4 text-gray-500 text-sm font-medium animate-pulse">
-         در حال بارگذاری اطلاعات کاربر...
+          در حال بارگذاری اطلاعات کاربر...
         </p>
       </div>
     );
   }
 
   return (
-    <div className="relative flex flex-col md:flex-row justify-center items-center md:items-start h-screen w-full bg-gray-50 overflow-hidden" dir="rtl">
+    <div className="relative flex flex-col md:flex-row justify-center items-center md:items-start h-screen w-full overflow-hidden" dir="rtl">
+
+      {/* بکگراند */}
+      <div
+        className="absolute inset-0 z-0"
+        style={{
+          backgroundImage: `url(/image/back-user.png)`,
+          backgroundRepeat: "no-repeat",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          filter: "blur(6px)",
+          opacity: 0.45,
+          transform: "scale(1.05)",
+        }}
+      />
       <Toaster />
 
       {/* دیالوگ تأیید خروج */}
@@ -169,7 +183,7 @@ export default function ProfilePage() {
             : { x: "0%", y: "0%", scale: 1, opacity: 1 }
         }
         transition={{ duration: 0.6, ease: "easeInOut" }}
-        className={`z-20 bg-white shadow-2xl rounded-xl p-4 sm:p-6 md:p-8 
+        className={`z-20 backdrop-blur-md bg-white/70 border border-white/40 shadow-2xl rounded-xl p-4 sm:p-6 md:p-8 
         ${isMobile ? "relative w-full max-h-[40%]" : "absolute w-[95%] sm:w-[80%] md:w-[40%] max-h-[90%]"} 
         overflow-y-auto`}
       >
@@ -233,7 +247,7 @@ export default function ProfilePage() {
             exit={{ opacity: 0, x: isMobile ? 0 : "-100%" }}
             transition={{ duration: 0.6, ease: "easeInOut" }}
             className={`${isMobile ? "relative mt-4 w-full flex-1" : "absolute left-0 z-10 w-[95%] sm:w-[80%] md:w-[40%] max-h-[90%]"
-              } bg-white shadow-2xl rounded-xl p-4 sm:p-6 md:p-8 overflow-y-auto`}
+              } backdrop-blur-md bg-white/70 border border-white/40 shadow-2xl rounded-xl p-4 sm:p-6 md:p-8 overflow-y-auto`}
           >
             {tabContent[activeTab]}
             <button

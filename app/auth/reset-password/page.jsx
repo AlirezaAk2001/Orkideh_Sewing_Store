@@ -112,7 +112,7 @@ export default function ResetPasswordPage() {
 
     if (!validateForm()) return;
     if (!isTokenValid) {
-      toast.error("لینک بازیابی معتبر نیست.");
+      toast.error("لینک بازیابی معتبر نیست.", { position: "top-center" });
       return;
     }
 
@@ -137,15 +137,18 @@ export default function ResetPasswordPage() {
 
       toast.success("رمز عبور شما با موفقیت تغییر کرد. در حال انتقال به صفحه ورود...", {
         duration: 3000,
+        position: "top-center", // اضافه شده برای نمایش در وسط بالا
       });
-      
+
       // تأخیر کوتاه برای نمایش toast قبل از ریدایرکت
       setTimeout(() => {
         router.push("/auth");
       }, 1500);
 
     } catch (error) {
-      toast.error(error.message || "عملیات شکست خورد");
+      toast.error(error.message || "عملیات شکست خورد", {
+        position: "top-center", // اضافه شده برای نمایش در وسط بالا
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -153,7 +156,7 @@ export default function ResetPasswordPage() {
 
   if (!isBgLoaded || isValidating) {
     return (
-      <div className="h-screen flex flex-col items-center justify-center bg-gray-100">
+      <div className="w-full flex flex-col items-center justify-center min-h-[70vh] bg-gray-100 overflow-hidden">
         <div className="flex flex-col items-center justify-center min-h-[60vh]">
           <Image
             src="/image/logo.png"
@@ -194,7 +197,7 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="fixed inset-0 flex items-start justify-center overflow-y-auto py-6">
+    <div className="fixed inset-0 flex items-center justify-center overflow-hidden">
       {/* پس‌زمینه با blur و opacity */}
       <div
         className="absolute inset-0 z-0"

@@ -3,11 +3,10 @@
 import { useState, useEffect } from "react";
 import { useAuth, useCart } from "@/lib/context";
 import Link from "next/link";
-import Image from "next/image";
 import toast, { Toaster } from "react-hot-toast";
 import Icon from '@mdi/react';
-import { 
-  mdiClipboardTextClockOutline, 
+import {
+  mdiClipboardTextClockOutline,
   mdiTruckDeliveryOutline,
   mdiTruckCheckOutline,
   mdiAccountFileTextOutline,
@@ -28,6 +27,7 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogActions from "@mui/material/DialogActions";
 import Button from "@mui/material/Button";
+import { Box, Skeleton } from "@mui/material";
 
 export default function OrdersPage() {
   const { currentUser } = useAuth();
@@ -48,6 +48,15 @@ export default function OrdersPage() {
   };
 
   const tabs = ["جاری", "تحویل داده شده", "مرجوع شده", "ناتمام"];
+
+  // توابع کمکی برای تب‌ها
+  const tabCount = (tab) => {
+    if (tab === "جاری") return orders.filter(o => o.status === "processing").length;
+    if (tab === "تحویل داده شده") return orders.filter(o => o.status === "delivered").length;
+    if (tab === "مرجوع شده") return orders.filter(o => o.status === "returned").length;
+    if (tab === "ناتمام") return orders.filter(o => o.status === "pending").length;
+    return 0;
+  };
 
   useEffect(() => {
     if (!currentUser) {
@@ -157,9 +166,31 @@ export default function OrdersPage() {
     }
   };
 
+  // کامپوننت SkeletonLoader
+  const SkeletonLoader = () => (
+    <Box sx={{ width: "100%" }}>
+      {Array.from(new Array(3)).map((_, index) => (
+        <Box key={index} sx={{ bgcolor: 'white', p: 3, borderRadius: 2, boxShadow: 1, mb: 3 }}>
+          <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+            <Skeleton variant="circular" width={24} height={24} sx={{ ml: 1 }} />
+            <Skeleton variant="text" width="70%" height={30} />
+          </Box>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+            {Array.from(new Array(4)).map((_, i) => (
+              <Box key={i} sx={{ display: "flex", alignItems: "center" }}>
+                <Skeleton variant="circular" width={20} height={20} sx={{ ml: 1 }} />
+                <Skeleton variant="text" width="50%" height={20} />
+              </Box>
+            ))}
+          </Box>
+        </Box>
+      ))}
+    </Box>
+  );
+
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white dark:bg-gray-800 shadow rounded-lg mt-6" dir="rtl">
-      <Toaster 
+      <Toaster
         position="top-center"
         reverseOrder={false}
         toastOptions={{
@@ -218,7 +249,7 @@ export default function OrdersPage() {
           <DialogContentText
             sx={{ fontFamily: "Vazirmatn, sans-serif", marginTop: "10px" }}
           >
-            سفارش #{deleteDialog.order?.userOrderNumber} حذف خواهد شد و محصول «{deleteDialog.order?.OrderItems?.[0]?.Product?.name || deleteDialog.order?.OrderItems?.[0]?.name || "نامشخص"}» از سبد خریدتان نیز حذف خواهد شد. آیا مطمئن هستید؟
+            سفارش #{deleteDialog.order?.userOrderNumber?.toLocaleString("fa-IR")} حذف خواهد شد و محصول «{deleteDialog.order?.OrderItems?.[0]?.Product?.name || deleteDialog.order?.OrderItems?.[0]?.name || "نامشخص"}» از سبد خریدتان نیز حذف خواهد شد. آیا مطمئن هستید؟
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -244,146 +275,243 @@ export default function OrdersPage() {
           </Button>
         </DialogActions>
       </Dialog>
-      
+
       <h1 className="text-xl font-bold mb-6 text-right text-gray-700 dark:text-gray-200 flex gap-1">
         <Icon path={mdiClipboardTextClockOutline} className="w-7 h-7" />
         تاریخچه سفارشات
       </h1>
 
-      <div className="flex justify-center gap-4 mb-6 flex-wrap">
+      {/* تب‌ها */}
+      <div className="grid grid-cols-2 md:grid-cols-2 gap-3 mb-6">
         {tabs.map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-5 py-2 rounded-md text-sm font-medium transition cursor-pointer ${
-              activeTab === tab
-                ? "bg-red-500 text-white"
-                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-            }`}
+            className={`w-full justify-center px-2 sm:px-5 py-2 rounded-md text-xs sm:text-sm font-medium transition cursor-pointer flex items-center gap-1 ${activeTab === tab
+              ? tab === "جاری"
+                ? "bg-yellow-500 text-white"
+                : tab === "تحویل داده شده"
+                  ? "bg-green-600 text-white"
+                  : tab === "مرجوع شده"
+                    ? "bg-red-600 text-white"
+                    : "bg-orange-500 text-white"
+              : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+              }`}
           >
             {tab === "جاری" ? (
-              <div className="flex items-center gap-1">
-                <Icon path={mdiTruckDeliveryOutline} size={0.8} />
-                {tab}
-              </div>
+              <Icon path={mdiTruckDeliveryOutline} size={0.8} />
             ) : tab === "تحویل داده شده" ? (
-              <div className="flex items-center gap-1">
-                <Icon path={mdiTruckCheckOutline} size={0.8} />
-                {tab}
-              </div>
+              <Icon path={mdiTruckCheckOutline} size={0.8} />
             ) : tab === "مرجوع شده" ? (
-              <div className="flex items-center gap-1">
-                <Icon path={mdiTruckRemoveOutline} size={0.8} />
-                {tab}
-              </div>
+              <Icon path={mdiTruckRemoveOutline} size={0.8} />
             ) : (
-              <div className="flex items-center gap-1">
-                <Icon path={mdiTruckAlertOutline} size={0.8} />
-                {tab}
-              </div>
+              <Icon path={mdiTruckAlertOutline} size={0.8} />
             )}
+            {tab}
+            {/* چیپ تعداد */}
+            <span style={{
+              marginRight: 2,
+              background: activeTab === tab ? "rgba(255,255,255,.25)" : "#d1d5db",
+              color: activeTab === tab ? "#fff" : "#6b7280",
+              borderRadius: "50%",
+              minWidth: 20,
+              height: 20,
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: ".72rem",
+              fontWeight: 700,
+              padding: "0 5px",
+            }}>
+              {loading ? (
+                <span style={{
+                  display: "inline-block",
+                  width: 8, height: 8,
+                  borderRadius: "50%",
+                  background: "currentColor",
+                  animation: "pulse-scale 1.2s ease-in-out infinite",
+                }} />
+              ) : (
+                tabCount(tab).toLocaleString("fa-IR")
+              )}
+            </span>
           </button>
         ))}
       </div>
 
-      {loading ? (
-            <div className="flex flex-col items-center justify-center min-h-[20vh]">
-              <Image
-                src="/image/logo.png"
-                alt="در حال بارگذاری سفارشات شما..."
-                width={80}
-                height={80}
-                className="animate-spin object-contain"
-                priority
-              />
-              <p className="mt-4 text-gray-500 text-sm font-medium animate-pulse">
-                در حال بارگذاری سفارشات شما...
-              </p>
-            </div>
-      ) : activeTab === "جاری" ? (
-        <div className="space-y-6">
-          {filteredOrders.length > 0 ? (
-            <div>
-              <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-4 flex gap-1">
-                <Icon path={mdiHumanDolly} size={1} />
-                سفارشات جاری
-              </h2>
-              <div className="space-y-4">
-                {filteredOrders.map((order) => (
-                  <div key={order.id} className="border border-yellow-200 rounded-lg p-4 bg-yellow-50">
-                    <div className="flex justify-between items-center mb-2">
-                      <h2 className="text-lg font-semibold text-gray-900 flex gap-1">
-                        <Icon path={mdiAccountFileTextOutline} size={1.1} />
-                        سفارش #{order.userOrderNumber || getFilteredOrderNumber(order)}
-                      </h2>
-                      <span className="text-sm px-2 py-1 rounded bg-yellow-100 text-yellow-800 flex items-center gap-1">
-                        <Icon path={mdiTruckDeliveryOutline} size={0.7} />
-                        جاری
-                      </span>
+      <div className={loading ? "min-h-[350px]" : ""}>
+        {loading ? (
+          <SkeletonLoader />
+        ) : activeTab === "جاری" ? (
+          <div className="space-y-6">
+            {filteredOrders.length > 0 ? (
+              <div>
+                <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-4 flex gap-1">
+                  <Icon path={mdiHumanDolly} size={1} />
+                  سفارشات جاری
+                </h2>
+                <div className="space-y-4">
+                  {filteredOrders.map((order) => (
+                    <div key={order.id} className="border border-yellow-200 rounded-lg p-4 bg-yellow-50">
+                      <div className="flex justify-between items-center mb-2">
+                        <h2 className="text-lg font-semibold text-gray-900 flex gap-1">
+                          <Icon path={mdiAccountFileTextOutline} size={1.1} />
+                          سفارش {order.userOrderNumber.toLocaleString("fa-IR") || getFilteredOrderNumber(order)}#
+                        </h2>
+                        <span className="text-sm px-2 py-1 rounded bg-yellow-100 text-yellow-800 flex items-center gap-1">
+                          <Icon path={mdiTruckDeliveryOutline} size={0.7} />
+                          جاری
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-700 flex gap-1">
+                        <CalendarCheck className="w-5 h-5" />
+                        تاریخ: {new Date(order.createdAt).toLocaleDateString("fa-IR")}
+                      </p>
+                      <p className="text-sm text-gray-700 flex gap-1">
+                        <Icon path={mdiTagOutline} size={0.9} />
+                        قیمت کل: {order.totalPrice.toLocaleString("fa-IR")} تومان
+                      </p>
+                      <div className="mt-2">
+                        <h3 className="text-sm font-medium text-gray-900 flex gap-1">
+                          <Icon path={mdiShoppingOutline} size={0.9} />
+                          محصولات:
+                        </h3>
+                        <ul className="list-disc pr-5 text-sm text-gray-700">
+                          {order.OrderItems.map((item) => (
+                            <li key={item.id}>
+                              <Link
+                                href={`/products/${item.slug || (item.Product && item.Product.slug)}`}
+                                className="font-bold hover:text-pink-500 transition"
+                              >
+                                {item.name || (item.Product && item.Product.name) || "نامشخص"}
+                              </Link>
+                              {" "}- تعداد: {item.quantity.toLocaleString("fa-IR")} - قیمت نهایی:{" "}
+                              {item.price.toLocaleString("fa-IR")} تومان
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
                     </div>
-                    <p className="text-sm text-gray-700 flex gap-1">
-                      <CalendarCheck className="w-5 h-5" />
-                      تاریخ: {new Date(order.createdAt).toLocaleDateString("fa-IR")}
-                    </p>
-                    <p className="text-sm text-gray-700 flex gap-1">
-                      <Icon path={mdiTagOutline} size={0.9} />
-                      قیمت کل: {order.totalPrice.toLocaleString("fa-IR")} تومان
-                    </p>
-                    <div className="mt-2">
-                      <h3 className="text-sm font-medium text-gray-900 flex gap-1">
-                        <Icon path={mdiShoppingOutline} size={0.9} />
-                        محصولات:
-                      </h3>
-                      <ul className="list-disc pr-5 text-sm text-gray-700">
-                        {order.OrderItems.map((item) => (
-                          <li key={item.id}>
-                            <Link
-                              href={`/products/${item.slug || (item.Product && item.Product.slug)}`}
-                              className="font-bold hover:text-pink-500 transition"
-                            >
-                              {item.name || (item.Product && item.Product.name) || "نامشخص"}
-                            </Link>
-                            {" "}- تعداد: {item.quantity.toLocaleString("fa-IR")} - قیمت نهایی:{" "}
-                            {item.price.toLocaleString("fa-IR")} تومان
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
-          ) : (
-            <div className="text-center py-16">
-              <p className="text-gray-600">هیچ سفارش جاری‌ای وجود ندارد.</p>
-            </div>
-          )}
-        </div>
+            ) : (
+              <div className="text-center py-16">
+                <p className="text-gray-600">هیچ سفارش جاری‌ای وجود ندارد.</p>
+              </div>
+            )}
+          </div>
 
-      ) : activeTab === "ناتمام" ? (
-        <div className="space-y-4">
-          {filteredOrders.length === 0 ? (
-            <div className="text-center py-16">
-              <p className="text-gray-600">هیچ سفارش ناتمامی وجود ندارد.</p>
-            </div>
-          ) : (
-            filteredOrders.map((order) => (
-              <div key={order.id} className="border border-orange-200 rounded-lg p-4 bg-orange-50">
+        ) : activeTab === "ناتمام" ? (
+          <div className="space-y-4">
+            {filteredOrders.length === 0 ? (
+              <div className="text-center py-16">
+                <p className="text-gray-600">هیچ سفارش ناتمامی وجود ندارد.</p>
+              </div>
+            ) : (
+              filteredOrders.map((order) => (
+                <div key={order.id} className="border border-orange-200 rounded-lg p-4 bg-orange-50">
+                  <div className="flex justify-between items-center mb-2">
+                    <h2 className="text-lg font-semibold text-gray-900 flex gap-1">
+                      <Icon path={mdiAccountFileTextOutline} size={1.1} />
+                      سفارش {order.userOrderNumber?.toLocaleString("fa-IR") || getFilteredOrderNumber(order)}#
+                    </h2>
+                    <span className="text-sm px-2 py-1 rounded bg-orange-100 text-orange-700 flex items-center gap-1">
+                      <Icon path={mdiTruckAlertOutline} size={0.7} />
+                      منتظر پرداخت
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-700 flex gap-1">
+                    <CalendarCheck className="w-5 h-5" />
+                    تاریخ: {new Date(order.createdAt).toLocaleDateString("fa-IR")}
+                  </p>
+                  <p className="text-sm text-gray-700 flex gap-1 mt-1">
+                    <Icon path={mdiTagOutline} size={0.9} />
+                    قیمت کل: {order.totalPrice.toLocaleString("fa-IR")} تومان
+                  </p>
+                  <div className="mt-2">
+                    <h3 className="text-sm font-medium text-gray-900 flex gap-1">
+                      <Icon path={mdiShoppingOutline} size={0.9} />
+                      محصولات:
+                    </h3>
+                    <ul className="list-disc pr-5 text-sm text-gray-700">
+                      {order.OrderItems.map((item) => (
+                        <li key={item.id}>
+                          <Link
+                            href={`/products/${item.Product?.slug}`}
+                            className="font-bold hover:text-pink-500 transition"
+                          >
+                            {item.Product?.name || "نامشخص"}
+                          </Link>
+                          {" "}- تعداد: {item.quantity.toLocaleString("fa-IR")} - قیمت:{" "}
+                          {item.price.toLocaleString("fa-IR")} تومان
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div className="mt-4 flex gap-2">
+                    <button
+                      onClick={() => handleRetryPayment(order)}
+                      disabled={retryLoading === order.id || deleteLoading === order.id}
+                      className="flex items-center gap-1 px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-60 cursor-pointer"
+                    >
+                      <Icon path={mdiCreditCardOutline} size={0.9} />
+                      {retryLoading === order.id ? "در حال انتقال به درگاه..." : "تکمیل پرداخت"}
+                    </button>
+
+                    <button
+                      onClick={() => handleDeletePendingOrder(order)}
+                      disabled={retryLoading === order.id || deleteLoading === order.id}
+                      className="flex items-center gap-1 px-5 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition disabled:opacity-60 cursor-pointer"
+                    >
+                      <Icon path={mdiTrashCanOutline} size={0.9} />
+                      {deleteLoading === order.id ? "در حال حذف..." : "حذف سفارش"}
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+        ) : filteredOrders.length === 0 ? (
+          <div className="text-center py-16">
+            <p className="text-gray-600">
+              {activeTab === "تحویل داده شده"
+                ? "هیچ سفارش تحویل داده شده‌ای وجود ندارد."
+                : "هیچ سفارش مرجوع شده‌ای وجود ندارد."}
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {filteredOrders.map((order) => (
+              <div key={order.id} className={`border rounded-lg p-4 ${order.status === "delivered"
+                ? "border-green-200 bg-green-50"
+                : "border-red-200 bg-red-50"
+                }`}>
                 <div className="flex justify-between items-center mb-2">
                   <h2 className="text-lg font-semibold text-gray-900 flex gap-1">
                     <Icon path={mdiAccountFileTextOutline} size={1.1} />
-                    سفارش #{order.userOrderNumber || getFilteredOrderNumber(order)}
+                    سفارش {order.userOrderNumber?.toLocaleString('fa-IR') || getFilteredOrderNumber(order)}#
                   </h2>
-                  <span className="text-sm px-2 py-1 rounded bg-orange-100 text-orange-700 flex items-center gap-1">
-                    <Icon path={mdiTruckAlertOutline} size={0.7} />
-                    منتظر پرداخت
+                  <span className={`text-sm px-2 py-1 rounded flex items-center gap-1 ${order.status === "processing" ? "bg-yellow-100 text-yellow-800"
+                    : order.status === "delivered" ? "bg-green-100 text-green-800"
+                      : "bg-red-100 text-red-800"
+                    }`}>
+                    {order.status === "processing" ? (
+                      <><Icon path={mdiTruckDeliveryOutline} size={0.7} />جاری</>
+                    ) : order.status === "delivered" ? (
+                      <><Icon path={mdiTruckCheckOutline} size={0.7} />تحویل شده</>
+                    ) : (
+                      <><Icon path={mdiTruckRemoveOutline} size={0.7} />مرجوع شده</>
+                    )}
                   </span>
                 </div>
                 <p className="text-sm text-gray-700 flex gap-1">
                   <CalendarCheck className="w-5 h-5" />
                   تاریخ: {new Date(order.createdAt).toLocaleDateString("fa-IR")}
                 </p>
-                <p className="text-sm text-gray-700 flex gap-1 mt-1">
+                <p className="text-sm text-gray-700 flex gap-1 mt-2">
                   <Icon path={mdiTagOutline} size={0.9} />
                   قیمت کل: {order.totalPrice.toLocaleString("fa-IR")} تومان
                 </p>
@@ -395,107 +523,20 @@ export default function OrdersPage() {
                   <ul className="list-disc pr-5 text-sm text-gray-700">
                     {order.OrderItems.map((item) => (
                       <li key={item.id}>
-                        <Link
-                          href={`/products/${item.Product?.slug}`}
-                          className="font-bold hover:text-pink-500 transition"
-                        >
-                          {item.Product?.name || "نامشخص"}
+                        <Link href={`/products/${item.Product?.slug}`} className="font-bold hover:text-pink-500 transition">
+                          {item.Product?.name}
                         </Link>
-                        {" "}- تعداد: {item.quantity.toLocaleString("fa-IR")} - قیمت:{" "}
+                        {" "}- تعداد: {item.quantity.toLocaleString("fa-IR")} - قیمت نهایی:{" "}
                         {item.price.toLocaleString("fa-IR")} تومان
                       </li>
                     ))}
                   </ul>
                 </div>
-
-                <div className="mt-4 flex gap-2">
-                  <button
-                    onClick={() => handleRetryPayment(order)}
-                    disabled={retryLoading === order.id || deleteLoading === order.id}
-                    className="flex items-center gap-1 px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-60 cursor-pointer"
-                  >
-                    <Icon path={mdiCreditCardOutline} size={0.9} />
-                    {retryLoading === order.id ? "در حال انتقال به درگاه..." : "تکمیل پرداخت"}
-                  </button>
-
-                  <button
-                    onClick={() => handleDeletePendingOrder(order)}
-                    disabled={retryLoading === order.id || deleteLoading === order.id}
-                    className="flex items-center gap-1 px-5 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition disabled:opacity-60 cursor-pointer"
-                  >
-                    <Icon path={mdiTrashCanOutline} size={0.9} />
-                    {deleteLoading === order.id ? "در حال حذف..." : "حذف سفارش"}
-                  </button>
-                </div>
               </div>
-            ))
-          )}
-        </div>
-
-      ) : filteredOrders.length === 0 ? (
-        <div className="text-center py-16">
-          <p className="text-gray-600">
-            {activeTab === "تحویل داده شده"
-              ? "هیچ سفارش تحویل داده شده‌ای وجود ندارد."
-              : "هیچ سفارش مرجوع شده‌ای وجود ندارد."}
-          </p>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {filteredOrders.map((order) => (
-            <div key={order.id} className={`border rounded-lg p-4 ${
-                order.status === "delivered"
-                  ? "border-green-200 bg-green-50"
-                  : "border-red-200 bg-red-50"
-              }`}>
-              <div className="flex justify-between items-center mb-2">
-                <h2 className="text-lg font-semibold text-gray-900 flex gap-1">
-                  <Icon path={mdiAccountFileTextOutline} size={1.1} />
-                  سفارش #{order.userOrderNumber?.toLocaleString('fa-IR') || getFilteredOrderNumber(order)}
-                </h2>
-                <span className={`text-sm px-2 py-1 rounded flex items-center gap-1 ${
-                  order.status === "processing" ? "bg-yellow-100 text-yellow-800"
-                  : order.status === "delivered" ? "bg-green-100 text-green-800"
-                  : "bg-red-100 text-red-800"
-                }`}>
-                  {order.status === "processing" ? (
-                    <><Icon path={mdiTruckDeliveryOutline} size={0.7} />جاری</>
-                  ) : order.status === "delivered" ? (
-                    <><Icon path={mdiTruckCheckOutline} size={0.7} />تحویل شده</>
-                  ) : (
-                    <><Icon path={mdiTruckRemoveOutline} size={0.7} />مرجوع شده</>
-                  )}
-                </span>
-              </div>
-              <p className="text-sm text-gray-700 flex gap-1">
-                <CalendarCheck className="w-5 h-5" />
-                تاریخ: {new Date(order.createdAt).toLocaleDateString("fa-IR")}
-              </p>
-              <p className="text-sm text-gray-700 flex gap-1 mt-2">
-                <Icon path={mdiTagOutline} size={0.9} />
-                قیمت کل: {order.totalPrice.toLocaleString("fa-IR")} تومان
-              </p>
-              <div className="mt-2">
-                <h3 className="text-sm font-medium text-gray-900 flex gap-1">
-                  <Icon path={mdiShoppingOutline} size={0.9} />
-                  محصولات:
-                </h3>
-                <ul className="list-disc pr-5 text-sm text-gray-700">
-                  {order.OrderItems.map((item) => (
-                    <li key={item.id}>
-                      <Link href={`/products/${item.Product?.slug}`} className="font-bold hover:text-pink-500 transition">
-                        {item.Product?.name}
-                      </Link>
-                      {" "}- تعداد: {item.quantity.toLocaleString("fa-IR")} - قیمت نهایی:{" "}
-                      {item.price.toLocaleString("fa-IR")} تومان
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
+      </div>
 
       <style jsx global>{`
         @keyframes dialogShake {
@@ -505,6 +546,14 @@ export default function OrdersPage() {
           60%  { transform: translateX(-5px); }
           80%  { transform: translateX(5px); }
           100% { transform: translateX(0); }
+        }
+        @keyframes pulse-scale {
+          0%, 100% { transform: scale(0.8); opacity: 0.5; }
+          50%       { transform: scale(1);   opacity: 1;   }
+        }
+        @keyframes shimmer {
+          0%   { background-position: 200% 0; }
+          100% { background-position: -200% 0; }
         }
       `}</style>
     </div>

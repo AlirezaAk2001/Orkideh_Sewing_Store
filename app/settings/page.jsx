@@ -10,6 +10,7 @@ import { mdiAccountEditOutline, mdiAccountCogOutline, mdiEyeOutline, mdiEyeOffOu
 import { motion, AnimatePresence } from "framer-motion";
 import { TextField, InputAdornment, IconButton } from "@mui/material";
 import axios from "axios";
+import Image from "next/image";
 
 const usernameRegex = /^[a-zA-Z0-9_]+$/;
 const passwordRegex = /^(?=.*[0-9])(?=.*[@_]).{8,}$/;
@@ -267,7 +268,23 @@ export default function SettingsPage() {
     }
   };
 
-  if (!currentUser) return <div className="text-center py-10">در حال بارگذاری...</div>;
+  if (!currentUser) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh]">
+        <Image
+          src="/image/logo.png"
+          alt="در حال بارگذاری اطلاعات کاربر..."
+          width={80}
+          height={80}
+          className="animate-spin object-contain"
+          priority
+        />
+        <p className="mt-4 text-gray-500 text-sm font-medium animate-pulse">
+          در حال بارگذاری اطلاعات کاربر...
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -380,31 +397,31 @@ export default function SettingsPage() {
               transition: { duration: 0.4 },
             } : {}}
           >
-          <TextField
-            {...rtlStyles}
-            fullWidth
-            label="رمز عبور فعلی"
-            placeholder="مثال: A@123456"
-            type={showCurrentPassword ? "text" : "password"}
-            value={currentPassword}
-            onChange={(e) => setCurrentPassword(e.target.value)}
-            InputProps={{
-              endAdornment: currentPassword ? (
-                <InputAdornment position="end">
-                  <IconButton
-                    onClick={() => setShowCurrentPassword((prev) => !prev)}
-                    edge="end"
-                    tabIndex={-1}
-                  >
-                    <Icon
-                      path={showCurrentPassword ? mdiEyeOffOutline : mdiEyeOutline}
-                      size={0.9}
-                    />
-                  </IconButton>
-                </InputAdornment>
-              ) : null,
-            }}
-          />
+            <TextField
+              {...rtlStyles}
+              fullWidth
+              label="رمز عبور فعلی"
+              placeholder="مثال: A@123456"
+              type={showCurrentPassword ? "text" : "password"}
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              InputProps={{
+                endAdornment: currentPassword ? (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => setShowCurrentPassword((prev) => !prev)}
+                      edge="end"
+                      tabIndex={-1}
+                    >
+                      <Icon
+                        path={showCurrentPassword ? mdiEyeOffOutline : mdiEyeOutline}
+                        size={0.9}
+                      />
+                    </IconButton>
+                  </InputAdornment>
+                ) : null,
+              }}
+            />
           </motion.div>
 
           {/* رمز عبور جدید */}
@@ -414,7 +431,7 @@ export default function SettingsPage() {
               transition: { duration: 0.4 },
             } : {}}
           >
-          <TextField
+            <TextField
               {...rtlStyles}
               fullWidth
               label="رمز عبور جدید"
@@ -450,7 +467,7 @@ export default function SettingsPage() {
               transition: { duration: 0.4 },
             } : {}}
           >
-          <TextField
+            <TextField
               {...rtlStyles}
               fullWidth
               label="تکرار رمز عبور جدید"

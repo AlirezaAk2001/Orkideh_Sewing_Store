@@ -99,9 +99,23 @@ export default function AdminLayout({ children }) {
         }}
       />
 
-      <div className="flex min-h-screen bg-gray-100 overflow-hidden" dir="rtl">
+      <div className="relative flex h-screen overflow-hidden" dir="rtl">
+        {/* بکگراند */}
+        <div
+          className="absolute inset-0 z-0"
+          style={{
+            backgroundImage: `url(/image/back-admin.png)`,
+            backgroundRepeat: "no-repeat",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            filter: "blur(6px)",
+            opacity: 0.45,
+            transform: "scale(1.05)",
+          }}
+        />
+
         <aside
-          className="bg-white shadow-md flex flex-col justify-between transition-all duration-300 ease-in-out overflow-hidden flex-shrink-0"
+          className="bg-white/70 backdrop-blur-md border border-white/40 shadow-2xl z-10 flex flex-col justify-between transition-all duration-300 ease-in-out overflow-hidden flex-shrink-0"
           style={{ width: isSidebarOpen ? "205px" : "60px" }}
         >
           <div>
@@ -191,7 +205,7 @@ export default function AdminLayout({ children }) {
                 onClick={handleLogout}
                 disabled={isLoading}
                 title={!isSidebarOpen ? "خروج از حساب" : undefined}
-                className={`mt-6 flex items-center gap-2 px-3 py-2 rounded transition-all duration-200
+                className={`mt-6 flex items-center gap-2 px-3 py-2 rounded transition-all duration-300
                 ${!isSidebarOpen ? 'justify-center' : ''}
                 ${isLoading
                     ? 'bg-gray-100 text-gray-400 cursor-not-allowed opacity-50'
@@ -214,7 +228,7 @@ export default function AdminLayout({ children }) {
           </div>
         </aside>
 
-        <main className="flex-1 p-6 overflow-auto">
+        <main className="flex-1 p-4 overflow-y-auto overflow-x-hidden z-10">
           {children}
         </main>
       </div>

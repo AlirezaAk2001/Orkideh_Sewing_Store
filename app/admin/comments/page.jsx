@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import toast, { Toaster } from "react-hot-toast";
-import { CheckCircle2, Clock, XCircle, Send, X, Edit3 } from "lucide-react";
+import toast from "react-hot-toast";
+import { CheckCircle2, Clock, Send, X, Edit3 } from "lucide-react";
 import moment from "moment-jalaali";
 import Icon from "@mdi/react";
 import {
@@ -45,6 +45,7 @@ function formatDateTime(dateStr) {
 // دیالوگ پاسخ ادمین
 function ReplyDialog({ comment, onClose, onSave }) {
   const [replyText, setReplyText] = useState(comment.adminReply || "");
+  const [originalReply] = useState(comment.adminReply || "");
   const [editMode, setEditMode] = useState(!comment.adminReply);
   const [saving, setSaving] = useState(false);
   const textareaRef = useRef(null);
@@ -63,6 +64,12 @@ function ReplyDialog({ comment, onClose, onSave }) {
     setSaving(true);
     try {
       await onSave(comment.id, replyText.trim());
+      const userName = comment.User?.username || comment.User?.name || "کاربر";
+      if (editMode && originalReply) {
+        toast.success(`پاسخ مدیر به ${userName} با موفقیت ویرایش شد`);
+      } else {
+        toast.success(`پاسخ مدیر به ${userName} با موفقیت ثبت شد`);
+      }
       setEditMode(false);
     } finally {
       setSaving(false);
@@ -80,10 +87,14 @@ function ReplyDialog({ comment, onClose, onSave }) {
         style={{ maxHeight: "85vh" }}
       >
         {/* هدر دیالوگ */}
-        <div className="flex items-center justify-between px-5 py-4 border-b bg-gradient-to-l from-blue-50 to-indigo-50">
-          <h3 className="font-bold text-gray-800 flex items-center gap-2">
-            <Icon path={mdiMessageReplyTextOutline} size={1} className="text-indigo-600" />
-            پاسخ به نظر کاربر
+        <div className="flex items-center justify-between px-5 py-4 border-b" style={{ background: "linear-gradient(to left, #ede7f6, #f3e5f5)" }}>
+          <h3 className="flex items-center gap-2" style={{ fontFamily: "Vazirmatn, sans-serif", fontSize: "1rem", fontWeight: 700, margin: 0, color: "#4a148c" }}>
+            <Icon
+              path={editMode && comment.adminReply ? mdiCommentEditOutline : mdiMessageReplyTextOutline}
+              size={0.9}
+              color="#673ab7"
+            />
+            {editMode && comment.adminReply ? "ویرایش پاسخ به نظر کاربر" : "پاسخ به نظر کاربر"}
           </h3>
           <button
             onClick={onClose}
@@ -159,7 +170,7 @@ function ReplyDialog({ comment, onClose, onSave }) {
               <div className="flex flex-col gap-2">
                 <button
                   onClick={handleSend}
-                  disabled={saving}
+                  disabled={saving || !replyText.trim() || replyText.trim() === originalReply.trim()}
                   className="w-10 h-10 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl flex items-center justify-center transition cursor-pointer disabled:opacity-50"
                   title="ارسال (Ctrl+Enter)"
                 >
@@ -197,10 +208,11 @@ function ReplyDialog({ comment, onClose, onSave }) {
 }
 
 // کارت یک کامنت
-function CommentCard({ comment, onApprove, onReject, onReply }) {
+function CommentCard({ comment, onApprove, onReject, onReply, activeTab }) {
   const [dissolving, setDissolving] = useState(false);
   const [dissolved, setDissolved] = useState(false);
   const [showReplyDialog, setShowReplyDialog] = useState(false);
+  const [approving, setApproving] = useState(false);
 
   const handleReject = () => {
     setDissolving(true);
@@ -221,9 +233,13 @@ function CommentCard({ comment, onApprove, onReject, onReply }) {
   return (
     <>
       <div
-        className={`relative border rounded-xl p-4 transition-all duration-300 ${isApproved
-          ? "border-green-200 bg-green-50"
-          : "border-yellow-200 bg-yellow-50"
+        className={`relative border rounded-xl p-4 transition-all duration-300 ${activeTab === "pending"
+            ? "border-amber-200 bg-amber-50"
+            : activeTab === "approved"
+              ? "border-green-200 bg-green-50"
+              : isApproved
+                ? "border-green-200 bg-green-50"
+                : "border-yellow-200 bg-yellow-50"
           } ${dissolving ? "dissolve-animation" : ""}`}
         style={
           dissolving
@@ -293,11 +309,23 @@ function CommentCard({ comment, onApprove, onReject, onReply }) {
           {/* دکمه تأیید / پاسخ / ویرایش */}
           {!isApproved ? (
             <button
-              onClick={() => onApprove(comment.id)}
-              className="flex items-center gap-1 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs transition cursor-pointer"
+              onClick={async () => {
+                if (approving) return;
+                setApproving(true);
+                try {
+                  await onApprove(comment.id);
+                } finally {
+                  setApproving(false);
+                }
+              }}
+              disabled={approving}
+              className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs transition cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+              style={{ background: "linear-gradient(135deg,#16a34a,#15803d)", color: "#fff", boxShadow: "0 2px 8px rgba(22,163,74,.3)" }}
               title="تأیید نظر"
             >
-              <Icon path={mdiCommentCheckOutline} size={0.75} />
+              {approving
+                ? <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin inline-block" />
+                : <Icon path={mdiCommentCheckOutline} size={0.75} />}
               تأیید
             </button>
           ) : (
@@ -317,7 +345,9 @@ function CommentCard({ comment, onApprove, onReject, onReply }) {
           {/* دکمه رد تأیید */}
           <button
             onClick={handleReject}
-            className="flex items-center gap-1 px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg text-xs transition cursor-pointer"
+            disabled={dissolving}
+            className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs transition cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+            style={{ background: "linear-gradient(135deg,#dc2626,#b91c1c)", color: "#fff", boxShadow: "0 2px 8px rgba(220,38,38,.2)" }}
             title="رد تأیید"
           >
             <Icon path={mdiCommentRemoveOutline} size={0.75} />
@@ -393,11 +423,12 @@ export default function AdminComments() {
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("all");
+  const [typewriterKey, setTypewriterKey] = useState(0);
 
   const tabs = [
-    { key: "all", label: "تمام نظرات", icon: mdiCommentAccountOutline },
-    { key: "approved", label: "نظرات تأیید شده", icon: mdiCommentCheckOutline },
-    { key: "pending", label: "نظرات تأیید نشده", icon: mdiCommentOffOutline },
+    { key: "all", label: "تمام نظرات", icon: mdiCommentAccountOutline, activeColor: "bg-indigo-600" },
+    { key: "approved", label: "نظرات تأیید شده", icon: mdiCommentCheckOutline, activeColor: "bg-green-600" },
+    { key: "pending", label: "نظرات تأیید نشده", icon: mdiCommentOffOutline, activeColor: "bg-amber-500" },
   ];
 
   const fetchComments = async () => {
@@ -456,7 +487,6 @@ export default function AdminComments() {
         { id, adminReply: reply },
         { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
       );
-      toast.success("پاسخ مدیر ثبت شد");
       setComments((prev) =>
         prev.map((c) =>
           c.id === id
@@ -476,67 +506,170 @@ export default function AdminComments() {
     return true;
   });
 
+  // هر بار که تب عوض شد یا لود تموم شد، typewriter ری‌استارت بشه
+  useEffect(() => { setTypewriterKey((k) => k + 1); }, [activeTab, loading]);
+
+  // برچسب زیرنویس هدر بر اساس تب فعال
+  const filterLabel = (() => {
+    if (activeTab === "approved") return { text: "نظر تأیید شده", color: "#16a34a" };
+    if (activeTab === "pending") return { text: "نظر در انتظار تأیید", color: "#d97706" };
+    return null;
+  })();
+
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-white shadow rounded-lg mt-6" dir="rtl">
-      <Toaster position="top-right" />
+    <div style={{ padding: "16px" }} dir="rtl">
 
-      <h1 className="text-xl font-bold mb-6 flex items-center gap-2 text-gray-800">
-        <Icon path={mdiAccountBoxEditOutline} size={1.2} />
-        مدیریت نظرات کاربران
-      </h1>
+      <style>{`
+        /* ── هدر کارت سبک (manage-users style) ── */
+        .comments-header-card {
+          background: #fff;
+          border-radius: 16px;
+          box-shadow: 0 2px 8px rgba(0,0,0,.07);
+          padding: 12px 20px;
+          margin-bottom: 10px;
+        }
+        .comments-header-title {
+          font-family: Vazirmatn, sans-serif;
+          font-size: 1rem;
+          font-weight: 700;
+          // color: #673ab7;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          margin: 0 0 2px 0;
+        }
+        .comments-header-subtitle {
+          font-family: Vazirmatn, sans-serif;
+          font-size: 14px;
+          color: #78909c;
+          margin-right: 8px;
+          display: inline-block;
+          overflow: hidden;
+          white-space: nowrap;
+          max-width: 0;
+          animation: typewriter 0.9s steps(25, end) forwards;
+        }
+        .comments-header-subtitle b {
+          font-size: 16px;
+        }
+        @keyframes typewriter {
+          from { max-width: 0; }
+          to   { max-width: 300px; }
+        }
+        @keyframes shimmer {
+          0%   { background-position: 200% 0; }
+          100% { background-position: -200% 0; }
+        }
 
-      {/* تب‌ها */}
-      <div className="flex gap-3 mb-6 flex-wrap">
-        {tabs.map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition cursor-pointer ${activeTab === tab.key
-              ? "bg-indigo-600 text-white shadow-md"
-              : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-              }`}
-          >
-            <Icon path={tab.icon} size={0.85} />
-            {tab.label}
-            <span
-              className={`text-xs px-1.5 py-0.5 rounded-full ${activeTab === tab.key ? "bg-indigo-500 text-white" : "bg-gray-200 text-gray-500"
-                }`}
-            >
-              {tab.key === "all"
-                ? comments.length
-                : tab.key === "approved"
-                  ? comments.filter((c) => c.approved).length
-                  : comments.filter((c) => !c.approved).length}
-            </span>
-          </button>
-        ))}
+        /* ── کارت اصلی ── */
+        .comment-card {
+          background: #fff;
+          border-radius: 20px;
+          box-shadow: 0 4px 24px rgba(0,0,0,.08);
+          overflow: hidden;
+        }
+        .comment-card-body {
+          padding: 24px;
+        }
+
+        @keyframes pulse-scale {
+          0%, 100% { transform: scale(0.8); opacity: 0.5; }
+          50%       { transform: scale(1);   opacity: 1;   }
+        }
+      `}</style>
+
+      {/* ── هدر جدا — سبک لایت مشابه manage-users ── */}
+      <div className="comments-header-card">
+        <p className="comments-header-title">
+          <Icon path={mdiAccountBoxEditOutline} size={1} />
+          مدیریت نظرات کاربران
+        </p>
+        {loading ? (
+          <div style={{
+            height: 16, width: 120, borderRadius: 4,
+            background: "linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%)",
+            backgroundSize: "200% 100%",
+            animation: "shimmer 1.5s infinite",
+            marginRight: 8,
+          }} />
+        ) : (
+          <span className="comments-header-subtitle" key={typewriterKey} style={{ color: filterLabel ? filterLabel.color : "#1e2a2f" }}>
+            {filterLabel ? (
+              <><b>{filteredComments.length.toLocaleString("fa-IR")}</b> {filterLabel.text} یافت شد</>
+            ) : (
+              <><b>{comments.length.toLocaleString("fa-IR")}</b> نظر یافت شد</>
+            )}
+          </span>
+        )}
       </div>
 
-      {/* محتوا */}
-      {loading ? (
-        <div className="space-y-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <SkeletonCard key={i} />
-          ))}
+      {/* ── کارت اصلی ── */}
+      <div className="comment-card">
+        <div className="comment-card-body">
+
+          {/* تب‌ها */}
+          <div className="flex justify-center gap-4 mb-6 flex-wrap">
+            {tabs.map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition cursor-pointer ${activeTab === tab.key ? tab.activeColor + " text-white shadow-md" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
+              >
+                <Icon path={tab.icon} size={0.85} />
+                {tab.label}
+                <span
+                  className={`text-xs px-1.5 py-0.5 rounded-full ${activeTab === tab.key ? "bg-white/20 text-white" : "bg-gray-200 text-gray-500"}`}
+                >
+                  {loading ? (
+                    <span style={{
+                      display: "inline-block",
+                      width: 10,
+                      height: 10,
+                      borderRadius: "50%",
+                      background: "currentColor",
+                      animation: "pulse-scale 1.2s ease-in-out infinite",
+                    }} />
+                  ) : (
+                    tab.key === "all"
+                      ? comments.length.toLocaleString("fa-IR")
+                      : tab.key === "approved"
+                        ? comments.filter((c) => c.approved).length.toLocaleString("fa-IR")
+                        : comments.filter((c) => !c.approved).length.toLocaleString("fa-IR")
+                  )}
+                </span>
+              </button>
+            ))}
+          </div>
+
+          {/* محتوا */}
+          {loading ? (
+            <div className="space-y-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <SkeletonCard key={i} />
+              ))}
+            </div>
+          ) : filteredComments.length === 0 ? (
+            <div className="text-center py-20 text-gray-400">
+              <Icon path={mdiCommentAccountOutline} size={3} className="mx-auto mb-3 opacity-30" />
+              <p>هیچ نظری در این دسته وجود ندارد</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {filteredComments.map((comment) => (
+                <CommentCard
+                  key={comment.id}
+                  comment={comment}
+                  activeTab={activeTab}
+                  onApprove={handleApprove}
+                  onReject={handleReject}
+                  onReply={handleReply}
+                />
+              ))}
+            </div>
+          )}
+
         </div>
-      ) : filteredComments.length === 0 ? (
-        <div className="text-center py-20 text-gray-400">
-          <Icon path={mdiCommentAccountOutline} size={3} className="mx-auto mb-3 opacity-30" />
-          <p>هیچ نظری در این دسته وجود ندارد</p>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {filteredComments.map((comment) => (
-            <CommentCard
-              key={comment.id}
-              comment={comment}
-              onApprove={handleApprove}
-              onReject={handleReject}
-              onReply={handleReply}
-            />
-          ))}
-        </div>
-      )}
+      </div>
     </div>
   );
 }

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import axios from "axios";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { PackageCheck, Undo2, CalendarCheck, Clock } from "lucide-react";
 import Icon from '@mdi/react';
@@ -34,11 +34,40 @@ const formatToPersian = (num) => {
 
 export default function AdminOrders() {
   const [orders, setOrders] = useState([]);
+  const [typewriterKey, setTypewriterKey] = useState(0);
   const [loading, setLoading] = useState(true);
+  const isFirstLoad = loading && orders.length === 0;
   const [activeTab, setActiveTab] = useState("جاری");
   const router = useRouter();
 
   const tabs = ["جاری", "تحویل داده شده", "مرجوع شده", "ناتمام"];
+
+  // تعداد سفارش‌های هر تب
+  const tabCount = (tab) => {
+    if (tab === "جاری") return orders.filter(o => o.status === "processing").length;
+    if (tab === "تحویل داده شده") return orders.filter(o => o.status === "delivered").length;
+    if (tab === "مرجوع شده") return orders.filter(o => o.status === "returned").length;
+    if (tab === "ناتمام") return orders.filter(o => o.status === "pending").length;
+    return 0;
+  };
+
+  const tabColor = (tab) => {
+    if (tab === "جاری") return "#ca8a04"; // زرد
+    if (tab === "تحویل داده شده") return "#16a34a"; // سبز
+    if (tab === "مرجوع شده") return "#dc2626"; // قرمز
+    if (tab === "ناتمام") return "#ea580c"; // نارنجی
+    return "#1e2a2f";
+  };
+
+  const tabLabel = (tab) => {
+    if (tab === "جاری") return "سفارش جاری";
+    if (tab === "تحویل داده شده") return "سفارش تحویل داده شده";
+    if (tab === "مرجوع شده") return "سفارش مرجوع شده";
+    if (tab === "ناتمام") return "سفارش ناتمام";
+    return "سفارش";
+  };
+
+  useEffect(() => { setTypewriterKey((k) => k + 1); }, [activeTab, loading]);
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -106,10 +135,9 @@ export default function AdminOrders() {
           )
         );
         toast.success(
-          `وضعیت سفارش به "${
-            newStatus === "delivered"
-              ? "تحویل داده شده"
-              : newStatus === "returned"
+          `وضعیت سفارش به "${newStatus === "delivered"
+            ? "تحویل داده شده"
+            : newStatus === "returned"
               ? "مرجوع شده"
               : "در حال پردازش"
           }" تغییر کرد`
@@ -184,17 +212,16 @@ export default function AdminOrders() {
   const OrderCard = ({ order }) => (
     <div
       key={order.id}
-      className={`border rounded-lg p-4 ${
-        order.status === "pending"
+      className={`border rounded-lg p-4 ${order.status === "pending"
           ? "border-orange-200 bg-orange-50"
           : order.status === "processing"
-          ? "border-yellow-200 bg-yellow-50"
-          : order.status === "delivered"
-          ? "border-green-200 bg-green-50"
-          : order.status === "returned"
-          ? "border-red-200 bg-red-50"
-          : "bg-white border border-gray-200"
-      }`}
+            ? "border-yellow-200 bg-yellow-50"
+            : order.status === "delivered"
+              ? "border-green-200 bg-green-50"
+              : order.status === "returned"
+                ? "border-red-200 bg-red-50"
+                : "bg-white border border-gray-200"
+        }`}
     >
       {/* هدر کارت */}
       <div className="flex justify-between items-center mb-2">
@@ -299,73 +326,168 @@ export default function AdminOrders() {
   );
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-white shadow rounded-lg mt-6" dir="rtl">
-      <Toaster position="top-right" />
+    <div style={{ padding: "16px" }} dir="rtl">
+      <style>
+        {`
+          .orders-header-card {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.07);
+            padding: 12px 20px;
+            margin-bottom: 10px;
+          }
+          .orders-header-title {
+            font-family: Vazirmatn, sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin: 0 0 2px 0;
+          }
+          .orders-header-subtitle {
+            font-family: Vazirmatn, sans-serif;
+            font-size: 14px;
+            color: #78909c;
+            margin-right: 8px;
+            display: inline-block;
+            overflow: hidden;
+            white-space: nowrap;
+            max-width: 0;
+            animation: typewriter 0.9s steps(25, end) forwards;
+          }
+          .orders-header-subtitle b { font-size: 16px; }
+          @keyframes typewriter {
+            from { max-width: 0; }
+            to   { max-width: 300px; }
+          }
+          @keyframes shimmer {
+            0%   { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+          }
+          @keyframes pulse-scale {
+            0%, 100% { transform: scale(0.8); opacity: 0.5; }
+            50%       { transform: scale(1);   opacity: 1;   }
+          }
 
-      <h1 className="text-xl font-bold mb-6 text-right text-gray-700 flex gap-1">
-        <Icon path={mdiAccountFileText} size={1.3} />
-        مدیریت سفارش‌های کاربران
-      </h1>
+          /* ── کارت اصلی ── */
+          .orders-card {
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 4px 24px rgba(0,0,0,.08);
+            overflow: hidden;
+          }
+          .orders-card-body {
+            padding: 24px;
+          }
+        `}
+      </style>
 
-      {/* تب‌ها */}
-      <div className="flex justify-center gap-4 mb-6 flex-wrap">
-        {tabs.map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`px-5 py-2 rounded-md text-sm font-medium transition cursor-pointer ${
-              activeTab === tab
-                ? "bg-red-500 text-white"
-                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-            }`}
-          >
-            {tab === "جاری" ? (
-              <div className="flex items-center gap-1">
-                <Icon path={mdiTruckDeliveryOutline} size={0.8} />
-                {tab}
-              </div>
-            ) : tab === "تحویل داده شده" ? (
-              <div className="flex items-center gap-1">
-                <Icon path={mdiTruckCheckOutline} size={0.8} />
-                {tab}
-              </div>
-            ) : tab === "مرجوع شده" ? (
-              <div className="flex items-center gap-1">
-                <Icon path={mdiTruckRemoveOutline} size={0.8} />
-                {tab}
-              </div>
-            ) : (
-              <div className="flex items-center gap-1">
-                <Icon path={mdiTruckAlertOutline} size={0.8} />
-                {tab}
-              </div>
-            )}
-          </button>
-        ))}
+      <div className="orders-header-card">
+        <p className="orders-header-title">
+          <Icon path={mdiAccountFileText} size={1.3} />
+          مدیریت سفارش‌های کاربران
+        </p>
+        {isFirstLoad ? (
+          <div style={{
+            height: 16, width: 120, borderRadius: 4,
+            background: "linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%)",
+            backgroundSize: "200% 100%",
+            animation: "shimmer 1.5s infinite",
+            marginRight: 8,
+          }} />
+        ) : (
+          <span className="orders-header-subtitle" key={typewriterKey} style={{ color: tabColor(activeTab) }}>
+            <b>{filteredOrders.length.toLocaleString("fa-IR")}</b> {tabLabel(activeTab)} یافت شد
+          </span>
+        )}
       </div>
 
-      {/* محتوا */}
-      {loading ? (
-        <SkeletonLoader />
-      ) : filteredOrders.length === 0 ? (
-        <div className="text-center py-16">
-          <p className="text-gray-600">
-            {activeTab === "جاری"
-              ? "هیچ سفارش جاری‌ای وجود ندارد."
-              : activeTab === "تحویل داده شده"
-              ? "هیچ سفارش تحویل داده شده‌ای وجود ندارد."
-              : activeTab === "مرجوع شده"
-              ? "هیچ سفارش مرجوع شده‌ای وجود ندارد."
-              : "هیچ سفارش ناتمامی وجود ندارد."}
-          </p>
+      <div className="orders-card">
+        <div className="orders-card-body">
+            {/* تب‌ها */}
+            <div className="flex justify-center gap-4 mb-6 flex-wrap">
+              {tabs.map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`px-5 py-2 rounded-md text-sm font-medium transition cursor-pointer flex items-center gap-1 ${activeTab === tab
+                      ? tab === "جاری"
+                        ? "bg-yellow-500 text-white"
+                        : tab === "تحویل داده شده"
+                          ? "bg-green-600 text-white"
+                          : tab === "مرجوع شده"
+                            ? "bg-red-600 text-white"
+                            : "bg-orange-500 text-white"
+                      : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                    }`}
+                >
+                  {tab === "جاری" ? (
+                    <Icon path={mdiTruckDeliveryOutline} size={0.8} />
+                  ) : tab === "تحویل داده شده" ? (
+                    <Icon path={mdiTruckCheckOutline} size={0.8} />
+                  ) : tab === "مرجوع شده" ? (
+                    <Icon path={mdiTruckRemoveOutline} size={0.8} />
+                  ) : (
+                    <Icon path={mdiTruckAlertOutline} size={0.8} />
+                  )}
+                  {tab}
+                  {/* چیپ تعداد */}
+                  <span style={{
+                    marginRight: 2,
+                    background: activeTab === tab ? "rgba(255,255,255,.25)" : "#d1d5db",
+                    color: activeTab === tab ? "#fff" : "#6b7280",
+                    borderRadius: "50%",
+                    minWidth: 20,
+                    height: 20,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: ".72rem",
+                    fontWeight: 700,
+                    padding: "0 5px",
+                  }}>
+                    {isFirstLoad ? (
+                      <span style={{
+                        display: "inline-block",
+                        width: 8, height: 8,
+                        borderRadius: "50%",
+                        background: "currentColor",
+                        animation: "pulse-scale 1.2s ease-in-out infinite",
+                      }} />
+                    ) : (
+                      tabCount(tab).toLocaleString("fa-IR")
+                    )}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            {/* محتوا */}
+            {loading ? (
+              <SkeletonLoader />
+            ) : filteredOrders.length === 0 ? (
+              <div className="text-center py-16">
+                <p className="text-gray-600">
+                  {activeTab === "جاری"
+                    ? "هیچ سفارش جاری‌ای وجود ندارد."
+                    : activeTab === "تحویل داده شده"
+                      ? "هیچ سفارش تحویل داده شده‌ای وجود ندارد."
+                      : activeTab === "مرجوع شده"
+                        ? "هیچ سفارش مرجوع شده‌ای وجود ندارد."
+                        : "هیچ سفارش ناتمامی وجود ندارد."}
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {filteredOrders.map((order) => (
+                  <OrderCard key={order.id} order={order} />
+                ))}
+              </div>
+            )}
+          </div>
         </div>
-      ) : (
-        <div className="space-y-4">
-          {filteredOrders.map((order) => (
-            <OrderCard key={order.id} order={order} />
-          ))}
-        </div>
-      )}
     </div>
+
   );
 }

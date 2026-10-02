@@ -125,7 +125,9 @@ export default function AdminHome() {
           <Box
             key={index}
             sx={{
-              bgcolor: 'white',
+              bgcolor: 'rgba(255,255,255,0.7)',
+              backdropFilter: 'blur(12px)',
+              border: '1px solid rgba(255,255,255,0.4)',
               p: 3,
               borderRadius: 2,
               boxShadow: 1,
@@ -152,7 +154,7 @@ export default function AdminHome() {
   );
 
   return (
-    <div className="p-4" dir="rtl">
+    <div className="p-4 relative" dir="rtl">
       <Toaster position="top-right" />
 
       <h1 className="text-2xl font-bold mb-6 flex gap-1">
@@ -168,7 +170,7 @@ export default function AdminHome() {
             {cards.map((card) => (
               <div
                 key={card.name}
-                className="bg-white p-4 rounded shadow flex flex-col items-center justify-center gap-2 hover:shadow-md transition-shadow"
+                className="bg-white/70 backdrop-blur-md border border-white/40 shadow-2xl p-4 rounded-xl flex flex-col items-center justify-center gap-2 hover:shadow-md transition-shadow"
                 style={{ height: '180px' }}
               >
                 <div className="text-pink-600">{card.icon}</div>

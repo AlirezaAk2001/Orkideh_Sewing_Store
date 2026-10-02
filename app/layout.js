@@ -1,9 +1,8 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Header from "./components/Header";
-import Footer from "./components/Footer";
 import { AuthProvider, FavoritesProvider, CartProvider } from "../lib/context";
 import { Toaster } from "react-hot-toast";
+import ConditionalLayout from "./components/ConditionalLayout";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
@@ -25,10 +24,8 @@ export default function RootLayout({ children }) {
         <AuthProvider>
           <FavoritesProvider>
             <CartProvider>
-              <Header />
-              <main className="flex-grow">{children}</main>
               <Toaster position="top-right" />
-              <Footer />
+              <ConditionalLayout>{children}</ConditionalLayout>
             </CartProvider>
           </FavoritesProvider>
         </AuthProvider>
