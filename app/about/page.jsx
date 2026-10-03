@@ -6,7 +6,7 @@ import { MapPinned, Map, UserRoundPlus } from "lucide-react"
 import ContactPhoneIcon from '@mui/icons-material/ContactPhone';
 
 export const metadata = {
-  title: "درباره ما | فروشگاه ارکیده",
+  title: "درباره ما",
   description: "اطلاعات تماس، آدرس و شبکه‌های اجتماعی فروشگاه ارکیده",
 };
 

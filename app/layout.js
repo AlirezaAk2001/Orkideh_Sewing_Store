@@ -3,10 +3,30 @@ import "./globals.css";
 import { AuthProvider, FavoritesProvider, CartProvider } from "../lib/context";
 import { Toaster } from "react-hot-toast";
 import ConditionalLayout from "./components/ConditionalLayout";
+import { SITE_NAME, SITE_DESCRIPTION, getSiteUrl, previewImage } from "../lib/seo";
 
 export const metadata = {
-  title: "فروشگاه چرخ خیاطی ارکیده",
-  description: "فروشگاه آنلاین چرخ خیاطی",
+  // آدرس‌های نسبی (تصویر پیش‌نمایش، canonical) نسبت به آدرس واقعی سایت کامل می‌شوند؛ NEXT_PUBLIC_BASE_URL را در production تنظیم کنید
+  metadataBase: new URL(getSiteUrl()),
+  title: { default: SITE_NAME, template: "%s | فروشگاه ارکیده" },
+  description: SITE_DESCRIPTION,
+  // «./» یعنی آدرس خود همان صفحه (بدون ?پارامتر)؛ صفحه‌هایی که متادیتای خودشان را دارند آن را عوض می‌کنند
+  alternates: { canonical: "./" },
+  openGraph: {
+    type: "website",
+    locale: "fa_IR",
+    siteName: SITE_NAME,
+    url: "./",
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
+    images: [{ url: previewImage(), alt: SITE_NAME }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
+    images: [previewImage()],
+  },
   icons: {
     icon: "/iamge/logo2.ico",
     shortcut: "/image/logo2.ico",
