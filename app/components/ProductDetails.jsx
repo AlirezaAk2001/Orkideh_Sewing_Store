@@ -20,12 +20,12 @@ import DialogContentText from "@mui/material/DialogContentText";
 import DialogActions from "@mui/material/DialogActions";
 import Button from "@mui/material/Button";
 
-export default function ProductDetails({ slug }) {
+// جزئیات محصول؛ داده را صفحهٔ سروری (app/products/[slug]/page.jsx) می‌دهد تا در همان HTML اولیه باشد
+export default function ProductDetails({ product }) {
   const router = useRouter();
   const { currentUser } = useAuth();
   const { addToCart, cartItems = [], removeFromCart } = useCart();
   const { addToFavorites, removeFromFavorites, favorites = [] } = useFavorites();
-  const [product, setProduct] = useState(null);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [isInCart, setIsInCart] = useState(false);
@@ -40,56 +40,6 @@ export default function ProductDetails({ slug }) {
     setTimeout(() => setShake(false), 500);
   };
 
-  function toLatinSlug(input) {
-    const persianToLatin = {
-      'س': 's', 'ر': 'r', 'د': 'd', 'و': 'oo', 'ز': 'z',
-      'آ': 'a', 'ا': 'a', 'ب': 'b', 'پ': 'p', 'ت': 't',
-      'ث': 's', 'ج': 'j', 'چ': 'ch', 'ح': 'h', 'خ': 'kh',
-      'ذ': 'z', 'ض': 'z', 'ط': 't', 'ظ': 'z', 'ع': 'a',
-      'غ': 'gh', 'ف': 'f', 'ق': 'q', 'ک': 'k', 'گ': 'g',
-      'ل': 'l', 'م': 'm', 'ن': 'n', 'ه': 'h', 'ی': 'y',
-      '٠': '0', '١': '1', '٢': '2', '٣': '3', '٤': '4',
-      '٥': '5', '٦': '6', '٧': '7', '٨': '8', '٩': '9',
-    };
-    return input
-      .split('')
-      .map(char => persianToLatin[char] || char)
-      .join('')
-      .replace(/\s+/g, '-')
-      .toLowerCase()
-      .replace(/[^a-z0-9-]/g, '');
-  }
-
-  useEffect(() => {
-    const fetchProduct = async () => {
-      try {
-        const decodedSlug = decodeURIComponent(slug);
-        const latinSlug = toLatinSlug(decodedSlug);
-        console.log(`Fetching product with slug: ${decodedSlug}, Latin slug: ${latinSlug}`);
-        const res = await fetch(`/api/admin/products/by-slug/${encodeURIComponent(latinSlug)}`, {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-        });
-        console.log(`Fetch response status: ${res.status}, statusText: ${res.statusText}`);
-        if (!res.ok) {
-          const errorData = await res.json().catch(() => ({}));
-          console.error("Fetch error data:", errorData);
-          throw new Error(errorData.error || `Failed to fetch product (status: ${res.status}, statusText: ${res.statusText})`);
-        }
-        const data = await res.json();
-        console.log("Fetched product data:", data);
-        setProduct(data);
-      } catch (error) {
-        console.error("Error fetching product:", {
-          message: error.message,
-          stack: error.stack,
-        });
-        toast.error(`خطا در بارگذاری محصول: ${error.message}`);
-      }
-    };
-    if (slug) fetchProduct();
-  }, [slug]);
-
   useEffect(() => {
     const cartItem = cartItems.find((item) => item.id === product?.id);
     setIsInCart(!!cartItem);
@@ -100,31 +50,6 @@ export default function ProductDetails({ slug }) {
     }
     setIsFavorite(Array.isArray(favorites) && favorites.some((item) => item.id === product?.id));
   }, [cartItems, favorites, product]);
-
-if (!product) {
-  return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh]">
-      <Image
-        src="/image/logo.png"
-        alt="در حال بارگذاری جزئیات محصول..."
-        width={80}
-        height={80}
-        className="animate-spin object-contain"
-        priority
-      />
-      <p className="mt-4 text-gray-500 text-sm font-medium animate-pulse">
-        در حال بارگذاری جزئیات محصول...
-      </p>
-    </div>
-  );
-}
-
-  const approvedComments = product?.comments?.filter((c) => c.approved === true) || [];
-  const totalVotes = approvedComments.length;
-  const averageRating =
-    totalVotes > 0
-      ? (approvedComments.reduce((acc, comment) => acc + (comment.rating || 0), 0) / totalVotes).toFixed(1)
-      : 0;
 
   // موجودی کالا؛ قاعده همان lib/stock.js است (null = پیگیری نمی‌شود، «لوازم جانبی» معاف است)
   const stock = product?.stock;

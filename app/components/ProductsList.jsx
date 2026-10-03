@@ -1,72 +1,14 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import ProductCard from "@/app/components/ProductCard";
 import { Toaster } from "react-hot-toast";
 
-export default function ProductsList() {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
+// فهرست محصولات؛ داده را صفحهٔ سروری (app/products/page.jsx) می‌دهد تا در همان HTML اولیه باشد
+export default function ProductsList({ products }) {
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
-
-    async function fetchProducts() {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const res = await fetch("/api/admin/products");
-        if (!res.ok) throw new Error("خطا در دریافت محصولات");
-
-        const data = await res.json();
-        setProducts(data);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchProducts();
   }, []);
-
-  if (loading)
-    return (
-      <div className="container mx-auto px-4 py-10">
-        <div className="h-8 w-48 bg-gray-300 rounded mx-auto mb-6 animate-pulse"></div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {[...Array(8)].map((_, i) => (
-            <div
-              key={i}
-              className="bg-gray-300 rounded-lg h-64 animate-pulse overflow-hidden relative"
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 animate-shimmer"></div>
-            </div>
-          ))}
-        </div>
-
-        <style jsx>{`
-          @keyframes shimmer {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
-          }
-          .animate-shimmer {
-            background: linear-gradient(
-              90deg,
-              rgba(200, 200, 200, 0.3) 0%,
-              rgba(255, 255, 255, 0.6) 50%,
-              rgba(200, 200, 200, 0.3) 100%
-            );
-            animation: shimmer 1.5s infinite;
-          }
-        `}</style>
-      </div>
-    );
-
-  if (error)
-    return <p className="text-center text-red-500 mt-10">{error}</p>;
 
   if (products.length === 0)
     return <p className="text-center text-gray-500 mt-10">محصولی یافت نشد.</p>;

@@ -1,30 +1,18 @@
+import { notFound } from "next/navigation";
 import ProductDetails from "@/app/components/ProductDetails";
-import prisma from "@/lib/prisma";
-import { toLatinSlug, safeDecode } from "@/lib/slug";
+import { getProductBySlug } from "@/lib/products";
 import { pageMetadata, productDescription } from "@/lib/seo";
 
-// صفحه خودش داده را سمت مرورگر می‌گیرد (ProductDetails)؛ این‌جا فقط عنوان، توضیح و تصویر پیش‌نمایش لینک برای ربات‌ها ساخته می‌شود.
-// جست‌وجوی slug همان قاعدهٔ /api/admin/products/by-slug است.
+// قیمت و موجودی در هر درخواست تازه از دیتابیس خوانده می‌شود، نه هنگام build
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata({ params }) {
   const { slug } = await params;
   try {
-    const latinSlug = toLatinSlug(safeDecode(slug));
-    const product = latinSlug
-      ? await prisma.product.findFirst({
-          where: { slug: latinSlug },
-          select: {
-            name: true,
-            slug: true,
-            image: true,
-            additionalFeatures: true,
-            Category: { select: { name: true } },
-          },
-        })
-      : null;
+    const product = await getProductBySlug(slug);
 
-    if (!product) {
-      return { title: "محصول یافت نشد", robots: { index: false, follow: false } };
-    }
+    // محصول نبود: خود صفحه notFound() می‌دهد (وضعیت 404 و noindex را نکست می‌گذارد)
+    if (!product) return {};
 
     return pageMetadata({
       title: product.name,
@@ -34,7 +22,7 @@ export async function generateMetadata({ params }) {
       imageAlt: product.name,
     });
   } catch (error) {
-    // خطای دیتابیس نباید صفحه را از کار بیندازد؛ عنوان پیش‌فرض سایت می‌ماند
+    // خطای دیتابیس نباید متادیتا را از کار بیندازد؛ عنوان پیش‌فرض سایت می‌ماند (خود صفحه در این حالت خطای سرور می‌دهد)
     console.error("خطا در ساخت متادیتای محصول:", error);
     return {};
   }
@@ -42,5 +30,9 @@ export async function generateMetadata({ params }) {
 
 export default async function ProductDetailPage({ params }) {
   const { slug } = await params;
-  return <ProductDetails slug={safeDecode(slug)} />;
+  const product = await getProductBySlug(slug);
+  if (!product) notFound();
+
+  // key: با رفتن از یک محصول به محصول دیگر، وضعیت صفحه (تعداد، منوهای باز) از نو شروع می‌شود
+  return <ProductDetails key={product.id} product={product} />;
 }

@@ -1,4 +1,5 @@
 import ProductsList from "@/app/components/ProductsList";
+import { listProducts } from "@/lib/products";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata({
@@ -7,6 +8,10 @@ export const metadata = pageMetadata({
   path: "/products",
 });
 
-export default function ProductsPage() {
-  return <ProductsList />;
+// قیمت و موجودی در هر درخواست تازه از دیتابیس خوانده می‌شود، نه هنگام build
+export const dynamic = "force-dynamic";
+
+export default async function ProductsPage() {
+  const products = await listProducts();
+  return <ProductsList products={products} />;
 }
