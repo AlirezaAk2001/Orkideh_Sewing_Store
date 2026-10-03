@@ -8,6 +8,7 @@ import { Save } from "lucide-react";
 import Icon from '@mdi/react';
 import { mdiImagePlusOutline, mdiImageOffOutline, mdiImageOutline } from '@mdi/js';
 import { getImagePath } from "@/app/utils/getImagePath";
+import AppImage from "@/app/components/AppImage";
 
 export default function AddBannerPage() {
   const router = useRouter();
@@ -272,10 +273,13 @@ export default function AddBannerPage() {
 
               {/* تصویر واقعی — مخفی تا load بشه */}
               {!imgError && previewImg && (
-                <img
+                <AppImage
                   key={previewImg}
                   src={getImagePath(previewImg)}
                   alt="پیش‌نمایش بنر"
+                  fill
+                  sizes="(max-width: 1000px) 100vw, 1000px"
+                  priority
                   style={{ display: imgLoading ? "none" : "block" }}
                   onLoad={() => { setImgLoading(false); setImgError(false); }}
                   onError={() => { setImgLoading(false); setImgError(true); }}

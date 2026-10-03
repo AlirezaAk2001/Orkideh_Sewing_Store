@@ -129,7 +129,7 @@ export default function CategoryProductsPage() {
             }}
           >
             <div className="bg-white rounded-xl overflow-hidden cursor-pointer transform transition-all duration-300 hover:scale-105 hover:ring-2 hover:ring-gray-300 hover:ring-opacity-60 h-full">
-              <ProductCard product={product} />
+              <ProductCard product={product} priority={index < 4} />
             </div>
           </div>
         ))}

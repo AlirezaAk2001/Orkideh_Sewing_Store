@@ -24,6 +24,7 @@ import Link from "next/link";
 import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
 import { getImagePath } from "@/app/utils/getImagePath";
+import AppImage from "@/app/components/AppImage";
 import Icon from '@mdi/react';
 import {
   mdiStoreCogOutline,
@@ -807,9 +808,11 @@ export default function AdminProducts() {
                       }}
                     >
                       {activeFilter.image ? (
-                        <img
+                        <AppImage
                           src={activeFilter.image}
                           alt={activeFilter.name}
+                          width={16}
+                          height={16}
                           style={{
                             width: 16,
                             height: 16,
@@ -945,9 +948,11 @@ export default function AdminProducts() {
                             >
                               {/* تصویر یا آیکون */}
                               {filter.image ? (
-                                <img
+                                <AppImage
                                   src={filter.image}
                                   alt={filter.name}
+                                  width={22}
+                                  height={22}
                                   style={{
                                     width: 22,
                                     height: 22,
@@ -1115,10 +1120,12 @@ export default function AdminProducts() {
                           <TableCell>
                             {row.image ? (
                               <Box sx={{ display: "flex", justifyContent: "center" }}>
-                                <img
+                                <AppImage
                                   src={getImagePath(row.image)}
                                   alt={row.name || "product"}
-                                  onError={(e) => { e.target.src = "/image/default-product.jpg"; }}
+                                  width={44}
+                                  height={44}
+                                  fallback="/image/default-product.jpg"
                                   style={{
                                     width: 44, height: 44, objectFit: "cover",
                                     borderRadius: 8, boxShadow: "0 2px 8px rgba(0,0,0,.12)",

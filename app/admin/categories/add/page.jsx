@@ -9,6 +9,7 @@ import { Button, CircularProgress, TextField, Box } from "@mui/material";
 import Icon from '@mdi/react';
 import { mdiImagePlusOutline, mdiImageOffOutline, mdiShapePlusOutline, mdiShapeOutline } from '@mdi/js';
 import { getImagePath } from "@/app/utils/getImagePath";
+import AppImage from "@/app/components/AppImage";
 
 export default function AddCategory() {
   const [name, setName] = useState("");
@@ -241,10 +242,13 @@ export default function AddCategory() {
 
               {/* تصویر واقعی — مخفی تا load بشه */}
               {!imgError && previewImg && (
-                <img
+                <AppImage
                   key={previewImg}
                   src={getImagePath(previewImg)}
                   alt="پیش‌نمایش دسته‌بندی"
+                  fill
+                  sizes="(max-width: 1000px) 100vw, 1000px"
+                  priority
                   style={{ display: imgLoading ? "none" : "block" }}
                   onLoad={() => { setImgLoading(false); setImgError(false); }}
                   onError={() => { setImgLoading(false); setImgError(true); }}

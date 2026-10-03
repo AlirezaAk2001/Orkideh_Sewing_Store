@@ -13,7 +13,7 @@ import RemoveShoppingCartIcon from '@mui/icons-material/RemoveShoppingCart';
 import Icon from '@mdi/react';
 import { mdiBriefcaseEyeOutline } from '@mdi/js';
 
-export default function ProductCard({ product }) {
+export default function ProductCard({ product, priority = false }) {
   const router = useRouter();
   const { currentUser } = useAuth();
   const { addToCart } = useCart();
@@ -96,6 +96,7 @@ export default function ProductCard({ product }) {
             alt={product.name}
             width={300}
             height={200}
+            priority={priority}
             className={`w-full h-32 sm:h-40 md:h-48 object-contain rounded-lg mb-2 sm:mb-3 ${isOutOfStock ? "opacity-50" : ""}`}
           />
         ) : (

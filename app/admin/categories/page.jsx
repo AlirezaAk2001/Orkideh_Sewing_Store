@@ -23,6 +23,7 @@ import {
 import Link from "next/link";
 import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
+import AppImage from "@/app/components/AppImage";
 import Icon from '@mdi/react';
 import {
   mdiShapeOutline,
@@ -601,9 +602,11 @@ export default function AdminCategories() {
                           <TableCell>
                             {row.image ? (
                               <Box sx={{ display: "flex", justifyContent: "center" }}>
-                                <img
+                                <AppImage
                                   src={row.image}
                                   alt={row.name || "category"}
+                                  width={48}
+                                  height={48}
                                   onError={(e) => { e.target.style.display = "none"; }}
                                   style={{
                                     width: 48, height: 48,

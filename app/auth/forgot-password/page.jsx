@@ -41,7 +41,7 @@ export default function ForgotPasswordPage() {
       } catch (err) {
         console.error("خطا در لود تصویر پس‌زمینه:", err);
         // در صورت خطا از تصویر پیش‌فرض استفاده کن
-        setBackgroundImage("/image/back-auth.png");
+        setBackgroundImage("/image/back-auth.webp");
       } finally {
         setIsBgLoaded(true);
       }
@@ -115,7 +115,7 @@ export default function ForgotPasswordPage() {
         <div
           className="absolute inset-0 z-0"
           style={{
-            backgroundImage: `url(/image/back-auth.png)`,
+            backgroundImage: `url(/image/back-auth.webp)`,
             backgroundRepeat: "no-repeat",
             backgroundSize: "cover",
             backgroundPosition: "center",

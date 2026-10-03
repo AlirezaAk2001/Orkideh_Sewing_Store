@@ -240,6 +240,8 @@ if (!product) {
               alt={product.name}
               width={500}
               height={500}
+              sizes="(max-width: 768px) 100vw, 500px"
+              priority
               className="w-full h-72 md:h-96 object-contain"
             />
           ) : (

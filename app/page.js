@@ -3,9 +3,13 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import BannerSlider from "./components/BannerSlider";
+import AppImage from "./components/AppImage";
 import { motion } from "framer-motion";
 import Icon from "@mdi/react";
 import { mdiArchiveEyeOutline } from "@mdi/js";
+
+// تصویر دسته‌بندی از optimizer می‌گذرد (به‌جای PNG چند مگابایتی، WebP متناسب با اندازهٔ کارت)
+const MotionAppImage = motion.create(AppImage);
 
 export default function Home() {
   const [categories, setCategories] = useState([]);
@@ -150,9 +154,13 @@ export default function Home() {
                 >
                 {/* یک div به عنوان wrapper برای افکت Shine اضافه کنید */}
                 <div className="shine-overlay absolute inset-0 pointer-events-none"></div>
-                  <motion.img
+                  {/* width/height فقط برای نسبت و srcset هستند؛ اندازهٔ نمایش از CSS می‌آید و عمداً با ارتفاع CSS (224) یکی نیست تا next/image در dev هشدار «فقط یکی از width/height تغییر کرده» ندهد */}
+                  <MotionAppImage
                     src={cat.image || "/img/placeholder.png"}
                     alt={cat.name}
+                    width={384}
+                    height={220}
+                    sizes="(min-width: 768px) 320px, (min-width: 640px) 240px, 208px"
                     className="w-full h-36 sm:h-44 md:h-56 object-contain mb-2 sm:mb-3 md:mb-4"
                     initial={{ opacity: 0, y: 20, translateZ: -10 }}
                     animate={{ opacity: 1, y: 0, translateZ: 0 }}

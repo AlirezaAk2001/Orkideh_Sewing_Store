@@ -10,6 +10,7 @@ import "swiper/css/pagination";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import toast from "react-hot-toast";
+import AppImage from "./AppImage";
 
 export default function BannerSlider() {
   const [banners, setBanners] = useState([]);
@@ -136,11 +137,11 @@ export default function BannerSlider() {
           height: 40px;
           color: white;
         }
-        img.fade-in {
+        :global(img.fade-in) {
           opacity: 0;
           transition: opacity 0.8s ease-in;
         }
-        img.fade-in.loaded {
+        :global(img.fade-in.loaded) {
           opacity: 1;
         }
       `}</style>
@@ -157,16 +158,19 @@ export default function BannerSlider() {
         {banners.map((banner, index) => (
           <SwiperSlide key={banner.id}>
             <div className="relative w-full aspect-[18/9] min-h-[180px] sm:min-h-[250px] md:min-h-[350px] lg:min-h-[420px] overflow-hidden">
-              <img
+              <AppImage
                 src={
                   banner.img?.startsWith("/image/")
                   ? banner.img
                   : `/image/${banner.img}`
                 }
                 alt={banner.title}
-                className="w-full h-full object-cover fade-in"
+                fill
+                sizes="(min-width: 1200px) 1200px, 100vw"
+                priority={index === 0}
+                className="object-cover fade-in"
+                fallback="/image/default-banner.jpg"
                 onLoad={(e) => e.currentTarget.classList.add("loaded")}
-                onError={(e) => (e.target.src = "/image/default-banner.jpg")}
               />
               <div className="absolute inset-0 bg-black/50 flex flex-col justify-center px-4 sm:px-8 md:px-12 z-10 text-white text-center sm:text-right">
                 <h2

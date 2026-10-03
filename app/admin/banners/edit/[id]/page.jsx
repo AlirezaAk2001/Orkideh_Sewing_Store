@@ -9,6 +9,7 @@ import Image from "next/image";
 import Icon from '@mdi/react';
 import { mdiImageEditOutline, mdiImageOffOutline, mdiPanoramaVariantOutline } from '@mdi/js';
 import { getImagePath } from "@/app/utils/getImagePath";
+import AppImage from "@/app/components/AppImage";
 
 export default function EditBannerPage() {
   const router = useRouter();
@@ -289,9 +290,12 @@ export default function EditBannerPage() {
             <div className={`img-preview-wrapper${img && !imgError ? " has-image" : ""}`}>
               {img && !imgError ? (
                 <>
-                  <img
+                  <AppImage
                     src={getImagePath(img)}
                     alt="پیش‌نمایش بنر"
+                    fill
+                    sizes="(max-width: 1000px) 100vw, 1000px"
+                    priority
                     onError={() => setImgError(true)}
                   />
                   {(title || desc) && (

@@ -10,6 +10,7 @@ import Image from "next/image";
 import Icon from '@mdi/react';
 import { mdiStoreEditOutline, mdiImagePlusOutline, mdiImageOffOutline, mdiStoreOutline } from '@mdi/js';
 import { getImagePath } from "@/app/utils/getImagePath";
+import AppImage from "@/app/components/AppImage";
 
 export default function EditProduct() {
   const router = useRouter();
@@ -443,10 +444,13 @@ export default function EditProduct() {
               )}
 
               {previewImg && (
-                <img
+                <AppImage
                   key={previewImg}
                   src={getImagePath(previewImg)}
                   alt="پیش‌نمایش محصول"
+                  fill
+                  sizes="(max-width: 1000px) 100vw, 1000px"
+                  priority
                   style={{ display: imgLoading ? "none" : "block" }}
                   onLoad={()  => { setImgLoading(false); setImgError(false); }}
                   onError={() => { setImgLoading(false); setImgError(true);  }}

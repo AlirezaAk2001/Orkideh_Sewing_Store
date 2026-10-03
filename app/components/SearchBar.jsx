@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import AppImage from "./AppImage";
 
 export default function SearchBar() {
   const [query, setQuery] = useState("");
@@ -50,9 +51,11 @@ export default function SearchBar() {
             >
               <div className="flex items-center gap-3">
                 {item.image && (
-                  <img
+                  <AppImage
                     src={item.image}
                     alt={item.name}
+                    width={40}
+                    height={40}
                     className="w-10 h-10 object-cover rounded"
                   />
                 )}

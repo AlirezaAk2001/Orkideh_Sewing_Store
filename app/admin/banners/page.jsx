@@ -23,6 +23,7 @@ import {
 import toast, { Toaster } from "react-hot-toast";
 import Link from "next/link";
 import { getImagePath } from "@/app/utils/getImagePath";
+import AppImage from "@/app/components/AppImage";
 import Icon from '@mdi/react';
 import {
   mdiImageSearchOutline,
@@ -586,10 +587,12 @@ export default function AdminBannersPage() {
                           <TableCell>
                             {row.img ? (
                               <Box sx={{ display: "flex", justifyContent: "center" }}>
-                                <img
+                                <AppImage
                                   src={getImagePath(row.img)}
                                   alt={row.title || "banner"}
-                                  onError={(e) => { e.target.src = "/image/default-banner.jpg"; }}
+                                  width={76}
+                                  height={66}
+                                  fallback="/image/default-banner.jpg"
                                   style={{
                                     width: 76, height: 66, objectFit: "cover",
                                     borderRadius: 8, boxShadow: "0 2px 8px rgba(0,0,0,.12)",

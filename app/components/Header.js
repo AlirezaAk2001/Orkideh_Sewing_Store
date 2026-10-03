@@ -9,6 +9,10 @@ import { useRouter, usePathname } from "next/navigation";
 import { useAuth, useFavorites, useCart } from "../../lib/context";
 import { AnimatePresence, motion } from "framer-motion";
 import { Tooltip } from 'react-tooltip';
+import AppImage from "./AppImage";
+
+// لوگوی هدر در همهٔ صفحه‌ها هست؛ از optimizer می‌گذرد تا PNG چند مگابایتی برای یک دایرهٔ کوچک دانلود نشود
+const MotionAppImage = motion.create(AppImage);
 
 export default function Header() {
   const router = useRouter();
@@ -147,10 +151,12 @@ export default function Header() {
           <Link href="/" className={`flex-shrink-0 ${isMaintenance ? 'pointer-events-none' : ''}`}>
             <AnimatePresence>
               {logoUrl ? (
-                <motion.img
+                <MotionAppImage
                   src={logoUrl}
                   alt="لوگو"
-                  className="w-12 sm:w-16 h-12 sm:h-16 rounded-full object-cover border"
+                  width={64}
+                  height={64}
+                  className="w-12 sm:w-16 h-12 sm:h-16 rounded-full object-cover border border-gray-900"
                   initial={{ opacity: 0, scale: 0.5, rotate: -10 }}
                   animate={{ opacity: 1, scale: 1, rotate: 0 }}
                   exit={{ opacity: 0, scale: 0.5 }}
@@ -249,9 +255,11 @@ export default function Header() {
                         }}
                       >
                         {product.image && (
-                          <img
+                          <AppImage
                             src={product.image}
                             alt={product.name}
+                            width={32}
+                            height={32}
                             className="w-8 h-8 object-cover rounded mt-1"
                           />
                         )}

@@ -246,7 +246,7 @@ export default function VerifyPage({ tempAuth }) {
       <div
         className="fixed inset-0 z-0"
         style={{
-          backgroundImage: `url(/image/back-auth.png)`,
+          backgroundImage: `url(/image/back-auth.webp)`,
           backgroundRepeat: "no-repeat",
           backgroundSize: "cover",
           backgroundPosition: "center",
