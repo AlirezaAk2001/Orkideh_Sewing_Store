@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination, Autoplay } from "swiper/modules";
 import { ShoppingCart } from "lucide-react";
@@ -8,99 +8,18 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import toast from "react-hot-toast";
 import AppImage from "./AppImage";
 
-export default function BannerSlider() {
-  const [banners, setBanners] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+// بنرها را صفحهٔ سروری (app/page.js) می‌دهد تا در همان HTML اولیه باشند؛ error همان پیام نگرفتن بنرهاست
+export default function BannerSlider({ banners, error }) {
   const [activeIndex, setActiveIndex] = useState(0);
-  const isMounted = useRef(true);
-  const pathname = usePathname();
-  
 
-  const fetchBanners = async (controller) => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const res = await fetch("/api/admin/banners", {
-        signal: controller.signal,
-        cache: "no-store",
-      });
-
-      if (!res.ok) throw new Error(`خطای HTTP! وضعیت: ${res.status}`);
-
-      const data = await res.json();
-      const parsed = data.map((b) => ({
-        id: b.id,
-        img: b.img,
-        title: b.title,
-        desc: b.desc,
-        link: b.link || "/products",
-      }));
-
-      if (isMounted.current) {
-        setBanners(parsed);
-        if (parsed.length === 0) {
-          setError("هیچ بنری یافت نشد");
-          toast.error("هیچ بنری یافت نشد");
-        }
-      }
-    } catch (err) {
-      if (isMounted.current) {
-        if (err.name === "AbortError") return;
-        setError("خطا در بارگذاری بنرها: " + err.message);
-        toast.error("خطا در بارگذاری بنرها: " + err.message);
-      }
-    } finally {
-      if (isMounted.current) setLoading(false);
-    }
-  };
-
+  // مثل قبل: نبودن بنر یا خطا در دریافت آن‌ها پیام خطا نشان می‌دهد
   useEffect(() => {
-    isMounted.current = true;
-    const controller = new AbortController();
-    setLoading(true);
-    setBanners([]);
-    fetchBanners(controller);
-
-    return () => {
-      isMounted.current = false;
-      controller.abort();
-    };
-  }, [pathname]);
-
-  if (loading)
-    return (
-      <div className="w-full lg:max-w-[1200px] lg:mx-auto rounded-xl overflow-hidden">
-        {/* سینماتیک پیش‌نمایش */}
-        <div className="w-full aspect-[18/9] bg-gray-300 rounded-xl overflow-hidden relative">
-          <div className="absolute inset-0 bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 animate-shimmer"></div>
-        </div>
-        <style jsx>{`
-          @keyframes shimmer {
-            0% {
-              transform: translateX(-100%);
-            }
-            100% {
-              transform: translateX(100%);
-            }
-          }
-          .animate-shimmer {
-            background: linear-gradient(
-              90deg,
-              rgba(200, 200, 200, 0.3) 0%,
-              rgba(255, 255, 255, 0.6) 50%,
-              rgba(200, 200, 200, 0.3) 100%
-            );
-            animation: shimmer 1.5s infinite;
-          }
-        `}</style>
-      </div>
-    );
+    if (error) toast.error(error);
+    else if (banners.length === 0) toast.error("هیچ بنری یافت نشد");
+  }, [error, banners.length]);
 
   return (
     <div className="w-full lg:max-w-[1200px] lg:mx-auto rounded-xl overflow-hidden">
