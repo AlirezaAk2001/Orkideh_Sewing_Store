@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
+import AppImage from "./AppImage";
 import { useRouter } from "next/navigation";
 import { useCart, useAuth } from "@/lib/context";
 import { isSoldOut } from "@/lib/stock";
@@ -91,7 +91,7 @@ export default function ProductCard({ product, priority = false }) {
     <div className="bg-white shadow-lg rounded-xl p-2 sm:p-3 md:p-4 hover:shadow-xl transition border border-gray-200 w-full flex flex-col h-full">
       <div className="relative flex-shrink-0">
         {product.image ? (
-          <Image
+          <AppImage
             src={product.image}
             alt={product.name}
             width={300}

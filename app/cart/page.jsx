@@ -10,7 +10,7 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogActions from "@mui/material/DialogActions";
 import Button from "@mui/material/Button";
-import Image from "next/image";
+import AppImage from "@/app/components/AppImage";
 import { useRouter } from "next/navigation";
 import { Trash2, ClipboardList, CreditCard } from "lucide-react";
 import Icon from '@mdi/react';
@@ -451,7 +451,7 @@ export default function CartPage() {
               >
                 <div className="flex items-center gap-4">
                   {item.image ? (
-                    <Image
+                    <AppImage
                       src={item.image}
                       alt={item.name}
                       width={60}

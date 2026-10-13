@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
+import AppImage from "./AppImage";
 import { ChevronDown, BaggageClaim } from "lucide-react";
 import { Tooltip } from 'react-tooltip';
 import { useCart, useFavorites, useAuth } from "@/lib/context";
@@ -160,7 +160,7 @@ export default function ProductDetails({ product }) {
             </div>
           )}
           {product.image ? (
-            <Image
+            <AppImage
               src={product.image}
               alt={product.name}
               width={500}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useFavorites } from "@/lib/context";
-import Image from "next/image";
+import AppImage from "@/app/components/AppImage";
 import toast, { Toaster } from "react-hot-toast";
 import { useState } from "react";
 import Dialog from "@mui/material/Dialog";
@@ -242,7 +242,7 @@ export default function FavoritesPage() {
             >
               <div className="flex items-center gap-4">
                 {item.image ? (
-                  <Image
+                  <AppImage
                     src={item.image}
                     alt={item.name}
                     width={60}
