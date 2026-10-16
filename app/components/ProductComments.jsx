@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import CommentsForm from "./CommentsForm";
@@ -74,10 +74,12 @@ function CommentWithReply({ comment, onDelete }) {
   );
 }
 
-export default function ProductComments({ productId }) {
+// initialComments را صفحهٔ سروری (app/products/[slug]/page.jsx) می‌دهد تا بار اول در همان HTML باشد؛
+// بعد از ثبت یا حذف نظر همچنان همان API سمت مرورگر صدا زده می‌شود (fetchComments)
+export default function ProductComments({ productId, initialComments = [] }) {
   const { currentUser } = useAuth();
-  const [comments, setComments] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [comments, setComments] = useState(initialComments);
+  const [loading, setLoading] = useState(false);
 
   const fetchComments = async () => {
     try {
@@ -91,10 +93,6 @@ export default function ProductComments({ productId }) {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    if (productId) fetchComments();
-  }, [productId]);
 
   return (
     <div className="space-y-2 sm:space-y-4 mt-2 sm:mt-4 rounded-xl" dir="rtl">

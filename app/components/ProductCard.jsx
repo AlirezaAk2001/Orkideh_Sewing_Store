@@ -5,7 +5,6 @@ import AppImage from "./AppImage";
 import { useRouter } from "next/navigation";
 import { useCart, useAuth } from "@/lib/context";
 import { isSoldOut } from "@/lib/stock";
-import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import StarRating from "./StarRating";
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
@@ -17,8 +16,9 @@ export default function ProductCard({ product, priority = false }) {
   const router = useRouter();
   const { currentUser } = useAuth();
   const { addToCart } = useCart();
-  const [averageRating, setAverageRating] = useState(0);
-  const [totalVotes, setTotalVotes] = useState(0);
+  // میانگین امتیاز و تعداد رای را صفحهٔ سروری حساب کرده (lib/products.js یا lib/categories.js + lib/comments.js)
+  const averageRating = product.averageRating ?? 0;
+  const totalVotes = product.totalVotes ?? 0;
 
   const price = parseFloat(product.price) || 0;
   const discount = parseFloat(product.discount) || 0;
@@ -53,16 +53,6 @@ export default function ProductCard({ product, priority = false }) {
   };
 
   const slug = product.slug || toLatinSlug(product.name);
-
-  useEffect(() => {
-    const approved = (product.comments || []).filter((c) => c.approved === true);
-    const votes = approved.length;
-    const avg = votes > 0
-      ? (approved.reduce((acc, c) => acc + (c.rating || 0), 0) / votes).toFixed(1)
-      : 0;
-    setAverageRating(parseFloat(avg));
-    setTotalVotes(votes);
-  }, [product.id, product.comments]);
 
   const handleAddToCart = () => {
     if (!currentUser) {

@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import CategoryProducts from "@/app/components/CategoryProducts";
 import { getCategoryBySlug } from "@/lib/categories";
+import { getRatingSummaries } from "@/lib/comments";
 import { SITE_NAME, pageMetadata } from "@/lib/seo";
 
 // محصولات هر دسته در هر درخواست تازه از دیتابیس خوانده می‌شوند، نه هنگام build
@@ -33,10 +34,13 @@ export default async function CategoryPage({ params }) {
   const category = await getCategoryBySlug(slug);
   if (!category) notFound();
 
-  // کارت محصول نام و slug دسته را از خود محصول می‌خواند
+  // کارت محصول نام و slug دسته، و میانگین امتیاز/تعداد رای را از خود محصول می‌خواند
+  const ratings = await getRatingSummaries(category.Product.map((product) => product.id));
   const products = category.Product.map((product) => ({
     ...product,
     Category: { name: category.name, slug: category.slug },
+    averageRating: ratings[product.id]?.averageRating ?? 0,
+    totalVotes: ratings[product.id]?.totalVotes ?? 0,
   }));
 
   return <CategoryProducts key={category.id} name={category.name} products={products} />;

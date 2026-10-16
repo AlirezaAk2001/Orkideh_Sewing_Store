@@ -20,8 +20,8 @@ import DialogContentText from "@mui/material/DialogContentText";
 import DialogActions from "@mui/material/DialogActions";
 import Button from "@mui/material/Button";
 
-// جزئیات محصول؛ داده را صفحهٔ سروری (app/products/[slug]/page.jsx) می‌دهد تا در همان HTML اولیه باشد
-export default function ProductDetails({ product }) {
+// جزئیات محصول؛ داده و نظرهای تأییدشده را صفحهٔ سروری (app/products/[slug]/page.jsx) می‌دهد تا در همان HTML اولیه باشند
+export default function ProductDetails({ product, initialComments = [] }) {
   const router = useRouter();
   const { currentUser } = useAuth();
   const { addToCart, cartItems = [], removeFromCart } = useCart();
@@ -308,7 +308,7 @@ export default function ProductDetails({ product }) {
             </div>
           )}
         </div>
-        <ProductComments productId={product.id} />
+        <ProductComments productId={product.id} initialComments={initialComments} />
       </div>
 
       {/* Tooltip Definitions - فقط برای ۵ مورد درخواستی */}
