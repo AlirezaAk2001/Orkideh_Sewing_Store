@@ -1,22 +1,13 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import jwt from "jsonwebtoken";
+import { requireUser } from "@/lib/auth";
 
 export async function GET(req) {
+  const auth = await requireUser(req);
+  if (auth.error) return auth.error;
+  const userId = auth.user.id;
+
   try {
-    const token = req.headers.get("authorization")?.split(" ")[1];
-    if (!token) {
-      return NextResponse.json({ error: "توکن موجود نیست" }, { status: 401 });
-    }
-
-    let userId;
-    try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      userId = decoded.id;
-    } catch (error) {
-      return NextResponse.json({ error: "توکن نامعتبر یا منقضی شده است." }, { status: 401 });
-    }
-
     const addresses = await prisma.address.findMany({
       where: { userId },
     });
@@ -29,20 +20,11 @@ export async function GET(req) {
 }
 
 export async function POST(req) {
+  const auth = await requireUser(req);
+  if (auth.error) return auth.error;
+  const userId = auth.user.id;
+
   try {
-    const token = req.headers.get("authorization")?.split(" ")[1];
-    if (!token) {
-      return NextResponse.json({ error: "توکن موجود نیست" }, { status: 401 });
-    }
-
-    let userId;
-    try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      userId = decoded.id;
-    } catch (error) {
-      return NextResponse.json({ error: "توکن نامعتبر یا منقضی شده است." }, { status: 401 });
-    }
-
     const { address, postalCode } = await req.json();
     if (!address || !postalCode) {
       return NextResponse.json({ error: "آدرس و کد پستی الزامی است" }, { status: 400 });
@@ -64,20 +46,11 @@ export async function POST(req) {
 }
 
 export async function PUT(req) {
+  const auth = await requireUser(req);
+  if (auth.error) return auth.error;
+  const userId = auth.user.id;
+
   try {
-    const token = req.headers.get("authorization")?.split(" ")[1];
-    if (!token) {
-      return NextResponse.json({ error: "توکن موجود نیست" }, { status: 401 });
-    }
-
-    let userId;
-    try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      userId = decoded.id;
-    } catch (error) {
-      return NextResponse.json({ error: "توکن نامعتبر یا منقضی شده است." }, { status: 401 });
-    }
-
     const { id, address, postalCode } = await req.json();
     if (!id || !address || !postalCode) {
       return NextResponse.json({ error: "شناسه آدرس، آدرس و کد پستی الزامی است" }, { status: 400 });

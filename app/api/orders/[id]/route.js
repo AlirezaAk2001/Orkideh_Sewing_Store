@@ -2,22 +2,14 @@
 
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import jwt from "jsonwebtoken";
+import { requireUser } from "@/lib/auth";
 
 export async function DELETE(req, { params }) {
+  const auth = await requireUser(req);
+  if (auth.error) return auth.error;
+  const userId = auth.user.id;
+
   try {
-    const token = req.headers.get("authorization")?.split(" ")[1];
-    if (!token)
-      return NextResponse.json({ error: "توکن موجود نیست" }, { status: 401 });
-
-    let userId;
-    try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      userId = decoded.id;
-    } catch {
-      return NextResponse.json({ error: "توکن نامعتبر" }, { status: 401 });
-    }
-
     const orderId = parseInt((await params).id);
 
     // بررسی اینکه سفارش متعلق به این کاربر باشه و pending باشه

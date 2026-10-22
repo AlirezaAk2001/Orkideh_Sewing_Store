@@ -1,25 +1,15 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import jwt from "jsonwebtoken";
+import { requireUser } from "@/lib/auth";
 import { tracksStock } from "@/lib/stock";
 import { isValidPhone } from "@/lib/validation";
 
 export async function GET(req) {
+  const auth = await requireUser(req);
+  if (auth.error) return auth.error;
+  const userId = auth.user.id;
+
   try {
-    const token = req.headers.get("authorization")?.split(" ")[1];
-    if (!token) {
-      return NextResponse.json({ error: "توکن موجود نیست" }, { status: 401 });
-    }
-
-    let userId;
-    try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      userId = decoded.id;
-    } catch (error) {
-      console.error("JWT Error:", error.message);
-      return NextResponse.json({ error: "توکن نامعتبر یا منقضی شده است" }, { status: 401 });
-    }
-
     const orders = await prisma.order.findMany({
       where: { userId },
       include: {
@@ -63,20 +53,11 @@ export async function GET(req) {
 }
 
 export async function POST(req) {
+  const auth = await requireUser(req);
+  if (auth.error) return auth.error;
+  const userId = auth.user.id;
+
   try {
-    const token = req.headers.get("authorization")?.split(" ")[1];
-    if (!token) {
-      return NextResponse.json({ error: "توکن موجود نیست" }, { status: 401 });
-    }
-
-    let userId;
-    try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      userId = decoded.id;
-    } catch {
-      return NextResponse.json({ error: "توکن نامعتبر" }, { status: 401 });
-    }
-
     const { phoneNumber } = await req.json();
     if (!phoneNumber) {
       return NextResponse.json({ error: "شماره تلفن لازم است" }, { status: 400 });

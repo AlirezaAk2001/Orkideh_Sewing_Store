@@ -1,25 +1,16 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import jwt from "jsonwebtoken";
+import { requireUser } from "@/lib/auth";
 
 export async function DELETE(req) {
   try {
     const body = await req.json();
     const { userId } = body;
-    const token = req.headers.get("authorization")?.replace("Bearer ", "");
 
-    if (!token) {
-      return NextResponse.json({ error: "توکن الزامی است" }, { status: 401 });
-    }
+    const auth = await requireUser(req);
+    if (auth.error) return auth.error;
 
-    let decoded;
-    try {
-      decoded = jwt.verify(token, process.env.JWT_SECRET);
-    } catch (err) {
-      return NextResponse.json({ error: "توکن نامعتبر یا منقضی شده" }, { status: 401 });
-    }
-
-    if (decoded.id !== userId) {
+    if (auth.user.id !== userId) {
       return NextResponse.json({ error: "دسترسی غیرمجاز" }, { status: 403 });
     }
 

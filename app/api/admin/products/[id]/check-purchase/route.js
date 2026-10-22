@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import jwt from "jsonwebtoken";
+import { requireUser } from "@/lib/auth";
 
 export async function GET(req, { params }) {
   try {
@@ -9,35 +9,22 @@ export async function GET(req, { params }) {
 
     if (isNaN(productId)) {
       return NextResponse.json(
-        { error: "شناسه محصول نامعتبر است" }, 
+        { error: "شناسه محصول نامعتبر است" },
         { status: 400 }
       );
     }
 
-    const token = req.headers.get("authorization")?.split(" ")[1];
-    
-    // اگر توکن وجود ندارد
-    if (!token) {
-      return NextResponse.json({ 
+    // کاربر مهمان یا توکن نامعتبر: پاسخ نرم (نه خطا) که می‌گوید هنوز نمی‌تواند نظر بدهد
+    const auth = await requireUser(req);
+    if (auth.error) {
+      return NextResponse.json({
         canComment: false,
         hasPurchased: false,
         hasCommented: false,
-        message: "لطفاً ابتدا وارد حساب کاربری خود شوید"
+        message: "لطفاً ابتدا وارد حساب کاربری خود شوید",
       });
     }
-
-    let userId;
-    try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      userId = decoded.id;
-    } catch {
-      return NextResponse.json({ 
-        canComment: false,
-        hasPurchased: false,
-        hasCommented: false,
-        message: "توکن نامعتبر"
-      });
-    }
+    const userId = auth.user.id;
 
     // بررسی خرید و مجوز
     const deliveredOrder = await prisma.order.findFirst({

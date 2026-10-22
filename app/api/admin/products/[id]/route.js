@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { shapeProduct } from "@/lib/products";
 
 export async function GET(req, { params }) {
   try {
@@ -33,26 +34,7 @@ export async function GET(req, { params }) {
       return NextResponse.json({ error: "محصول یافت نشد" }, { status: 404 });
     }
 
-    const normalizedProduct = {
-      ...product,
-      categoryId: product.categoryId || null,
-      categoryName: product.Category?.name || null,
-      Category: product.Category || null,
-      discount: product.discount != null ? product.discount : null,
-      finalPrice: product.finalPrice != null ? parseFloat(product.finalPrice) : product.discount != null ? parseFloat(product.price * (1 - product.discount / 100)) : parseFloat(product.price),
-      weight: product.weight || null,
-      voltage: product.voltage || null,
-      powerConsumption: product.powerConsumption || null, // اضافه کردن توان مصرفی
-      material: product.material || null,
-      size: product.size || null,
-      color: product.color || null,
-      suitableFor: product.suitableFor || null,
-      additionalFeatures: product.additionalFeatures || null,
-      image: product.image ? product.image.replace(/\/$/, '') : null,
-    };
-
-    console.log("Product data:", normalizedProduct);
-    return NextResponse.json(normalizedProduct);
+    return NextResponse.json(shapeProduct(product));
   } catch (error) {
     console.error("Error fetching product:", {
       message: error.message,

@@ -2,26 +2,8 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth";
 import { parseStock } from "@/lib/stock";
-
-function toLatinSlug(name) {
-  const persianToLatin = {
-    'س': 's', 'ر': 'r', 'د': 'd', 'و': 'oo', 'ز': 'z',
-    'آ': 'a', 'ا': 'a', 'ب': 'b', 'پ': 'p', 'ت': 't',
-    'ث': 's', 'ج': 'j', 'چ': 'ch', 'ح': 'h', 'خ': 'kh',
-    'ذ': 'z', 'ض': 'z', 'ط': 't', 'ظ': 'z', 'ع': 'a',
-    'غ': 'gh', 'ف': 'f', 'ق': 'q', 'ک': 'k', 'گ': 'g',
-    'ل': 'l', 'م': 'm', 'ن': 'n', 'ه': 'h', 'ی': 'y',
-    '٠': '0', '١': '1', '٢': '2', '٣': '3', '٤': '4',
-    '٥': '5', '٦': '6', '٧': '7', '٨': '8', '٩': '9',
-  };
-  return name
-    .split('')
-    .map(char => persianToLatin[char] || char)
-    .join('')
-    .replace(/\s+/g, '-')
-    .toLowerCase()
-    .replace(/[^a-z0-9-]/g, '');
-}
+import { toLatinSlug } from "@/lib/slug";
+import { shapeProduct } from "@/lib/products";
 
 export async function GET(req) {
   try {
@@ -49,29 +31,8 @@ export async function GET(req) {
       },
     });
 
-    const validProducts = products.map((product) => ({
-      ...product,
-      categoryName: product.Category?.name || null,
-      categoryId: product.categoryId || null,
-      Category: product.Category || null,
-      discount: product.discount != null ? product.discount : null,
-      finalPrice: product.finalPrice != null
-        ? parseFloat(product.finalPrice)
-        : product.discount != null
-        ? parseFloat(product.price * (1 - product.discount / 100))
-        : parseFloat(product.price),
-      image: product.image ? product.image.replace(/\/$/, "") : null,
-      weight: product.weight || null,
-      voltage: product.voltage || null,
-      powerConsumption: product.powerConsumption || null, // اضافه کردن توان مصرفی
-      material: product.material || null,
-      size: product.size || null,
-      color: product.color || null,
-      suitableFor: product.suitableFor || null,
-      additionalFeatures: product.additionalFeatures || null,
-    }));
+    const validProducts = products.map(shapeProduct);
 
-    console.log("Products from API:", validProducts);
     return NextResponse.json(validProducts);
   } catch (error) {
     console.error("Error fetching products:", error);
@@ -87,7 +48,6 @@ export async function POST(req) {
   if (auth.error) return auth.error;
 
   const body = await req.json();
-  console.log("Received payload for POST:", body);
   const { name, price, stock, categoryId, image, additionalFeatures, material, size, weight, color, suitableFor, discount, voltage, powerConsumption } = body;
 
   if (!name || !price || isNaN(parseFloat(price))) {
@@ -136,7 +96,6 @@ export async function POST(req) {
         slug,
       },
     });
-    console.log("Created product:", product);
     return NextResponse.json(product);
   } catch (error) {
     console.error("Error creating product:", { message: error.message, stack: error.stack, code: error.code });
@@ -198,7 +157,6 @@ export async function PUT(req) {
       data: updateData,
     });
 
-    console.log("Updated product:", updatedProduct);
     return NextResponse.json(updatedProduct);
   } catch (error) {
     console.error("Error updating product:", { message: error.message, stack: error.stack, code: error.code });
@@ -214,7 +172,6 @@ export async function DELETE(req) {
   if (auth.error) return auth.error;
 
   const body = await req.json();
-  console.log("Received payload for DELETE:", body);
   const { id } = body;
 
   if (!id || isNaN(parseInt(id))) {
@@ -246,7 +203,6 @@ export async function DELETE(req) {
       prisma.comment.deleteMany({ where: { productId } }),
       prisma.product.delete({ where: { id: productId } }),
     ]);
-    console.log("Deleted product with id:", id);
     return NextResponse.json({ message: "محصول حذف شد" });
   } catch (error) {
     console.error("Error deleting product:", {

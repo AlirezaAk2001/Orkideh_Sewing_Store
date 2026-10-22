@@ -1,21 +1,15 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import jwt from "jsonwebtoken";
+import { requireUser } from "@/lib/auth";
 
 // ---------------------------
 // GET: دریافت علاقه‌مندی‌ها
 // ---------------------------
 export async function GET(req) {
-  const token = req.headers.get("authorization")?.split(" ")[1];
-  if (!token) return NextResponse.json({ favorites: [] }, { status: 200 });
-
-  let userId;
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    userId = decoded.id;
-  } catch {
-    return NextResponse.json({ favorites: [] }, { status: 200 });
-  }
+  // کاربر مهمان یا توکن نامعتبر: فهرست خالی (نه خطا) تا رابط کاربری علاقه‌مندی‌ها را بی‌سروصدا خالی نشان دهد
+  const auth = await requireUser(req);
+  if (auth.error) return NextResponse.json({ favorites: [] }, { status: 200 });
+  const userId = auth.user.id;
 
   try {
     const favorites = await prisma.favorite.findMany({
@@ -51,11 +45,9 @@ export async function POST(req) {
     // اگر یک آبجکت ارسال شده بود، فقط id بگیر
     if (typeof productId === "object" && productId.id) productId = productId.id;
 
-    const token = req.headers.get("authorization")?.split(" ")[1];
-    if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const userId = decoded.id;
+    const auth = await requireUser(req);
+    if (auth.error) return auth.error;
+    const userId = auth.user.id;
 
     // بررسی وجود محصول
     const product = await prisma.product.findUnique({ where: { id: productId } });
@@ -85,11 +77,9 @@ export async function DELETE(req) {
     // اگر یک آبجکت ارسال شده بود، فقط id بگیر
     if (typeof productId === "object" && productId.id) productId = productId.id;
 
-    const token = req.headers.get("authorization")?.split(" ")[1];
-    if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const userId = decoded.id;
+    const auth = await requireUser(req);
+    if (auth.error) return auth.error;
+    const userId = auth.user.id;
 
     await prisma.favorite.deleteMany({ where: { userId, productId } });
 
