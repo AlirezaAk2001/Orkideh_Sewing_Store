@@ -1,6 +1,13 @@
 import { NextResponse } from 'next/server'
 
-export function middleware(request) {
+export function proxy(request) {
+  // نکست ۱۶ برای آدرس با درصدکد خراب (مثل /products/100%) به‌جای ۴۰۰ یک ۵۰۰ خام برمی‌گرداند؛ ربات‌ها و اسکنرها این آدرس‌ها را زیاد می‌زنند
+  try {
+    decodeURIComponent(request.nextUrl.pathname);
+  } catch {
+    return new NextResponse('Bad Request', { status: 400 });
+  }
+
   const isMaintenanceMode = process.env.MAINTENANCE_MODE === 'true';
 
   if (isMaintenanceMode && !request.nextUrl.pathname.startsWith('/maintenance')) {

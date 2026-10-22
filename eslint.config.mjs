@@ -1,17 +1,8 @@
-import { dirname } from "path";
-import { fileURLToPath } from "url";
-import { FlatCompat } from "@eslint/eslintrc";
+import nextVitals from "eslint-config-next/core-web-vitals";
 import globals from "globals";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-});
-
 const eslintConfig = [
-  ...compat.extends("next/core-web-vitals"),
+  ...nextVitals,
   {
     // به‌طور پیش‌فرض فقط .js و .mjs بررسی می‌شد و فایل‌های .jsx اصلاً lint نمی‌شدند.
     // importهای فراموش‌شده و متغیرهای تعریف‌نشده هم خطا هستند (مثل <Image> بدون import).
@@ -22,6 +13,16 @@ const eslintConfig = [
     rules: {
       "no-undef": "error",
       "react/jsx-no-undef": "error",
+    },
+  },
+  {
+    // eslint-config-next 16 (با eslint-plugin-react-hooks 7) چند قاعدهٔ «آمادگی برای React Compiler» را خطا می‌کند. React Compiler
+    // در این پروژه روشن نیست و این الگوها (setState بعد از fetch داخل useEffect، تغییر window.location برای رفتن به درگاه) درست کار می‌کنند.
+    // static-components فقط هشدار می‌ماند: SkeletonLoader داخل خود کامپوننت تعریف شده و در هر رندر دوباره ساخته می‌شود.
+    rules: {
+      "react-hooks/set-state-in-effect": "off",
+      "react-hooks/immutability": "off",
+      "react-hooks/static-components": "warn",
     },
   },
   {
