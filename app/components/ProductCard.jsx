@@ -7,11 +7,7 @@ import { useCart, useAuth } from "@/lib/context";
 import { isSoldOut } from "@/lib/stock";
 import { toLatinSlug } from "@/lib/slug";
 import toast from "react-hot-toast";
-import StarRating from "./StarRating";
-import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
-import RemoveShoppingCartIcon from '@mui/icons-material/RemoveShoppingCart';
-import Icon from '@mdi/react';
-import { mdiBriefcaseEyeOutline } from '@mdi/js';
+import { ImageOff, ShoppingCart, Star } from "lucide-react";
 
 export default function ProductCard({ product, priority = false }) {
   const router = useRouter();
@@ -59,8 +55,9 @@ export default function ProductCard({ product, priority = false }) {
   };
 
   return (
-    <div className="bg-white shadow-lg rounded-xl p-2 sm:p-3 md:p-4 hover:shadow-xl transition border border-gray-200 w-full flex flex-col h-full">
-      <div className="relative flex-shrink-0">
+    // کل کارت قابل کلیک است: لینک روی نام محصول با ::after تمام کارت را می‌پوشاند و دکمهٔ سبد (z-10) بالاتر از آن می‌ماند
+    <article className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white transition duration-300 hover:-translate-y-1 hover:shadow-xl has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-brand-500">
+      <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-b from-gray-50 to-white">
         {product.image ? (
           <AppImage
             src={product.image}
@@ -68,77 +65,72 @@ export default function ProductCard({ product, priority = false }) {
             width={300}
             height={200}
             priority={priority}
-            className={`w-full h-32 sm:h-40 md:h-48 object-contain rounded-lg mb-2 sm:mb-3 ${isOutOfStock ? "opacity-50" : ""}`}
+            sizes="(min-width: 1024px) 300px, (min-width: 640px) 36vw, 64vw"
+            className={`h-full w-full object-contain p-3 transition duration-500 group-hover:scale-105 ${
+              isOutOfStock ? "opacity-50 grayscale" : ""
+            }`}
           />
         ) : (
-          <div className="w-full h-32 sm:h-40 md:h-48 bg-gray-200 rounded-lg mb-2 sm:mb-3 flex items-center justify-center">
-            بدون تصویر
+          <div className="flex h-full flex-col items-center justify-center gap-1 text-gray-400">
+            <ImageOff className="h-8 w-8" aria-hidden="true" />
+            <span className="text-xs">بدون تصویر</span>
           </div>
         )}
         {hasDiscount && (
-          <div className="absolute top-2 left-2 bg-red-600 text-white text-xs sm:text-sm md:text-base font-bold px-1 sm:px-2 py-1 rounded-full">
-            {discount.toLocaleString("fa-IR")}% تخفیف
-          </div>
+          <span className="absolute right-2 top-2 rounded-full bg-rose-600 px-2.5 py-0.5 text-xs font-bold text-white shadow-sm">
+            {discount.toLocaleString("fa-IR")}٪ تخفیف
+          </span>
+        )}
+        {isOutOfStock && (
+          <span className="absolute inset-x-0 bottom-0 bg-gray-900/70 py-1 text-center text-xs font-medium text-white">
+            ناموجود
+          </span>
         )}
       </div>
 
-      <div className="flex-shrink-0 mb-1 sm:mb-2">
-        <h2 className="text-sm sm:text-base md:text-lg font-semibold text-gray-800 text-center line-clamp-1">
-          {product.name}
+      <div className="flex flex-1 flex-col gap-2 p-3 sm:p-4">
+        <h2 className="text-sm font-semibold leading-6 text-gray-800 sm:text-base">
+          <Link
+            href={`/products/${slug}`}
+            className="line-clamp-2 min-h-12 outline-none after:absolute after:inset-0"
+          >
+            {product.name}
+          </Link>
         </h2>
+
         {totalVotes > 0 && (
-          <div className="flex items-center justify-center gap-1 sm:gap-2 mt-1 text-xs sm:text-sm md:text-base text-gray-500">
-            <StarRating rating={averageRating} />
-            <span className="text-xs sm:text-sm md:text-base text-gray-600">
-              ({averageRating} - {totalVotes} رای)
-            </span>
+          <div className="flex items-center gap-1 text-xs text-gray-500">
+            <Star className="h-4 w-4 fill-amber-400 text-amber-400" aria-hidden="true" />
+            <span className="font-medium text-gray-700">{averageRating.toLocaleString("fa-IR")}</span>
+            <span>({totalVotes.toLocaleString("fa-IR")} رای)</span>
           </div>
         )}
-      </div>
 
-      <div className="flex-grow min-h-[60px] sm:min-h-[65px] md:min-h-[70px] mb-2 sm:mb-3 flex flex-col justify-center">
-        <div className="text-right">
-          <div className="text-pink-700 text-sm sm:text-base md:text-lg font-bold leading-tight whitespace-nowrap overflow-hidden text-ellipsis">
-            {finalPrice.toLocaleString("fa-IR")}{" "}
-            <span className="text-xs sm:text-sm md:text-base font-normal">تومان</span>
+        <div className="mt-auto pt-1">
+          {/* قیمت قبل از تخفیف؛ بدون تخفیف هم جایش می‌ماند تا قیمت‌ها در یک ردیف هم‌تراز باشند */}
+          <div className="h-4 text-xs text-gray-400 line-through">
+            {hasDiscount ? `${price.toLocaleString("fa-IR")} تومان` : ""}
           </div>
-          {hasDiscount && (
-            <div className="text-gray-500 text-xs sm:text-sm md:text-base line-through mt-1">
-              {price.toLocaleString("fa-IR")} تومان
-            </div>
-          )}
+          <div className="flex items-baseline gap-1 text-brand-700">
+            <span className="text-base font-extrabold sm:text-lg">{finalPrice.toLocaleString("fa-IR")}</span>
+            <span className="text-xs">تومان</span>
+          </div>
         </div>
-      </div>
 
-      <div className="flex flex-col gap-1 sm:gap-2 flex-shrink-0">
         <button
+          type="button"
           onClick={handleAddToCart}
-          className={`flex items-center justify-center gap-1 sm:gap-2 py-1 sm:py-2 md:py-2 rounded w-full text-xs sm:text-sm md:text-base font-medium ${
-            isOutOfStock
-              ? "bg-gray-400 text-gray-800 cursor-not-allowed"
-              : "bg-red-500 text-white hover:bg-red-600 cursor-pointer"
-          }`}
           disabled={isOutOfStock}
+          className={`relative z-10 mt-1 flex w-full items-center justify-center gap-2 rounded-xl py-2 text-sm font-medium transition ${
+            isOutOfStock
+              ? "cursor-not-allowed bg-gray-200 text-gray-500"
+              : "cursor-pointer bg-brand-600 text-white hover:bg-brand-700 active:scale-[0.98]"
+          }`}
         >
-          {isOutOfStock ? (
-            <>
-              <RemoveShoppingCartIcon fontSize="small" />
-              <span>ناموجود</span>
-            </>
-          ) : (
-            <>
-              <AddShoppingCartIcon fontSize="small" />
-              <span>افزودن به سبد خرید</span>
-            </>
-          )}
+          <ShoppingCart className="h-4 w-4" aria-hidden="true" />
+          <span>{isOutOfStock ? "ناموجود" : "افزودن به سبد خرید"}</span>
         </button>
-        <Link href={`/products/${slug}`}>
-          <button className="flex items-center justify-center gap-1 sm:gap-2 bg-pink-600 text-white py-1 sm:py-2 md:py-2 rounded w-full text-xs sm:text-sm md:text-base font-medium hover:bg-pink-700 cursor-pointer">
-            <Icon path={mdiBriefcaseEyeOutline} size={0.8} />
-            <span>مشاهده جزئیات</span>
-          </button>
-        </Link>
       </div>
-    </div>
+    </article>
   );
 }

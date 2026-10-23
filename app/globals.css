@@ -16,6 +16,150 @@ main {
   flex: 1;
 }
 
+/* رنگ برند: همه‌جا bg-brand-600 و مانند آن؛ برای عوض‌کردن رنگ فروشگاه فقط همین چند خط را عوض کنید (فعلاً همان مقادیر pink تیل‌ویند) */
+@theme {
+  --color-brand-50: oklch(97.1% 0.014 343.198);
+  --color-brand-100: oklch(94.8% 0.028 342.258);
+  --color-brand-200: oklch(89.9% 0.061 343.231);
+  --color-brand-500: oklch(65.6% 0.241 354.308);
+  --color-brand-600: oklch(59.2% 0.249 0.584);
+  --color-brand-700: oklch(52.5% 0.223 3.958);
+}
+
+/* تیل‌ویند ۴ رنگ پیش‌فرض border را به رنگ متن (تقریباً سیاه) تغییر داده؛ اینجا به خاکستری روشن برمی‌گردد (رفتار تیل‌ویند ۳ که کدها برایش نوشته شده) */
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentColor);
+  }
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* ظاهر شدن بخش‌ها هنگام اسکرول (Reveal.jsx)؛ فقط وقتی جاوااسکریپت فعال است و کاربر «کاهش حرکت» نخواسته، وگرنه همه‌چیز از اول دیده می‌شود */
+@media (scripting: enabled) and (prefers-reduced-motion: no-preference) {
+  [data-reveal] {
+    opacity: 0;
+    transform: translateY(18px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  [data-reveal].is-in {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* دو دایرهٔ تزئینی کاشی «مشاهده همه» (home/ProductRail.jsx): با hover جایشان را عوض می‌کنند و با برداشتن موس برمی‌گردند.
+   موقعیت‌ها بر پایهٔ درصد عرض و ارتفاع کاشی‌اند تا در هر اندازه‌ای درست بنشینند. افقی زودتر و عمودی دیرتر حرکت می‌کنند،
+   پس مسیر هر دایره خمیده است و دو دایره از دو سوی مخالف از کنار هم رد می‌شوند (نه از وسط هم). */
+.tile-circle-a,
+.tile-circle-b {
+  position: absolute;
+  border-radius: 9999px;
+  pointer-events: none;
+}
+.tile-circle-a {
+  width: 160px;
+  height: 160px;
+  left: calc(100% - 120px);
+  top: -40px;
+}
+.tile-circle-b {
+  width: 192px;
+  height: 192px;
+  left: -48px;
+  top: calc(100% - 144px);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .tile-circle-a,
+  .tile-circle-b {
+    transition: left 0.9s cubic-bezier(0.4, 0.3, 0.5, 1), top 0.9s cubic-bezier(0.5, 0, 0.6, 0.7);
+  }
+  .group:hover .tile-circle-a {
+    left: -32px;
+    top: calc(100% - 128px);
+  }
+  .group:hover .tile-circle-b {
+    left: calc(100% - 136px);
+    top: -56px;
+  }
+}
+
+/* اسلایدر بنر صفحهٔ اصلی: فلش‌ها و نقطه‌های خود Swiper با styled-jsx قابل استایل نیستند، پس اینجا */
+.hero-swiper {
+  --swiper-navigation-size: 44px;
+  --swiper-navigation-sides-offset: 12px;
+  --swiper-pagination-bottom: 14px;
+}
+/* فلش‌ها: دایرهٔ شیشه‌ای تیره با فلش سفید ضخیم؛ روی هر عکسی خوانا است و با نشاندن موس به رنگ برند درمی‌آید */
+.hero-swiper .swiper-button-prev,
+.hero-swiper .swiper-button-next {
+  color: #fff;
+  border: 1px solid rgb(255 255 255 / 0.5);
+  border-radius: 9999px;
+  background: rgb(0 0 0 / 0.35);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 6px 18px rgb(0 0 0 / 0.25);
+  transition: background-color 0.2s, border-color 0.2s, transform 0.2s;
+}
+/* Swiper فلش را با یک مسیر بسیار نازک می‌کشد؛ دور آن خط می‌کشیم تا ضخیم و گرد شود */
+.hero-swiper .swiper-navigation-icon {
+  width: 10px;
+  height: 18px;
+}
+.hero-swiper .swiper-navigation-icon path {
+  stroke: currentColor;
+  stroke-width: 1.4px;
+  stroke-linejoin: round;
+}
+.hero-swiper .swiper-button-prev:focus-visible,
+.hero-swiper .swiper-button-next:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+@media (hover: hover) {
+  .hero-swiper .swiper-button-prev:hover,
+  .hero-swiper .swiper-button-next:hover {
+    border-color: var(--color-brand-600);
+    background: var(--color-brand-600);
+    transform: scale(1.08);
+  }
+}
+.hero-swiper .swiper-pagination-bullet {
+  width: 8px;
+  height: 8px;
+  background: #fff;
+  opacity: 0.65;
+  transition: width 0.3s, background-color 0.3s;
+}
+.hero-swiper .swiper-pagination-bullet-active {
+  width: 26px;
+  border-radius: 9999px;
+  background: var(--color-brand-500);
+  opacity: 1;
+}
+@media (max-width: 639px) {
+  .hero-swiper .swiper-button-prev,
+  .hero-swiper .swiper-button-next {
+    display: none;
+  }
+}
+@media (min-width: 768px) {
+  /* کارت معرفی روی لبهٔ پایین بنر می‌نشیند؛ نقطه‌ها بالاتر بیایند تا زیر آن نروند */
+  .hero-swiper {
+    --swiper-pagination-bottom: 56px;
+  }
+}
+
 @keyframes fadeInUp3D {
   0% {
     opacity: 0;

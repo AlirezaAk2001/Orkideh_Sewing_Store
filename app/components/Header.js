@@ -29,9 +29,12 @@ export default function Header() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [showSkeleton, setShowSkeleton] = useState(false);
+  const [scrolledDown, setScrolledDown] = useState(false);
+  const [searchFocused, setSearchFocused] = useState(false);
   const searchInputRef = useRef(null);
 
   const loading = authLoading || !favInit || !cartInit || !logoLoaded;
+  const searchCollapsed = scrolledDown && !searchFocused && searchQuery.trim() === "";
 
   // لود لوگو
   useEffect(() => {
@@ -45,6 +48,19 @@ export default function Header() {
         console.error("خطا در لود لوگو:", err);
         setLogoLoaded(true); // ← حتی در خطا هم true کن تا گیر نکنه
       });
+  }, []);
+
+  // اسکرول به پایین ردیف جستجوی موبایل را جمع می‌کند، اسکرول به بالا یا نزدیک بالای صفحه دوباره باز می‌کند
+  useEffect(() => {
+    let lastY = window.scrollY;
+    const onScroll = () => {
+      const y = window.scrollY;
+      if (y > lastY + 8 && y > 140) setScrolledDown(true);
+      else if (y < lastY - 8 || y < 60) setScrolledDown(false);
+      lastY = y;
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   // مدیریت کلیک کاربر
@@ -146,7 +162,7 @@ export default function Header() {
   return (
     <>
       <header className="bg-white shadow-md py-2 sm:py-3 px-2 sm:px-4 sticky top-0 z-50">
-        <div className="container mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-4">
+        <div className="container mx-auto flex flex-wrap sm:flex-nowrap items-center justify-between gap-y-2 sm:gap-4">
           {/* لوگو */}
           <Link href="/" className={`flex-shrink-0 ${isMaintenance ? 'pointer-events-none' : ''}`}>
             <AnimatePresence>
@@ -156,7 +172,7 @@ export default function Header() {
                   alt="لوگو"
                   width={64}
                   height={64}
-                  className="w-12 sm:w-16 h-12 sm:h-16 rounded-full object-cover border border-gray-900"
+                  className="w-10 sm:w-16 h-10 sm:h-16 rounded-full object-cover border border-gray-900"
                   initial={{ opacity: 0, scale: 0.5, rotate: -10 }}
                   animate={{ opacity: 1, scale: 1, rotate: 0 }}
                   exit={{ opacity: 0, scale: 0.5 }}
@@ -166,7 +182,7 @@ export default function Header() {
                 />
               ) : (
                 <motion.div
-                  className="w-12 sm:w-16 h-12 sm:h-16 bg-gray-300 rounded-full flex items-center justify-center text-xs"
+                  className="w-10 sm:w-16 h-10 sm:h-16 bg-gray-300 rounded-full flex items-center justify-center text-xs"
                   initial={{ opacity: 0, scale: 0.5 }}
                   animate={{
                     opacity: 1,
@@ -186,7 +202,16 @@ export default function Header() {
           </Link>
 
           {/* جستجو */}
-          <div className="relative flex-1 w-full sm:w-auto mx-0 sm:mx-6">
+          {/* روی موبایل جستجو ردیف دوم است و هنگام اسکرول به پایین جمع می‌شود (با تایپ یا فوکوس باز می‌ماند) تا هدر چسبان فضای صفحه را نخورد */}
+          <div
+            className={`relative order-3 sm:order-none basis-full sm:basis-auto flex-1 w-full sm:w-auto mx-0 sm:mx-6 transition-[max-height,opacity,margin] duration-300 ${
+              searchCollapsed
+                ? "max-h-0 -mt-2 overflow-hidden opacity-0 sm:max-h-none sm:mt-0 sm:overflow-visible sm:opacity-100"
+                : "max-h-24 opacity-100"
+            }`}
+            onFocus={() => setSearchFocused(true)}
+            onBlur={() => setSearchFocused(false)}
+          >
             <div className="relative">
               <input
                 ref={searchInputRef}
@@ -296,7 +321,7 @@ export default function Header() {
           </div>
 
           {/* آیکون‌ها */}
-          <div className={`flex items-center gap-3 sm:gap-4 text-gray-600 ${isMaintenance ? 'opacity-50 pointer-events-none grayscale' : ''}`}>
+          <div className={`order-2 sm:order-none flex items-center gap-1 sm:gap-4 text-gray-600 [&>a]:p-1.5 sm:[&>a]:p-0${isMaintenance ? 'opacity-50 pointer-events-none grayscale' : ''}`}>
             {/* علاقه‌مندی‌ها */}
             <Link
               href={loading ? "#" : !currentUser ? "/auth?redirect=/favorites" : "/favorites"}
@@ -304,6 +329,7 @@ export default function Header() {
                 ? "cursor-not-allowed opacity-50 pointer-events-none"
                 : "hover:text-pink-600 cursor-pointer"
                 }`}
+              aria-label="علاقه‌مندی‌ها"
               data-tooltip-id="favorites-tooltip"
               data-tooltip-content={loading ? "در حال بارگذاری..." : "مشاهده علاقه‌مندی‌ها"}
             >
@@ -361,6 +387,7 @@ export default function Header() {
                       ? "cursor-not-allowed opacity-50 pointer-events-none"
                       : "hover:text-pink-600 cursor-pointer"
                       }`}
+                    aria-label="حساب کاربری"
                     data-tooltip-id="profile-tooltip"
                     data-tooltip-content={loading ? "در حال بارگذاری..." : currentUser.is_admin ? "پنل مدیریت" : "پروفایل کاربری"}
                   >
@@ -391,6 +418,7 @@ export default function Header() {
                 ? "cursor-not-allowed opacity-50 pointer-events-none"
                 : "hover:text-pink-600 cursor-pointer"
                 }`}
+              aria-label="سبد خرید"
               data-tooltip-id="cart-tooltip"
               data-tooltip-content={loading ? "در حال بارگذاری..." : "مشاهده سبد خرید"}
             >
@@ -417,6 +445,7 @@ export default function Header() {
                 ? "cursor-not-allowed opacity-50 pointer-events-none"
                 : "hover:text-pink-600 cursor-pointer"
                 }`}
+              aria-label="درباره ما"
               data-tooltip-id="about-tooltip"
               data-tooltip-content={loading ? "در حال بارگذاری..." : "درباره ما"}
             >
