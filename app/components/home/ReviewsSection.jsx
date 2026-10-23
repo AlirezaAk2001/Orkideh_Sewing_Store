@@ -4,14 +4,19 @@ import SectionHeading from "./SectionHeading";
 
 // آخرین نظرهای تأییدشدهٔ مشتریان؛ فقط نام کوچک نویسنده نمایش داده می‌شود
 export default function ReviewsSection({ reviews }) {
-  // «نظر مشتریان» برای یک و چند نظر درست است؛ فقط زیرعنوان مفرد می‌شود
-  const subtitle = reviews.length === 1 ? "آخرین نظر ثبت‌شده برای محصولات فروشگاه" : "آخرین نظرهای ثبت‌شده برای محصولات فروشگاه";
+  // با یک نظر عنوان و زیرعنوان مفرد می‌شود، مثل ردیف‌های محصول در HomeContent
+  const single = reviews.length === 1;
+  const title = single ? "نظر مشتریان" : "نظرات مشتریان";
+  const subtitle = single ? "آخرین نظر ثبت‌شده برای محصولات فروشگاه" : "آخرین نظرهای ثبت‌شده برای محصولات فروشگاه";
   return (
     <section aria-labelledby="home-reviews">
-      <SectionHeading id="home-reviews" title="نظر مشتریان" subtitle={subtitle} />
+      <SectionHeading id="home-reviews" title={title} subtitle={subtitle} />
       <ul className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {reviews.map((review) => (
-          <li key={review.id} className="flex flex-col rounded-2xl bg-white p-5 ring-1 ring-gray-200">
+          <li
+            key={review.id}
+            className="flex flex-col rounded-2xl bg-white p-5 ring-1 ring-gray-200 transition duration-300 hover:shadow-lg hover:ring-brand-200 motion-safe:hover:-translate-y-1"
+          >
             <div className="flex items-start justify-between gap-3">
               <Quote className="h-7 w-7 text-brand-200" aria-hidden="true" />
               {review.rating > 0 && (
