@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { useCart, useAuth } from "@/lib/context";
+import { authUrl } from "@/lib/redirect";
 import Link from "next/link";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
@@ -12,7 +13,7 @@ import DialogActions from "@mui/material/DialogActions";
 import Button from "@mui/material/Button";
 import AppImage from "@/app/components/AppImage";
 import { useRouter } from "next/navigation";
-import { Trash2, ClipboardList, CreditCard } from "lucide-react";
+import { Trash2, ClipboardList, CreditCard, Plus, Minus } from "lucide-react";
 import Icon from '@mdi/react';
 import { mdiCartOutline, mdiCartMinus, mdiCloseCircleOutline, mdiDeleteCircleOutline, mdiDeleteSweepOutline } from '@mdi/js';
 import { TextField } from "@mui/material";
@@ -52,14 +53,59 @@ const animationStyles = `
   }
 `;
 
+// گام‌شمار تعداد: «+» سمت راست، «−» سمت چپ (صفحه راست‌به‌چپ است)
+function QuantityStepper({ value, max, disabled, onChange }) {
+  const btn =
+    "grid h-9 w-9 cursor-pointer place-items-center text-gray-600 transition-colors hover:bg-pink-50 hover:text-pink-600 disabled:cursor-not-allowed disabled:text-gray-300 disabled:hover:bg-transparent";
+  return (
+    <div className="inline-flex items-center overflow-hidden rounded-lg border border-gray-200 bg-white" role="group" aria-label="تعداد">
+      <button
+        type="button"
+        onClick={() => onChange(value + 1)}
+        disabled={disabled || value >= max}
+        aria-label="افزایش تعداد"
+        title={value >= max ? "بیشتر از موجودی نمی‌شود" : undefined}
+        className={btn}
+      >
+        <Plus className="h-4 w-4" aria-hidden="true" />
+      </button>
+      <span className="min-w-10 px-1 text-center font-semibold" aria-live="polite">
+        {value.toLocaleString("fa-IR")}
+      </span>
+      <button
+        type="button"
+        onClick={() => onChange(value - 1)}
+        disabled={disabled || value <= 1}
+        aria-label="کاهش تعداد"
+        className={btn}
+      >
+        <Minus className="h-4 w-4" aria-hidden="true" />
+      </button>
+    </div>
+  );
+}
+
 export default function CartPage() {
-  const { cartItems, removeFromCart, clearCart } = useCart();
+  const { cartItems, removeFromCart, clearCart, updateQuantity, cartCount } = useCart();
   const { currentUser } = useAuth();
   const router = useRouter();
   const [phoneNumber, setPhoneNumber] = useState("");
   const [loading, setLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [clearLoading, setClearLoading] = useState(false);
+  // محصولی که تغییر تعدادش در راه است؛ تا پاسخ سرور دکمه‌هایش غیرفعال می‌ماند تا کلیک‌های پشت‌سرهم با هم قاطی نشوند
+  const [qtyLoading, setQtyLoading] = useState(null);
+
+  const totalPrice = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+  const handleQuantity = async (item, quantity) => {
+    setQtyLoading(item.id);
+    try {
+      await updateQuantity(item.id, quantity);
+    } finally {
+      setQtyLoading(null);
+    }
+  };
 
   const isPhoneValid = /^09[0-9]{9}$/.test(phoneNumber);
 
@@ -119,15 +165,14 @@ export default function CartPage() {
         const ordersData = await ordersRes.json();
 
         if (ordersRes.ok && ordersData.orders) {
+          // سفارش ناتمام با آیتم‌های قبلی ساخته شده و با حذف این محصول کهنه می‌شود؛ فقط خودِ سفارش را پاک می‌کنیم
+          // (سفارش جدید از سبد ساخته می‌شود) و سبد خرید دست‌نخورده می‌ماند
           const pendingOrder = ordersData.orders.find(o => o.status === "pending");
           if (pendingOrder) {
             await fetch(`/api/orders/${pendingOrder.id}`, {
               method: "DELETE",
               headers: { Authorization: `Bearer ${token}` },
             });
-            clearCart();
-            toast.success("محصول موردنظر از سبد خرید شما حذف شد.", { icon: "🗑️" });
-            return;
           }
         }
       }
@@ -200,7 +245,7 @@ export default function CartPage() {
 
     if (!currentUser) {
       toast("برای ثبت سفارش، ابتدا وارد حساب کاربری خود شوید.", { icon: "⚠️" });
-      setTimeout(() => router.push("/auth"), 2000);
+      setTimeout(() => router.push(authUrl("/cart")), 2000);
       return;
     }
 
@@ -253,23 +298,11 @@ export default function CartPage() {
 
   return (
     <div
-      className="max-w-4xl mx-auto p-4 sm:p-6 bg-white dark:bg-gray-800 shadow rounded-xl mt-4 sm:mt-6"
+      className="max-w-4xl mx-auto p-4 sm:p-6 bg-white shadow rounded-xl mt-4 sm:mt-6"
       dir="rtl"
     >
       <style>{animationStyles}</style>
 
-      <Toaster
-        position="top-right"
-        toastOptions={{
-          duration: 2500,
-          style: {
-            fontFamily: "Vazirmatn, sans-serif",
-            direction: "rtl",
-            borderRadius: "10px",
-            fontSize: "14px",
-          },
-        }}
-      />
 
       {/* Dialog تأییدیه حذف تکی */}
       <Dialog
@@ -414,7 +447,7 @@ export default function CartPage() {
 
       {/* هدر صفحه */}
       <div className="flex justify-between items-center mb-4">
-        <h1 className="text-xl sm:text-2xl font-bold text-gray-700 dark:text-gray-200 flex gap-1">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-700 flex gap-1">
           <Icon path={mdiCartOutline} size={1.3} />
           سبد خرید
         </h1>
@@ -440,47 +473,42 @@ export default function CartPage() {
       </div>
 
       {cartItems.length === 0 ? (
-        <p className="text-gray-600 dark:text-gray-400">هیچ محصولی به سبد خرید شما اضافه نشده است.</p>
+        <p className="text-gray-600">هیچ محصولی به سبد خرید شما اضافه نشده است.</p>
       ) : (
         <>
           <ul className="space-y-2">
             {cartItems.map((item) => (
               <li
                 key={item.id}
-                className="flex justify-between items-center p-4 border rounded-lg bg-white shadow-sm"
+                className="p-3 sm:p-4 border rounded-lg bg-white shadow-sm"
               >
-                <div className="flex items-center gap-4">
+                <div className="flex items-start gap-3 sm:gap-4">
                   {item.image ? (
                     <AppImage
                       src={item.image}
                       alt={item.name}
                       width={60}
                       height={60}
-                      className="object-contain rounded"
+                      className="object-contain rounded shrink-0"
                     />
                   ) : (
-                    <div className="w-16 h-16 bg-gray-200 rounded flex items-center justify-center">
+                    <div className="w-16 h-16 bg-gray-200 rounded flex items-center justify-center text-xs text-center shrink-0">
                       بدون تصویر
                     </div>
                   )}
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <Link
                       href={`/products/${item.slug || item.Product?.slug}`}
-                      className="font-semibold hover:text-pink-500 transition"
+                      className="font-semibold hover:text-pink-500 transition line-clamp-2"
                     >
                       {item.name || item.Product?.name}
                     </Link>
-                    <span className="text-gray-600 block mt-1">
-                      تعداد: {item.quantity.toLocaleString("fa-IR")}
+                    <span className="text-gray-500 text-sm block mt-1">
+                      قیمت واحد: {item.price.toLocaleString("fa-IR")} تومان
                     </span>
                   </div>
-                </div>
-                <div className="flex items-center gap-4">
-                  <span className="font-medium">
-                    {(item.price * item.quantity).toLocaleString("fa-IR")} تومان
-                  </span>
                   <button
-                    className="delete-btn flex items-center gap-1 text-red-500 hover:text-red-700 transition cursor-pointer disabled:opacity-50"
+                    className="delete-btn flex items-center gap-1 text-red-500 hover:text-red-700 transition cursor-pointer disabled:opacity-50 shrink-0"
                     onClick={() => handleRemove(item.id, item.name)}
                     disabled={deleteLoading === item.id}
                   >
@@ -493,9 +521,32 @@ export default function CartPage() {
                     <span>{deleteLoading === item.id ? "در حال حذف..." : "حذف"}</span>
                   </button>
                 </div>
+                <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 pt-3">
+                  <QuantityStepper
+                    value={item.quantity}
+                    max={item.maxQuantity ?? Infinity}
+                    disabled={qtyLoading === item.id}
+                    onChange={(quantity) => handleQuantity(item, quantity)}
+                  />
+                  <span className="font-bold text-gray-800">
+                    {(item.price * item.quantity).toLocaleString("fa-IR")} تومان
+                  </span>
+                </div>
               </li>
             ))}
           </ul>
+
+          {/* جمع کل */}
+          <div className="mt-4 rounded-xl border bg-gray-50 p-4">
+            <div className="flex items-center justify-between text-sm text-gray-600">
+              <span>تعداد کالاها</span>
+              <span>{cartCount.toLocaleString("fa-IR")}</span>
+            </div>
+            <div className="mt-3 flex items-center justify-between border-t border-gray-200 pt-3">
+              <span className="font-semibold text-gray-700">مبلغ قابل پرداخت</span>
+              <span className="text-lg font-bold text-pink-600">{totalPrice.toLocaleString("fa-IR")} تومان</span>
+            </div>
+          </div>
 
           {/* باکس خلاصه */}
           {!showForm && (

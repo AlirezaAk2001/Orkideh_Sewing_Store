@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { Button, CircularProgress, TextField } from "@mui/material";
 import { CheckCircle } from "lucide-react";
@@ -230,17 +230,6 @@ export default function VerifyPage({ tempAuth }) {
 
   return (
     <>
-      <Toaster 
-        position="top-right"
-        reverseOrder={false}
-        toastOptions={{
-          duration: 2000,
-          style: {
-            direction: "rtl",
-            fontFamily: "inherit",
-          },
-        }}
-      />
       
       {/* پس‌زمینه با blur و opacity */}
       <div

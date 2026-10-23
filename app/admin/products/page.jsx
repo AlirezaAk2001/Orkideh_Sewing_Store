@@ -22,7 +22,7 @@ import {
 } from "@mui/material";
 import Link from "next/link";
 import axios from "axios";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import { getImagePath } from "@/app/utils/getImagePath";
 import AppImage from "@/app/components/AppImage";
 import Icon from '@mdi/react';
@@ -674,7 +674,6 @@ export default function AdminProducts() {
       `}</style>
 
       <Box sx={{ p: 2, height: "100%", display: "flex", flexDirection: "column" }}>
-        <Toaster position="top-right" />
 
         {/* ===== دیالوگ حذف ===== */}
         <Dialog

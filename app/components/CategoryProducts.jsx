@@ -2,7 +2,6 @@
 
 import React, { useEffect } from "react";
 import ProductCard from "@/app/components/ProductCard";
-import { Toaster } from "react-hot-toast";
 
 // محصولات یک دسته؛ داده را صفحهٔ سروری (app/categories/[slug]/page.jsx) می‌دهد تا در همان HTML اولیه باشد
 export default function CategoryProducts({ name, products }) {
@@ -22,18 +21,6 @@ export default function CategoryProducts({ name, products }) {
 
   return (
     <div className="container mx-auto px-4 py-10">
-      <Toaster
-        position="top-right"
-        toastOptions={{
-          duration: 2500,
-          style: {
-            fontFamily: "Vazirmatn, sans-serif",
-            direction: "rtl",
-            borderRadius: "10px",
-            fontSize: "14px",
-          },
-        }}
-      />
 
       <h1 className="text-2xl font-bold mb-6 text-center text-gray-800">
         محصولات دسته: <span className="text-blue-600">{name}</span>

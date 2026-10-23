@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useAuth, useCart } from "@/lib/context";
 import Link from "next/link";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import Icon from '@mdi/react';
 import {
   mdiClipboardTextClockOutline,
@@ -183,32 +183,7 @@ export default function OrdersPage() {
   );
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-white dark:bg-gray-800 shadow rounded-lg mt-6" dir="rtl">
-      <Toaster
-        position="top-center"
-        reverseOrder={false}
-        toastOptions={{
-          duration: 3000,
-          style: {
-            background: '#363636',
-            color: '#fff',
-          },
-          success: {
-            duration: 3000,
-            iconTheme: {
-              primary: '#4ade80',
-              secondary: '#fff',
-            },
-          },
-          error: {
-            duration: 4000,
-            iconTheme: {
-              primary: '#ef4444',
-              secondary: '#fff',
-            },
-          },
-        }}
-      />
+    <div className="max-w-4xl mx-auto p-6 bg-white shadow rounded-lg mt-6" dir="rtl">
 
       {/* Dialog تأییدیه حذف سفارش */}
       <Dialog
@@ -270,7 +245,7 @@ export default function OrdersPage() {
         </DialogActions>
       </Dialog>
 
-      <h1 className="text-xl font-bold mb-6 text-right text-gray-700 dark:text-gray-200 flex gap-1">
+      <h1 className="text-xl font-bold mb-6 text-right text-gray-700 flex gap-1">
         <Icon path={mdiClipboardTextClockOutline} className="w-7 h-7" />
         تاریخچه سفارشات
       </h1>
@@ -340,7 +315,7 @@ export default function OrdersPage() {
           <div className="space-y-6">
             {filteredOrders.length > 0 ? (
               <div>
-                <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-4 flex gap-1">
+                <h2 className="text-lg font-semibold text-gray-700 mb-4 flex gap-1">
                   <Icon path={mdiHumanDolly} size={1} />
                   سفارشات جاری
                 </h2>

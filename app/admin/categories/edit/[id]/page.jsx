@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import axios from "axios";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import { Box, Button, TextField, CircularProgress } from "@mui/material";
 import { Save } from "lucide-react";
 import Image from "next/image";
@@ -309,7 +309,6 @@ export default function EditCategory() {
       `}</style>
 
       <Box sx={{ p: 0 }} dir="rtl">
-        <Toaster position="top-right" />
 
         {/* ── عنوان صفحه ── */}
         <div className="category-header-card">

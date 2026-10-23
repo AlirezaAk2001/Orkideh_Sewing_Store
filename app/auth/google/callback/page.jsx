@@ -3,7 +3,8 @@
 import { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "../../../../lib/context";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
+import { takeRedirect } from "../../../../lib/redirect";
 
 function GoogleCallbackContent() {
     const router = useRouter();
@@ -30,9 +31,16 @@ function GoogleCallbackContent() {
                 if (!res.ok) throw new Error(data.error);
 
                 login(data.user, data.token);
-                // پیام رو به صفحه بعدی پاس بده
-                sessionStorage.setItem("welcomeMessage", data.user.name);
-                router.push(data.user.role === "admin" ? "/admin" : "/profile");
+                const target = takeRedirect();
+                if (target) {
+                    // پیام خوش‌آمد را صفحهٔ پروفایل یا ادمین نشان می‌دهد؛ برای مقصد دیگر همین‌جا نشان می‌دهیم
+                    toast.success(`خوش آمدید ${data.user.name} عزیز 🎉`, { position: "top-center" });
+                    router.push(target);
+                } else {
+                    // پیام رو به صفحه بعدی پاس بده
+                    sessionStorage.setItem("welcomeMessage", data.user.name);
+                    router.push(data.user.role === "admin" ? "/admin" : "/profile");
+                }
             } catch (err) {
                 toast.error(err.message || "خطا در ورود با گوگل");
                 router.push("/auth");
@@ -44,7 +52,6 @@ function GoogleCallbackContent() {
 
     return (
         <div className="flex items-center justify-center min-h-screen fixed inset-0">
-            <Toaster position="top-center" />
             <div className="text-center">
                 {/* <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div> */}
                 <div className="flex flex-col items-center justify-center min-h-[60vh]">

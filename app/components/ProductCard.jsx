@@ -4,6 +4,7 @@ import Link from "next/link";
 import AppImage from "./AppImage";
 import { useRouter } from "next/navigation";
 import { useCart, useAuth } from "@/lib/context";
+import { authUrl } from "@/lib/redirect";
 import { isSoldOut } from "@/lib/stock";
 import { toLatinSlug } from "@/lib/slug";
 import toast from "react-hot-toast";
@@ -34,7 +35,7 @@ export default function ProductCard({ product, priority = false }) {
   const handleAddToCart = () => {
     if (!currentUser) {
       toast("برای افزودن به سبد خرید، لطفاً ابتدا وارد حساب کاربری خود شوید.", { icon: "⚠️" });
-      setTimeout(() => router.push("/auth"), 2000);
+      setTimeout(() => router.push(authUrl(window.location.pathname)), 2000);
       return;
     }
 
@@ -50,8 +51,7 @@ export default function ProductCard({ product, priority = false }) {
       quantity: 1,
       image: product.image,
     });
-
-    toast.success("محصول موردنظر با موفقیت به سبد خرید اضافه شد!");
+    // پیام موفقیت (یا خطا) را خود addToCart بعد از پاسخ سرور نشان می‌دهد
   };
 
   return (

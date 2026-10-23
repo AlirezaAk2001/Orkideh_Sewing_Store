@@ -2,7 +2,7 @@
 
 import { useFavorites } from "@/lib/context";
 import AppImage from "@/app/components/AppImage";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import { useState } from "react";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
@@ -53,21 +53,9 @@ export default function FavoritesPage() {
 
   return (
     <div
-      className="max-w-4xl mx-auto p-4 sm:p-6 bg-white dark:bg-gray-800 shadow rounded-lg mt-4 sm:mt-6"
+      className="max-w-4xl mx-auto p-4 sm:p-6 bg-white shadow rounded-lg mt-4 sm:mt-6"
       dir="rtl"
     >
-      <Toaster
-        position="top-right"
-        toastOptions={{
-          duration: 2500,
-          style: {
-            fontFamily: "Vazirmatn, sans-serif",
-            direction: "rtl",
-            borderRadius: "10px",
-            fontSize: "14px",
-          },
-        }}
-      />
 
       {/* Dialog تأییدیه حذف تکی */}
       <Dialog 
@@ -207,7 +195,7 @@ export default function FavoritesPage() {
 
       {/* هدر صفحه */}
       <div className="flex justify-between items-center mb-4">
-        <h1 className="text-xl sm:text-2xl font-bold text-gray-700 dark:text-gray-200 flex gap-1">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-700 flex gap-1">
           <Icon path={mdiHeartOutline} size={1.3} />
           علاقه‌مندی‌ها
         </h1>
@@ -230,7 +218,7 @@ export default function FavoritesPage() {
       </div>
 
       {favorites.length === 0 ? (
-        <p className="text-gray-600 dark:text-gray-400">
+        <p className="text-gray-600">
           هیچ محصولی به علاقه‌مندی‌های شما اضافه نشده است.
         </p>
       ) : (
@@ -250,7 +238,7 @@ export default function FavoritesPage() {
                     className="object-contain rounded"
                   />
                 ) : (
-                  <div className="w-16 h-16 bg-gray-200 dark:bg-gray-600 rounded flex items-center justify-center">
+                  <div className="w-16 h-16 bg-gray-200 rounded flex items-center justify-center">
                     بدون تصویر
                   </div>
                 )}

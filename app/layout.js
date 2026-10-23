@@ -45,7 +45,20 @@ export default function RootLayout({ children }) {
         <AuthProvider>
           <FavoritesProvider>
             <CartProvider>
-              <Toaster position="top-right" />
+              {/* تنها Toaster برنامه: هر Toaster همهٔ پیام‌ها را نشان می‌دهد، پس Toasterهای جدا در صفحه‌ها پیام‌ها را دوبار نشان می‌دادند */}
+              <Toaster
+                position="top-right"
+                toastOptions={{
+                  duration: 2500,
+                  style: {
+                    fontFamily: "Vazirmatn, sans-serif",
+                    direction: "rtl",
+                    borderRadius: "10px",
+                    fontSize: "14px",
+                  },
+                  error: { duration: 4000 },
+                }}
+              />
               <ConditionalLayout>{children}</ConditionalLayout>
             </CartProvider>
           </FavoritesProvider>

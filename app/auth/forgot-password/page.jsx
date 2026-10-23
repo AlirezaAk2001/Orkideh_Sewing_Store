@@ -6,7 +6,7 @@ import { Button, CircularProgress, TextField } from "@mui/material";
 import { ArrowRight, IterationCcw } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import toast, { Toaster } from "react-hot-toast"; // 🍞 جایگزین Swal
+import toast from "react-hot-toast"; // 🍞 جایگزین Swal
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -108,7 +108,6 @@ export default function ForgotPasswordPage() {
   return (
     <>
       {/* 🍞 ظرف Toast (باید در بالاترین سطح کامپوننت قرار گیرد) */}
-      <Toaster position="top-center" reverseOrder={false} />
 
       <div className="fixed inset-0 flex items-center justify-center overflow-hidden mt-8">
         {/* پس‌زمینه با blur و opacity */}

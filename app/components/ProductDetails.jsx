@@ -6,13 +6,14 @@ import AppImage from "./AppImage";
 import { ChevronDown, BaggageClaim } from "lucide-react";
 import { Tooltip } from 'react-tooltip';
 import { useCart, useFavorites, useAuth } from "@/lib/context";
+import { authUrl } from "@/lib/redirect";
 import { isSoldOut, maxPurchasable } from "@/lib/stock";
 import SellerBox from "./SellerBox";
 import ProductComments from "./ProductComments";
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import Icon from "@mdi/react";
 import { mdiCartRemove, mdiCartMinus, mdiHeart, mdiHeartPlusOutline, mdiHeartMinusOutline, mdiCloseCircleOutline, mdiDeleteCircleOutline } from "@mdi/js";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
@@ -57,12 +58,29 @@ export default function ProductDetails({ product, initialComments = [] }) {
   const isOutOfStock = isSoldOut(product);
   const maxQuantity = maxPurchasable(product);
 
+  // null = موجودی ثبت نشده؛ در این حالت چیزی نشان داده نمی‌شود (به‌جای «نامشخص»)
   const renderInventory = () => {
     if (isOutOfStock) return "ناموجود";
     if (isAccessories) return "موجود";
-    if (stock == null || stock === "") return "نامشخص";
+    if (stock == null || stock === "") return null;
     return `${Number(stock).toLocaleString("fa-IR")} عدد`;
   };
+  const inventoryText = renderInventory();
+
+  // فقط مشخصاتی که مقدار دارند نمایش داده می‌شوند؛ ردیف‌های خالی «نامشخص» نمی‌گیرند
+  const hasValue = (value) => value != null && String(value).trim() !== "";
+  const specs = [
+    ["جنس", product.material],
+    ["ابعاد", product.size],
+    ["وزن", product.weight],
+    ["رنگ", product.color],
+    ["ولتاژ", product.voltage],
+    ["توان مصرفی", product.powerConsumption],
+  ].filter(([, value]) => hasValue(value));
+  const extras = [
+    ["توضیحات", product.additionalFeatures],
+    ["مناسب برای", product.suitableFor],
+  ].filter(([, value]) => hasValue(value));
 
   const increaseQuantity = () => {
     if (quantity >= maxQuantity) {
@@ -81,7 +99,7 @@ export default function ProductDetails({ product, initialComments = [] }) {
   const handleAddToCart = () => {
     if (!currentUser) {
       toast("برای افزودن محصول موردنظر به سبد خرید، لطفاً ابتدا وارد حساب کاربری خود شوید.", { icon: "⚠️" });
-      setTimeout(() => router.push("/auth"), 2000);
+      setTimeout(() => router.push(authUrl(window.location.pathname)), 2000);
       return;
     }
 
@@ -102,8 +120,7 @@ export default function ProductDetails({ product, initialComments = [] }) {
       image: product.image,
       slug: product.slug,
     });
-
-    toast.success("محصول با موفقیت به سبد خرید شما اضافه شد.");
+    // پیام موفقیت (یا خطا) را خود addToCart بعد از پاسخ سرور نشان می‌دهد
 
     setIsInCart(true);
   };
@@ -123,7 +140,7 @@ export default function ProductDetails({ product, initialComments = [] }) {
   const handleFavoriteToggle = () => {
     if (!currentUser) {
       toast("برای افزودن محصول موردنظر به علاقه‌مندی‌ها، ابتدا وارد حساب کاربری خود شوید.", { icon: "⚠️" });
-      setTimeout(() => router.push("/auth"), 2000);
+      setTimeout(() => router.push(authUrl(window.location.pathname)), 2000);
       return;
     }
 
@@ -276,38 +293,42 @@ export default function ProductDetails({ product, initialComments = [] }) {
             <span className="flex items-center gap-1">📦 ارسال رایگان در تهران</span>
           </div>
           <SellerBox sellerName={product.seller || "فروشگاه چرخ خیاطی ارکیده"} />
-          <div className="bg-gray-50 border rounded-lg p-4 text-base text-gray-700">
-            <strong>موجودی:</strong> {renderInventory()}
-          </div>
-        </div>
-      </div>
-      <div className="mt-8 space-y-6">
-        <div className="bg-white p-4 rounded-xl shadow-md">
-          <h3 className="text-xl font-semibold text-gray-700 mb-2">مشخصات کلی</h3>
-          <ul className="space-y-1 text-gray-600 text-base" dir="rtl">
-            <li><strong>جنس:</strong> {product.material || "نامشخص"}</li>
-            <li><strong>ابعاد:</strong> {product.size || "نامشخص"}</li>
-            <li><strong>وزن:</strong> {product.weight || "نامشخص"}</li>
-            {product.color && <li><strong>رنگ:</strong> {product.color}</li>}
-            {product.voltage && <li><strong>ولتاژ:</strong> {product.voltage}</li>}
-            {product.powerConsumption && <li><strong>توان مصرفی:</strong> {product.powerConsumption}</li>}
-          </ul>
-        </div>
-        <div className="bg-white p-4 rounded-xl shadow-md">
-          <button
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="flex justify-between w-full text-gray-700 font-semibold hover:text-pink-500 cursor-pointer"
-          >
-            <span>مشاهده ویژگی‌های بیشتر</span>
-            <ChevronDown className={`w-5 h-5 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
-          </button>
-          {isExpanded && (
-            <div className="mt-2 text-gray-600 text-base space-y-2" dir="rtl">
-              <p><strong>توضیحات:</strong> {product.additionalFeatures || "—"}</p>
-              <p><strong>مناسب برای:</strong> {product.suitableFor || "نامشخص"}</p>
+          {inventoryText && (
+            <div className="bg-gray-50 border rounded-lg p-4 text-base text-gray-700">
+              <strong>موجودی:</strong> {inventoryText}
             </div>
           )}
         </div>
+      </div>
+      <div className="mt-8 space-y-6">
+        {specs.length > 0 && (
+          <div className="bg-white p-4 rounded-xl shadow-md">
+            <h3 className="text-xl font-semibold text-gray-700 mb-2">مشخصات کلی</h3>
+            <ul className="space-y-1 text-gray-600 text-base" dir="rtl">
+              {specs.map(([label, value]) => (
+                <li key={label}><strong>{label}:</strong> {value}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {extras.length > 0 && (
+          <div className="bg-white p-4 rounded-xl shadow-md">
+            <button
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="flex justify-between w-full text-gray-700 font-semibold hover:text-pink-500 cursor-pointer"
+            >
+              <span>مشاهده ویژگی‌های بیشتر</span>
+              <ChevronDown className={`w-5 h-5 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
+            </button>
+            {isExpanded && (
+              <div className="mt-2 text-gray-600 text-base space-y-2" dir="rtl">
+                {extras.map(([label, value]) => (
+                  <p key={label}><strong>{label}:</strong> {value}</p>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
         <ProductComments productId={product.id} initialComments={initialComments} />
       </div>
 
@@ -318,18 +339,6 @@ export default function ProductDetails({ product, initialComments = [] }) {
       <Tooltip id="favorite-tooltip" />
 
       {/* Toast */}
-      <Toaster
-        position="top-right"
-        toastOptions={{
-          duration: 2500,
-          style: {
-            fontFamily: "Vazirmatn, sans-serif",
-            direction: "rtl",
-            borderRadius: "10px",
-            fontSize: "14px",
-          },
-        }}
-      />
 
       {/* Dialog تأییدیه حذف */}
       <Dialog open={dialog.open} onClose={handleBackdropClick} dir="rtl"

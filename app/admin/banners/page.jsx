@@ -20,7 +20,7 @@ import {
   TableCell,
   Paper,
 } from "@mui/material";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import Link from "next/link";
 import { getImagePath } from "@/app/utils/getImagePath";
 import AppImage from "@/app/components/AppImage";
@@ -387,7 +387,6 @@ export default function AdminBannersPage() {
       `}</style>
 
       <Box sx={{ p: 2 }}>
-        <Toaster position="top-right" />
 
         {/* ===== دیالوگ حذف ===== */}
         <Dialog

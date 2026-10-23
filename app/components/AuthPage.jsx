@@ -6,9 +6,10 @@ import { Button, CircularProgress, TextField } from "@mui/material";
 import { LogIn, UserPlus } from "lucide-react";
 import Icon from "@mdi/react";
 import { mdiEyeOutline, mdiEyeOffOutline } from "@mdi/js";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "../../lib/context";
+import { rememberRedirect, takeRedirect } from "../../lib/redirect";
 
 const allowedAdmins = ["poshtibani.orkideh@gmail.com"];
 
@@ -104,6 +105,11 @@ export default function AuthPage() {
 
     window.location.href = url;
   };
+
+  // مقصد بعد از ورود (?redirect=) را نگه می‌داریم تا ورود با گوگل و مسیر ثبت‌نام ← تأیید ایمیل هم آن را از دست ندهند
+  useEffect(() => {
+    rememberRedirect();
+  }, []);
 
   useEffect(() => {
     const fetchBackground = async () => {
@@ -355,8 +361,15 @@ export default function AuthPage() {
 
         login(data.user, data.token);
         const userName = data.user.name || data.user.firstName + " " + data.user.lastName || "کاربر";
-        sessionStorage.setItem("welcomeMessage", userName)
-        router.push(data.user.role === "admin" ? "/admin" : "/profile");
+        const target = takeRedirect();
+        if (target) {
+          // پیام خوش‌آمد را صفحهٔ پروفایل یا ادمین نشان می‌دهد؛ برای مقصد دیگر همین‌جا نشان می‌دهیم
+          toast.success(`خوش آمدید ${userName} عزیز 🎉`, { position: "top-center" });
+          router.push(target);
+        } else {
+          sessionStorage.setItem("welcomeMessage", userName);
+          router.push(data.user.role === "admin" ? "/admin" : "/profile");
+        }
       }
       else {
         const resp = await fetch("/api/auth/signup", {
@@ -426,17 +439,6 @@ export default function AuthPage() {
 
   return (
     <>
-      <Toaster
-        position="top-center"
-        reverseOrder={false}
-        toastOptions={{
-          duration: 2000,
-          style: {
-            direction: "rtl",
-            fontFamily: "inherit",
-          },
-        }}
-      />
       <div className="fixed inset-0 flex items-center justify-center overflow-hidden mt-8">
         <div
           className="absolute inset-0 z-0"

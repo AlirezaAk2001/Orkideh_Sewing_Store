@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/lib/context";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import {
   Save,
@@ -16,6 +16,7 @@ import Icon from '@mdi/react';
 import { mdiHomePlusOutline } from '@mdi/js';
 import { mdiHomeOutline } from '@mdi/js';
 import { mdiHomeEditOutline } from '@mdi/js';
+import { toPersianDigits } from "@/lib/format";
 
 const animationStyles = `
   @keyframes spin360FadeOut {
@@ -231,25 +232,14 @@ export default function AddressesPage() {
 
   return (
     <>
-      <Toaster
-        position="top-center"
-        reverseOrder={false}
-        toastOptions={{
-          duration: 2000,
-          style: {
-            direction: "rtl",
-            fontFamily: "inherit",
-          },
-        }}
-      />
 
       <div
-        className="max-w-4xl mx-auto p-4 sm:p-6 bg-white dark:bg-gray-800 shadow rounded-lg mt-4 sm:mt-6"
+        className="max-w-4xl mx-auto p-4 sm:p-6 bg-white shadow rounded-lg mt-4 sm:mt-6"
         dir="rtl"
       >
         <style>{animationStyles}</style>
 
-        <h1 className="text-xl sm:text-2xl font-bold mb-4 text-gray-700 dark:text-gray-200 flex gap-1">
+        <h1 className="text-xl sm:text-2xl font-bold mb-4 text-gray-700 flex gap-1">
           <MapPinHouse className="w-7 h-7" />
           آدرس‌های من
         </h1>
@@ -429,7 +419,7 @@ export default function AddressesPage() {
 
         {/* لیست آدرس‌ها */}
         {addresses.length === 0 ? (
-          <p className="text-gray-600 dark:text-gray-400">هیچ آدرسی ثبت نشده است.</p>
+          <p className="text-gray-600">هیچ آدرسی ثبت نشده است.</p>
         ) : (
           <ul className="space-y-2">
             {addresses.map((addr) => (
@@ -441,11 +431,11 @@ export default function AddressesPage() {
                 <div>
                   <p className="font-semibold text-gray-600 flex gap-1">
                     <Icon path={mdiHomeOutline} size={1} />
-                    آدرس: {addr.address.toLocaleString('fa-IR')}
+                    آدرس: {toPersianDigits(addr.address)}
                   </p>
                   <p className="font-semibold text-gray-600 flex gap-1">
                     <Milestone className="w-5 h-5" />
-                    کد پستی: {addr.postalCode.toLocaleString('fa-IR')}
+                    کد پستی: {toPersianDigits(addr.postalCode)}
                   </p>
                 </div>
                 <button

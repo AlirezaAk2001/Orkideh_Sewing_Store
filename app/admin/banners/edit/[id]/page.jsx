@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Box, Button, TextField, CircularProgress } from "@mui/material";
 import { useRouter, useParams } from "next/navigation";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import { Save } from "lucide-react";
 import Image from "next/image";
 import Icon from '@mdi/react';
@@ -270,7 +270,6 @@ export default function EditBannerPage() {
       `}</style>
 
       <Box sx={{ p: 0 }} dir="rtl">
-        <Toaster position="top-right" />
 
         {/* ── عنوان صفحه ── */}
         <div className="banner-header-card">

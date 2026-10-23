@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/context";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -71,12 +71,7 @@ export default function ProfilePage() {
     };
     handleResize();
     window.addEventListener("resize", handleResize);
-
-    document.body.style.overflow = "hidden";
-    return () => {
-      window.removeEventListener("resize", handleResize);
-      document.body.style.overflow = "auto";
-    };
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   const tabContent = {
@@ -106,12 +101,21 @@ export default function ProfilePage() {
     );
   }
 
+  const tabs = [
+    { key: "orders", icon: <ShoppingBagOutlinedIcon />, label: "سفارش‌های من" },
+    { key: "addresses", icon: <MapPinHouse />, label: "آدرس‌های من" },
+    { key: "cart", icon: <ShoppingCartOutlinedIcon />, label: "سبد خرید" },
+    { key: "favorites", icon: <FavoriteBorderOutlinedIcon />, label: "علاقه‌مندی‌های من" },
+    { key: "settings", icon: <Icon path={mdiAccountCogOutline} size={1} />, label: "تنظیمات حساب کاربری" },
+  ];
+
+  // منو و محتوای تب با flex کنار هم می‌نشینند (روی موبایل زیر هم)؛ پنل‌ها دیگر absolute نیستند، پس از لبهٔ صفحه بیرون نمی‌زنند
   return (
-    <div className="relative flex flex-col md:flex-row justify-center items-center md:items-start h-screen w-full overflow-hidden" dir="rtl">
+    <div className="relative isolate min-h-[calc(100vh-5rem)] w-full overflow-hidden px-4 py-6 md:py-10" dir="rtl">
 
       {/* بکگراند */}
       <div
-        className="absolute inset-0 z-0"
+        className="absolute inset-0 -z-10"
         style={{
           backgroundImage: `url(/image/back-user.webp)`,
           backgroundRepeat: "no-repeat",
@@ -122,7 +126,6 @@ export default function ProfilePage() {
           transform: "scale(1.05)",
         }}
       />
-      <Toaster />
 
       {/* دیالوگ تأیید خروج */}
       <Dialog
@@ -175,92 +178,82 @@ export default function ProfilePage() {
         </DialogActions>
       </Dialog>
 
-      {/* منو */}
-      <motion.div
-        animate={
-          activeTab && !isMobile
-            ? { x: "40%", y: "-10%", scale: 0.9, opacity: 0.9 }
-            : { x: "0%", y: "0%", scale: 1, opacity: 1 }
-        }
-        transition={{ duration: 0.6, ease: "easeInOut" }}
-        className={`z-20 backdrop-blur-md bg-white/70 border border-white/40 shadow-2xl rounded-xl p-4 sm:p-6 md:p-8 
-        ${isMobile ? "relative w-full max-h-[40%]" : "absolute w-[95%] sm:w-[80%] md:w-[40%] max-h-[90%]"} 
-        overflow-y-auto`}
-      >
-        {/* پروفایل کاربر با نمایش نام کاربری */}
-        <div className="flex items-center gap-3 border-b pb-3 mb-3">
-          <Icon path={mdiAccountCircleOutline} size={1} className="text-gray-600" />
-          <div>
-            <p className="text-sm sm:text-base flex items-center gap-1">
-              <Icon path={mdiCardAccountDetailsOutline} size={0.8} />
-              نام و نام خانوادگی: {currentUser?.name || "کاربر مهمان"}
-            </p>
-            <p className="text-sm sm:text-base flex items-center gap-1">
-              <Icon path={mdiAccountBoxEditOutline} size={0.8} />
-              نام کاربری: {currentUser?.username || "نام کاربری تنظیم نشده"}
-            </p>
-            <p className="text-sm sm:text-base flex items-center gap-1">
-              <Icon path={mdiEmailOutline} size={0.8} />
-              ایمیل: {currentUser?.email || "ایمیل ثبت نشده"}
-            </p>
+      <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-4 md:flex-row md:items-start md:justify-center md:gap-6">
+        {/* منو */}
+        <motion.div
+          layout="position"
+          transition={{ duration: 0.5, ease: "easeInOut" }}
+          className="w-full shrink-0 rounded-xl border border-white/40 bg-white/70 p-4 shadow-2xl backdrop-blur-md sm:p-6 md:w-80"
+        >
+          {/* پروفایل کاربر با نمایش نام کاربری */}
+          <div className="mb-3 flex items-center gap-3 border-b pb-3">
+            <Icon path={mdiAccountCircleOutline} size={1} className="shrink-0 text-gray-600" />
+            <div className="min-w-0">
+              <p className="flex items-center gap-1 text-sm sm:text-base">
+                <Icon path={mdiCardAccountDetailsOutline} size={0.8} className="shrink-0" />
+                <span className="truncate">نام و نام خانوادگی: {currentUser?.name || "کاربر مهمان"}</span>
+              </p>
+              <p className="flex items-center gap-1 text-sm sm:text-base">
+                <Icon path={mdiAccountBoxEditOutline} size={0.8} className="shrink-0" />
+                <span className="truncate">نام کاربری: {currentUser?.username || "نام کاربری تنظیم نشده"}</span>
+              </p>
+              <p className="flex items-center gap-1 text-sm sm:text-base">
+                <Icon path={mdiEmailOutline} size={0.8} className="shrink-0" />
+                <span className="truncate">ایمیل: {currentUser?.email || "ایمیل ثبت نشده"}</span>
+              </p>
+            </div>
           </div>
-        </div>
 
-        <nav className={`${isMobile ? "flex-row justify-around" : "flex-col space-y-2 sm:space-y-3"} flex`}>
-          {[
-            { key: "orders", icon: <ShoppingBagOutlinedIcon />, label: "سفارش‌های من" },
-            { key: "addresses", icon: <MapPinHouse />, label: "آدرس‌های من" },
-            { key: "cart", icon: <ShoppingCartOutlinedIcon />, label: "سبد خرید" },
-            { key: "favorites", icon: <FavoriteBorderOutlinedIcon />, label: "علاقه‌مندی‌های من" },
-            { key: "settings", icon: <Icon path={mdiAccountCogOutline} size={1} />, label: "تنظیمات حساب کاربری" },
-          ].map((tab) => (
+          {/* روی موبایل شبکهٔ ۳ستونه (همهٔ گزینه‌ها بدون اسکرول افقی دیده می‌شوند)، روی دسکتاپ فهرست عمودی */}
+          <nav className="grid grid-cols-3 gap-2 md:flex md:flex-col md:gap-3" aria-label="حساب کاربری">
+            {tabs.map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                aria-current={activeTab === tab.key ? "page" : undefined}
+                className={`flex cursor-pointer flex-col items-center justify-center gap-1 rounded-lg p-2 text-center text-xs transition-all duration-300 md:flex-row md:justify-start md:gap-2 md:text-right md:text-base
+              ${activeTab === tab.key
+                    ? "bg-blue-100 font-semibold text-blue-600"
+                    : "text-gray-700 hover:bg-gray-100"
+                  }`}
+              >
+                {tab.icon}
+                {tab.label}
+              </button>
+            ))}
+
             <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`flex items-center gap-2 p-2 rounded-lg text-sm sm:text-base cursor-pointer transition-all duration-300 
-            ${activeTab === tab.key
-                  ? "bg-blue-100 text-blue-600 font-semibold"
-                  : "hover:bg-gray-100 text-gray-700"
-                }`}
+              onClick={handleLogout}
+              className="flex cursor-pointer flex-col items-center justify-center gap-1 rounded-lg bg-red-50 p-2 text-center text-xs text-red-600 hover:bg-red-100 md:flex-row md:justify-start md:gap-2 md:text-right md:text-base"
             >
-              {tab.icon}
-              {tab.label}
+              <LogoutOutlinedIcon /> خروج از حساب
             </button>
-          ))}
+          </nav>
+        </motion.div>
 
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 bg-red-50 text-red-600 hover:bg-red-100 p-2 rounded-lg text-sm sm:text-base cursor-pointer"
-          >
-            <LogoutOutlinedIcon /> خروج از حساب
-          </button>
-        </nav>
-      </motion.div>
-
-      {/* محتوای تب‌ها */}
-      <AnimatePresence>
-        {activeTab && (
-          <motion.div
-            key={activeTab}
-            initial={{ opacity: 0, x: isMobile ? 0 : "-100%" }}
-            animate={{ opacity: 1, x: isMobile ? 0 : "-5%" }}
-            exit={{ opacity: 0, x: isMobile ? 0 : "-100%" }}
-            transition={{ duration: 0.6, ease: "easeInOut" }}
-            className={`${isMobile ? "relative mt-4 w-full flex-1" : "absolute left-0 z-10 w-[95%] sm:w-[80%] md:w-[40%] max-h-[90%]"
-              } backdrop-blur-md bg-white/70 border border-white/40 shadow-2xl rounded-xl p-4 sm:p-6 md:p-8 overflow-y-auto`}
-          >
-            {tabContent[activeTab]}
-            <button
-              onClick={() => setActiveTab(null)}
-              className="mt-6 flex items-center gap-1 px-3 sm:px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 text-sm sm:text-base cursor-pointer transition-all"
+        {/* محتوای تب‌ها */}
+        <AnimatePresence mode="wait">
+          {activeTab && (
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, x: isMobile ? 0 : -40, y: isMobile ? 20 : 0 }}
+              animate={{ opacity: 1, x: 0, y: 0 }}
+              exit={{ opacity: 0, x: isMobile ? 0 : -40, y: isMobile ? 20 : 0 }}
+              transition={{ duration: 0.4, ease: "easeInOut" }}
+              className="w-full min-w-0 rounded-xl border border-white/40 bg-white/70 p-4 shadow-2xl backdrop-blur-md sm:p-6 md:w-[34rem] lg:w-[40rem]"
             >
-              <IterationCcw className="text-gray-700" />
-              بازگشت
-            </button>
-
-          </motion.div>
-        )}
-      </AnimatePresence>
+              {tabContent[activeTab]}
+              <button
+                onClick={() => setActiveTab(null)}
+                className="mt-6 flex cursor-pointer items-center gap-1 rounded-lg bg-gray-200 px-3 py-2 text-sm transition-all hover:bg-gray-300 sm:px-4 sm:text-base"
+              >
+                <IterationCcw className="text-gray-700" />
+                بازگشت
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
     </div>
   );
 }

@@ -22,7 +22,7 @@ import {
 } from "@mui/material";
 import Link from "next/link";
 import axios from "axios";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import AppImage from "@/app/components/AppImage";
 import Icon from '@mdi/react';
 import {
@@ -389,7 +389,6 @@ export default function AdminCategories() {
       `}</style>
 
       <Box sx={{ p: 2 }}>
-        <Toaster position="top-right" />
 
         {/* ===== دیالوگ تأیید حذف دسته‌بندی ===== */}
         <Dialog

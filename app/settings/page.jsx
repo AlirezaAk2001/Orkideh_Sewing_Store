@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/context";
+import { authUrl } from "@/lib/redirect";
 import Swal from "sweetalert2";
 import { Save, Loader2, RotateCcwKey } from "lucide-react";
 import Icon from '@mdi/react';
@@ -52,7 +53,7 @@ const rtlStyles = {
 
 export default function SettingsPage() {
   const router = useRouter();
-  const { currentUser, updateUser } = useAuth();
+  const { currentUser, updateUser, loading } = useAuth();
 
   const [username, setUsername] = useState(currentUser?.username || "");
   const [usernameError, setUsernameError] = useState("");
@@ -82,16 +83,22 @@ export default function SettingsPage() {
     setTimeout(() => setShakeFields({}), 500);
   };
 
+  // تا پایان بارگذاری وضعیت ورود (loading) کسی «وارد نشده» حساب نمی‌شود؛ وگرنه با باز کردن مستقیم صفحه هشدار به کاربرِ واردشده هم نشان داده می‌شد
   useEffect(() => {
-    if (!currentUser) {
+    if (!loading && !currentUser) {
       Swal.fire({
         icon: "warning",
         title: "هشدار",
         text: "برای دسترسی به تنظیمات، لطفاً وارد شوید!",
         confirmButtonText: "باشه",
-      }).then(() => router.push("/login"));
+      }).then(() => router.push(authUrl("/settings")));
     }
-  }, [currentUser, router]);
+  }, [loading, currentUser, router]);
+
+  // با باز کردن مستقیم صفحه، کاربر کمی دیرتر از اولین رندر می‌رسد؛ نام کاربری فعلی را وقتی رسید در فیلد می‌گذاریم
+  useEffect(() => {
+    if (currentUser?.username) setUsername((prev) => prev || currentUser.username);
+  }, [currentUser?.username]);
 
   // بررسی وجود نام کاربری در دیتابیس
   const checkUsernameExists = async (value) => {
@@ -288,17 +295,17 @@ export default function SettingsPage() {
 
   return (
     <div
-      className="max-w-4xl mx-auto p-6 bg-white dark:bg-gray-800 shadow rounded-lg mt-6 transition"
+      className="max-w-4xl mx-auto p-6 bg-white shadow rounded-lg mt-6 transition"
       dir="rtl"
     >
-      <h1 className="text-2xl font-bold mb-6 text-gray-700 dark:text-gray-200 flex gap-1">
+      <h1 className="text-2xl font-bold mb-6 text-gray-700 flex gap-1">
         <Icon path={mdiAccountCogOutline} size={1.3} />
         تنظیمات حساب کاربری
       </h1>
 
       {/* تغییر نام کاربری */}
       <div className="mb-8">
-        <label className="block mb-3 font-medium text-gray-700 dark:text-gray-200">
+        <label className="block mb-3 font-medium text-gray-700">
           <Icon path={mdiAccountEditOutline} className="inline-block w-5 h-5 ml-1" />
           تغییر نام کاربری
         </label>
@@ -384,7 +391,7 @@ export default function SettingsPage() {
 
       {/* تغییر رمز عبور */}
       <div>
-        <label className="block mb-3 font-medium text-gray-700 dark:text-gray-200">
+        <label className="block mb-3 font-medium text-gray-700">
           <RotateCcwKey className="inline-block w-5 h-5 ml-1" />
           تغییر رمز عبور
         </label>

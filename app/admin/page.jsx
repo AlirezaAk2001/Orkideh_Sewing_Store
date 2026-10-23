@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import axios from "axios";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import Icon from '@mdi/react';
 import { mdiMonitorDashboard, mdiPanoramaVariantOutline, mdiCommentAccountOutline, mdiAccountFileText } from '@mdi/js';
@@ -155,7 +155,6 @@ export default function AdminHome() {
 
   return (
     <div className="p-4 relative" dir="rtl">
-      <Toaster position="top-right" />
 
       <h1 className="text-2xl font-bold mb-6 flex gap-1">
         <Icon path={mdiMonitorDashboard} size={1.2} />
@@ -175,7 +174,7 @@ export default function AdminHome() {
               >
                 <div className="text-pink-600">{card.icon}</div>
                 <h2 className="font-bold text-center">{card.name}</h2>
-                <p className="text-xl font-semibold">{card.value}</p>
+                <p className="text-xl font-semibold">{(card.value ?? 0).toLocaleString("fa-IR")}</p>
               </div>
             ))}
           </div>

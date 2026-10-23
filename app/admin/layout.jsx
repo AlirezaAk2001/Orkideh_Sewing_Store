@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import Icon from '@mdi/react';
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 import CategoryOutlinedIcon from "@mui/icons-material/CategoryOutlined";
@@ -121,17 +121,6 @@ export default function AdminLayout({ children }) {
 
   return (
     <>
-      <Toaster
-        position="top-center"
-        reverseOrder={false}
-        toastOptions={{
-          duration: 2000,
-          style: {
-            direction: "rtl",
-            fontFamily: "Vazirmatn, sans-serif",
-          },
-        }}
-      />
 
       <div className="relative flex h-screen overflow-hidden" dir="rtl">
         {/* بکگراند */}

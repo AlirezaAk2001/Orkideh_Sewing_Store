@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import { Box, Button, TextField, MenuItem, CircularProgress } from "@mui/material";
 import { Save } from "lucide-react";
 import Icon from '@mdi/react';
@@ -305,7 +305,6 @@ export default function AddProduct() {
       `}</style>
 
       <Box sx={{ p: 0 }} dir="rtl">
-        <Toaster position="top-right" />
 
         {/* ── عنوان صفحه ── */}
         <div className="product-header-card">

@@ -31,10 +31,9 @@ export async function DELETE(req, { params }) {
     // حذف خود سفارش
     await prisma.order.delete({ where: { id: orderId } });
 
-    // حذف سبد خرید کاربر
-    await prisma.cart.deleteMany({ where: { userId } });
-
-    return NextResponse.json({ success: true, message: "سفارش و سبد خرید حذف شدند" });
+    // سبد خرید را اینجا پاک نمی‌کنیم: حذف یک محصول از سبد هم این مسیر را صدا می‌زند و بقیهٔ محصولات نباید از بین بروند.
+    // هر جا خالی شدن سبد لازم است (مثل صفحهٔ سفارش‌ها)، خودش DELETE /api/cart/clear را صدا می‌زند.
+    return NextResponse.json({ success: true, message: "سفارش حذف شد" });
   } catch (error) {
     console.error("DELETE Order Error:", error);
     return NextResponse.json({ error: "خطا در حذف سفارش" }, { status: 500 });
