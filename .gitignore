@@ -20,6 +20,9 @@
 # production
 /build
 
+# تصویرهای آپلودشدهٔ ادمین (lib/uploads.js)؛ مثل دیتابیس باید جدا پشتیبان‌گیری شود و داخل گیت نمی‌رود
+/uploads/
+
 .npm-cache/
 
 UsersAMAppDataLocalnpm-cache/

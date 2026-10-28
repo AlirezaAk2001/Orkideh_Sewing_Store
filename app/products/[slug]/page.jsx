@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import ProductDetails from "@/app/components/ProductDetails";
 import JsonLd from "@/app/components/JsonLd";
-import { getProductBySlug } from "@/lib/products";
+import { getProductBySlug, listRelatedProducts } from "@/lib/products";
 import { listApprovedComments } from "@/lib/comments";
 import { pageMetadata, productDescription, productJsonLd } from "@/lib/seo";
 
@@ -36,13 +36,13 @@ export default async function ProductDetailPage({ params }) {
   if (!product) notFound();
 
   // نظرهای تأییدشده: هم برای نمایش اول صفحه (بدون چشمک بارگذاری) هم برای JSON-LD (امتیاز و نظرها در نتایج گوگل)
-  const comments = await listApprovedComments(product.id);
+  const [comments, related] = await Promise.all([listApprovedComments(product.id), listRelatedProducts(product)]);
 
   return (
     <>
       <JsonLd data={productJsonLd(product, comments)} />
       {/* key: با رفتن از یک محصول به محصول دیگر، وضعیت صفحه (تعداد، منوهای باز) از نو شروع می‌شود */}
-      <ProductDetails key={product.id} product={product} initialComments={comments} />
+      <ProductDetails key={product.id} product={product} initialComments={comments} related={related} />
     </>
   );
 }

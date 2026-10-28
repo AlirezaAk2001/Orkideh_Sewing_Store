@@ -1,15 +1,14 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { Box, Button, TextField, MenuItem, CircularProgress } from "@mui/material";
 import { Save } from "lucide-react";
 import Icon from '@mdi/react';
-import { mdiStorePlusOutline, mdiImagePlusOutline, mdiImageOffOutline, mdiStoreOutline } from '@mdi/js';
-import { getImagePath } from "@/app/utils/getImagePath";
-import AppImage from "@/app/components/AppImage";
+import { mdiStorePlusOutline, mdiStoreOutline } from '@mdi/js';
+import ProductImagesField from "@/app/components/ProductImagesField";
 
 export default function AddProduct() {
   const router = useRouter();
@@ -17,10 +16,8 @@ export default function AddProduct() {
   const [price, setPrice] = useState("");
   const [stock, setStock] = useState("");
   const [categoryId, setCategoryId] = useState("");
-  const [image, setImage] = useState("");
-  const [previewImg, setPreviewImg] = useState("");
-  const [imgLoading, setImgLoading] = useState(false);
-  const [imgError, setImgError] = useState(false);
+  const [gallery, setGallery] = useState([]); // تصویرها؛ اولی تصویر اصلی (image)، بقیه گالری (images)
+  const [uploading, setUploading] = useState(false);
   const [additionalFeatures, setAdditionalFeatures] = useState("");
   const [material, setMaterial] = useState("");
   const [size, setSize] = useState("");
@@ -33,9 +30,8 @@ export default function AddProduct() {
   const [finalPrice, setFinalPrice] = useState("");
   const [categories, setCategories] = useState([]);
   const [isSaving, setIsSaving] = useState(false);
-  const debounceRef = useRef(null);
 
-  const isFormFilled = name.trim() || price.trim() || String(categoryId).trim() || image.trim();
+  const isFormFilled = name.trim() || price.trim() || String(categoryId).trim() || gallery.length > 0;
 
   const rtlSelectStyles = {
     InputLabelProps: {
@@ -96,34 +92,15 @@ export default function AddProduct() {
     fetchCategories();
   }, []);
 
-  // Debounce برای پیش‌نمایش تصویر
-  const handleImgChange = (val) => {
-    setImage(val);
-    setImgError(false);
-
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-
-    if (!val.trim()) {
-      setPreviewImg("");
-      setImgLoading(false);
-      return;
-    }
-
-    setImgLoading(true);
-    debounceRef.current = setTimeout(() => {
-      setPreviewImg(val.trim());
-    }, 600);
-  };
-
-  useEffect(() => {
-    if (!previewImg) setImgLoading(false);
-  }, [previewImg]);
-
   // ذخیره محصول جدید
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!name || !price) {
       toast.error("نام و قیمت محصول الزامی است");
+      return;
+    }
+    if (gallery.length === 0) {
+      toast.error("حداقل یک تصویر برای محصول اضافه کنید");
       return;
     }
 
@@ -137,7 +114,8 @@ export default function AddProduct() {
           price: parseFloat(price),
           stock: stock === "" ? null : parseInt(stock),
           categoryId: categoryId ? parseInt(categoryId) : null,
-          image,
+          image: gallery[0],
+          images: gallery.slice(1),
           additionalFeatures,
           material,
           size,
@@ -228,44 +206,6 @@ export default function AddProduct() {
           gap: 4px;
         }
 
-        /* ── پیش‌نمایش تصویر ── */
-        .img-preview-wrapper {
-          width: 100%;
-          aspect-ratio: 16 / 2;
-          border-radius: 12px;
-          overflow: hidden;
-          background: #f1f5f9;
-          border: 2px dashed #cbd5e1;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          margin-bottom: 8px;
-          transition: border-color .25s ease, background .25s ease;
-          position: relative;
-        }
-        .img-preview-wrapper.has-image {
-          border-style: solid;
-          border-color: #6366f1;
-          background: #0f172a;
-        }
-        .img-preview-wrapper img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          display: block;
-        }
-        .img-preview-placeholder {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 8px;
-          color: #94a3b8;
-          font-family: Vazirmatn, sans-serif;
-          font-size: .8rem;
-          user-select: none;
-          pointer-events: none;
-        }
-
         /* ── دکمه ذخیره ── */
         .save-btn {
           width: 100%;
@@ -320,44 +260,6 @@ export default function AddProduct() {
           </div>
 
           <div className="product-card-body">
-            {/* پیش‌نمایش تصویر */}
-            <div className={`img-preview-wrapper${previewImg && !imgError ? " has-image" : ""}`}>
-              {/* اسپینر لودینگ */}
-              {imgLoading && (
-                <div className="img-preview-placeholder">
-                  <CircularProgress size={28} sx={{ color: "#6366f1" }} />
-                  <span>در حال بررسی تصویر...</span>
-                </div>
-              )}
-
-              {/* تصویر واقعی — مخفی تا load بشه */}
-              {!imgError && previewImg && (
-                <AppImage
-                  key={previewImg}
-                  src={getImagePath(previewImg)}
-                  alt="پیش‌نمایش محصول"
-                  fill
-                  sizes="(max-width: 1000px) 100vw, 1000px"
-                  priority
-                  style={{ display: imgLoading ? "none" : "block" }}
-                  onLoad={() => { setImgLoading(false); setImgError(false); }}
-                  onError={() => { setImgLoading(false); setImgError(true); }}
-                />
-              )}
-
-              {/* placeholder — وقتی نه لودینگ، نه تصویر */}
-              {!imgLoading && (!previewImg || imgError) && (
-                <div className="img-preview-placeholder">
-                  <Icon
-                    path={imgError ? mdiImageOffOutline : mdiImagePlusOutline}
-                    size={1.6}
-                    color={imgError ? "#f87171" : "#cbd5e1"}
-                  />
-                  <span>{imgError ? "تصویر یافت نشد" : "پیش‌نمایش تصویر محصول"}</span>
-                </div>
-              )}
-            </div>
-
             {/* فرم */}
             <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 2 }}>
               {/* ردیف ۱: نام محصول | قیمت */}
@@ -427,17 +329,8 @@ export default function AddProduct() {
                 </TextField>
               </Box>
 
-              {/* ردیف ۳: آدرس تصویر - تک ستونه */}
-              <TextField
-                {...rtlStyles}
-                label="آدرس تصویر محصول"
-                placeholder="مثال: z.png"
-                value={image}
-                onChange={(e) => handleImgChange(e.target.value)}
-                required
-                fullWidth
-                margin="normal"
-              />
+              {/* ردیف ۳: تصویرهای محصول (آپلود چند تصویر؛ اولی تصویر اصلی) */}
+              <ProductImagesField value={gallery} onChange={setGallery} onBusyChange={setUploading} disabled={isSaving} />
 
               {/* ردیف ۴: تخفیف | قیمت نهایی */}
               <Box sx={{ display: "flex", gap: 2 }}>
@@ -556,7 +449,7 @@ export default function AddProduct() {
                 type="submit"
                 variant="contained"
                 className="save-btn"
-                disabled={isSaving || !isFormFilled}
+                disabled={isSaving || uploading || !isFormFilled}
               >
                 {isSaving ? (
                   <>

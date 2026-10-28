@@ -12,7 +12,7 @@ const ARROW_CLASS =
 // دکمه‌ها فقط وقتی جا برای حرکت در آن جهت هست فعال‌اند و اگر همهٔ کارت‌ها جا شوند نامرئی‌اند.
 // آخر ردیف یک کاشی «مشاهده همه» است (تنها لینک «مشاهده همه» هر بخش) که اگر کارت‌ها کم باشند، جای خالی را پر می‌کند.
 // ردیف کمی بالا و پایین فضای خالی دارد تا بالا آمدن کارت‌ها و سایه‌شان هنگام hover توسط overflow بریده نشود.
-export default function ProductRail({ id, title, subtitle, href, products }) {
+export default function ProductRail({ id, title, subtitle, href, hint = "همهٔ محصولات فروشگاه", products }) {
   const scroller = useRef(null);
   const [edge, setEdge] = useState({ prev: false, next: false });
 
@@ -101,7 +101,7 @@ export default function ProductRail({ id, title, subtitle, href, products }) {
                 <ArrowLeft className="h-5 w-5" aria-hidden="true" />
               </span>
               <span className="relative text-lg font-bold text-gray-900">مشاهده همه</span>
-              <span className="relative text-sm text-gray-600">همهٔ محصولات فروشگاه</span>
+              <span className="relative text-sm text-gray-600">{hint}</span>
             </Link>
           </li>
         )}

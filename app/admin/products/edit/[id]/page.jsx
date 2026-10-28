@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import axios from "axios";
 import toast from "react-hot-toast";
@@ -8,9 +8,9 @@ import { Box, Button, TextField, MenuItem, CircularProgress } from "@mui/materia
 import { Save } from "lucide-react";
 import Image from "next/image";
 import Icon from '@mdi/react';
-import { mdiStoreEditOutline, mdiImagePlusOutline, mdiImageOffOutline, mdiStoreOutline } from '@mdi/js';
-import { getImagePath } from "@/app/utils/getImagePath";
-import AppImage from "@/app/components/AppImage";
+import { mdiStoreEditOutline, mdiStoreOutline } from '@mdi/js';
+import ProductImagesField from "@/app/components/ProductImagesField";
+import { productImages } from "@/lib/productImages";
 
 export default function EditProduct() {
   const router = useRouter();
@@ -20,10 +20,8 @@ export default function EditProduct() {
   const [price, setPrice] = useState("");
   const [stock, setStock] = useState("");
   const [categoryId, setCategoryId] = useState("");
-  const [image, setImage] = useState("");
-  const [previewImg, setPreviewImg] = useState("");
-  const [imgLoading, setImgLoading] = useState(false);
-  const [imgError, setImgError] = useState(false);
+  const [gallery, setGallery] = useState([]); // تصویرها؛ اولی تصویر اصلی (image)، بقیه گالری (images)
+  const [uploading, setUploading] = useState(false);
   const [additionalFeatures, setAdditionalFeatures] = useState("");
   const [material, setMaterial] = useState("");
   const [size, setSize] = useState("");
@@ -38,7 +36,6 @@ export default function EditProduct() {
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [initialData, setInitialData] = useState({});
-  const debounceRef = useRef(null);
 
   // rtlStyles کامل مثل بنرها
   const rtlStyles = {
@@ -136,7 +133,7 @@ export default function EditProduct() {
           price: data.price || "",
           stock: data.stock ?? "",
           categoryId: data.categoryId || "",
-          image: data.image || "",
+          gallery: productImages(data).join("\n"),
           additionalFeatures: data.additionalFeatures || "",
           material: data.material || "",
           size: data.size || "",
@@ -151,8 +148,7 @@ export default function EditProduct() {
         setPrice(loaded.price);
         setStock(loaded.stock);
         setCategoryId(loaded.categoryId);
-        setImage(loaded.image);
-        setPreviewImg(loaded.image);
+        setGallery(productImages(data));
         setAdditionalFeatures(loaded.additionalFeatures);
         setMaterial(loaded.material);
         setSize(loaded.size);
@@ -175,39 +171,17 @@ export default function EditProduct() {
 
   // اگر هر فیلد قابل‌ویرایشی عوض شده باشد دکمهٔ ذخیره فعال می‌شود (قبلاً فقط نام، قیمت، دسته و تصویر حساب می‌شد)
   const current = {
-    name, price, stock, categoryId, image, additionalFeatures, material,
+    name, price, stock, categoryId, gallery: gallery.join("\n"), additionalFeatures, material,
     size, color, suitableFor, discount, weight, voltage, powerConsumption,
   };
   const hasChanged = Object.keys(initialData).some(
     (key) => String(current[key] ?? "") !== String(initialData[key] ?? "")
   );
 
-  // Debounce برای پیش‌نمایش تصویر (بدون تغییر)
-  const handleImgChange = (val) => {
-    setImage(val);
-    setImgError(false);
-
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-
-    if (!val.trim()) {
-      setPreviewImg("");
-      setImgLoading(false);
-      return;
-    }
-
-    setImgLoading(true);
-    debounceRef.current = setTimeout(() => {
-      setPreviewImg(val.trim());
-    }, 600);
-  };
-
-  useEffect(() => {
-    if (!previewImg) setImgLoading(false);
-  }, [previewImg]);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!name || !price) return toast.error("نام و قیمت محصول الزامی است");
+    if (gallery.length === 0) return toast.error("حداقل یک تصویر برای محصول لازم است");
 
     setIsSaving(true);
     try {
@@ -217,7 +191,8 @@ export default function EditProduct() {
         price: parseFloat(price),
         stock: stock === "" ? null : parseInt(stock),
         categoryId: categoryId ? parseInt(categoryId) : null,
-        image,
+        image: gallery[0],
+        images: gallery.slice(1),
         additionalFeatures,
         material,
         size,
@@ -301,83 +276,6 @@ export default function EditProduct() {
           gap: 4px;
         }
 
-        /* ── پیش‌نمایش تصویر ── */
-        .img-preview-wrapper {
-          width: 100%;
-          aspect-ratio: 16 / 2;
-          border-radius: 12px;
-          overflow: hidden;
-          background: #f1f5f9;
-          border: 2px dashed #cbd5e1;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          margin-bottom: 8px;
-          transition: border-color .25s ease, background .25s ease;
-          position: relative;
-        }
-        .img-preview-wrapper.has-image {
-          border-style: solid;
-          border-color: #6366f1;
-          background: #0f172a;
-        }
-        .img-preview-wrapper img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          display: block;
-        }
-        .img-preview-placeholder {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 8px;
-          color: #94a3b8;
-          font-family: Vazirmatn, sans-serif;
-          font-size: .8rem;
-          user-select: none;
-          pointer-events: none;
-        }
-
-        /* ── اوورلی نام و قیمت روی تصویر ── */
-        .img-preview-overlay {
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(to top, rgba(0,0,0,.65) 0%, transparent 55%);
-          display: flex;
-          flex-direction: column;
-          justify-content: flex-end;
-          padding: 14px 18px;
-          pointer-events: none;
-        }
-        .img-preview-overlay .overlay-name {
-          font-family: Vazirmatn, sans-serif;
-          font-size: .95rem;
-          font-weight: 700;
-          color: #fff;
-          text-shadow: 0 1px 4px rgba(0,0,0,.4);
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-        .img-preview-overlay .overlay-price {
-          font-family: Vazirmatn, sans-serif;
-          font-size: .78rem;
-          color: rgba(255,255,255,.8);
-          margin-top: 2px;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-        .img-preview-overlay .overlay-original-price {
-          font-family: Vazirmatn, sans-serif;
-          font-size: .7rem;
-          color: rgba(255,255,255,.5);
-          text-decoration: line-through;
-          margin-right: 6px;
-          white-space: nowrap;
-        }
-
         /* ── دکمه ذخیره ── */
         .save-btn {
           width: 100%;
@@ -433,60 +331,6 @@ export default function EditProduct() {
           </div>
 
           <div className="product-card-body">
-            {/* پیش‌نمایش تصویر (مشابه بنرها با اوورلی) */}
-            <div className={`img-preview-wrapper${previewImg && !imgError ? " has-image" : ""}`}>
-              {imgLoading && (
-                <div className="img-preview-placeholder">
-                  <CircularProgress size={28} sx={{ color: "#6366f1" }} />
-                  <span>در حال بررسی تصویر...</span>
-                </div>
-              )}
-
-              {previewImg && (
-                <AppImage
-                  key={previewImg}
-                  src={getImagePath(previewImg)}
-                  alt="پیش‌نمایش محصول"
-                  fill
-                  sizes="(max-width: 1000px) 100vw, 1000px"
-                  priority
-                  style={{ display: imgLoading ? "none" : "block" }}
-                  onLoad={()  => { setImgLoading(false); setImgError(false); }}
-                  onError={() => { setImgLoading(false); setImgError(true);  }}
-                />
-              )}
-
-              {/* اوورلی نام و قیمت (مشابه بنرها با عنوان و توضیحات) */}
-              {previewImg && !imgError && !imgLoading && name && (
-                <div className="img-preview-overlay">
-                  <span className="overlay-name">{name}</span>
-                  <span className="overlay-price">
-                    {discount ? (
-                      <>
-                        {Number(finalPrice).toLocaleString("fa-IR")} تومان
-                        <span className="overlay-original-price">
-                          {Number(price).toLocaleString("fa-IR")} تومان
-                        </span>
-                      </>
-                    ) : (
-                      <>{price ? `${Number(price).toLocaleString("fa-IR")} تومان` : ""}</>
-                    )}
-                  </span>
-                </div>
-              )}
-
-              {!imgLoading && (!previewImg || imgError) && (
-                <div className="img-preview-placeholder">
-                  <Icon
-                    path={imgError ? mdiImageOffOutline : mdiImagePlusOutline}
-                    size={1.6}
-                    color={imgError ? "#f87171" : "#cbd5e1"}
-                  />
-                  <span>{imgError ? "تصویر یافت نشد" : "پیش‌نمایش تصویر محصول"}</span>
-                </div>
-              )}
-            </div>
-
             {/* فرم (کلیه فیلدها با چیدمان منعطف اما کاملاً مشابه استایل بنرها) */}
             <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 2 }}>
               {/* ردیف ۱: نام محصول | قیمت */}
@@ -556,17 +400,8 @@ export default function EditProduct() {
                 </TextField>
               </Box>
 
-              {/* ردیف ۳: آدرس تصویر */}
-              <TextField
-                {...rtlStyles}
-                label="آدرس تصویر"
-                placeholder="مثال: z.png"
-                value={image}
-                onChange={(e) => handleImgChange(e.target.value)}
-                required
-                fullWidth
-                margin="normal"
-              />
+              {/* ردیف ۳: تصویرهای محصول (آپلود چند تصویر؛ اولی تصویر اصلی) */}
+              <ProductImagesField value={gallery} onChange={setGallery} onBusyChange={setUploading} disabled={isSaving} />
 
               {/* ردیف ۴: تخفیف | قیمت نهایی */}
               <Box sx={{ display: "flex", gap: 2 }}>
@@ -685,7 +520,7 @@ export default function EditProduct() {
                 type="submit"
                 variant="contained"
                 className="save-btn"
-                disabled={isSaving || !hasChanged}
+                disabled={isSaving || uploading || !hasChanged}
               >
                 {isSaving ? (
                   <>

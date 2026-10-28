@@ -107,6 +107,70 @@ main {
   }
 }
 
+/* چیپ تخفیف صفحهٔ محصول (ProductDetails.jsx): سکه‌ای برجسته با حلقهٔ سفید، انعکاس نور بالا و لبهٔ ضخامت زیرش. روی عکس می‌نشیند،
+   پس z-index دارد (دکمهٔ زوم هم موقعیت‌دار است و بدون آن چیپ را می‌پوشاند) و کلیک را به همان دکمه رد می‌کند.
+   برق (::after) نرم و کند از رویش می‌گذرد: حدود نیمی از هر چرخه حرکت و نیم دیگر مکث است. با «کاهش حرکت» برق نمی‌زند. */
+.discount-chip {
+  position: absolute;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 4.25rem;
+  height: 4.25rem;
+  overflow: hidden;
+  isolation: isolate;
+  pointer-events: none;
+  border-radius: 9999px;
+  color: #fff;
+  background: radial-gradient(circle at 32% 22%, var(--color-brand-500), var(--color-brand-600) 58%, var(--color-brand-700));
+  box-shadow: 0 0 0 3px #fff, 0 5px 0 3px var(--color-brand-700), 0 12px 20px -4px rgb(0 0 0 / 0.35),
+    inset 0 2px 1px rgb(255 255 255 / 0.55), inset 0 -4px 6px rgb(0 0 0 / 0.18);
+}
+.discount-chip::after {
+  content: "";
+  position: absolute;
+  top: -20%;
+  bottom: -20%;
+  left: 0;
+  width: 50%;
+  opacity: 0;
+  background: linear-gradient(100deg, transparent 0%, rgb(255 255 255 / 0.75) 50%, transparent 100%);
+  transform: translateX(-180%) skewX(-18deg);
+}
+/* مسیر برق فقط از بیرون لبهٔ چپ تا بیرون لبهٔ راست چیپ است و منحنی سینوسی دارد؛ پس بیش از یک ثانیه و نیم روی چیپ دیده می‌شود، نه یک جهش سریع */
+@keyframes discount-shine {
+  0% {
+    transform: translateX(-180%) skewX(-18deg);
+  }
+  60%,
+  100% {
+    transform: translateX(250%) skewX(-18deg);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .discount-chip::after {
+    opacity: 1;
+    animation: discount-shine 4.4s cubic-bezier(0.37, 0, 0.63, 1) 0.8s infinite;
+  }
+}
+
+/* تعویض تصویر گالری صفحهٔ محصول (ProductDetails.jsx): تصویر تازه نرم ظاهر می‌شود؛ با «کاهش حرکت» فوری عوض می‌شود */
+@keyframes gallery-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .gallery-fade {
+    animation: gallery-fade 0.35s ease-out both;
+  }
+}
+
 /* دو دایرهٔ تزئینی کاشی «مشاهده همه» (home/ProductRail.jsx): با hover جایشان را عوض می‌کنند و با برداشتن موس برمی‌گردند.
    موقعیت‌ها بر پایهٔ درصد عرض و ارتفاع کاشی‌اند تا در هر اندازه‌ای درست بنشینند. افقی زودتر و عمودی دیرتر حرکت می‌کنند،
    پس مسیر هر دایره خمیده است و دو دایره از دو سوی مخالف از کنار هم رد می‌شوند (نه از وسط هم). */

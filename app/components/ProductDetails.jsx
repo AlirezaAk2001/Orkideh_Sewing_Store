@@ -1,9 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import AppImage from "./AppImage";
-import { ChevronDown, BaggageClaim } from "lucide-react";
+import ImageLightbox from "./ImageLightbox";
+import ProductRail from "./home/ProductRail";
+import { ChevronDown, ChevronLeft, ChevronRight, BaggageClaim, Headset, MessageSquare, PackageCheck, Phone, Star, Truck, ZoomIn } from "lucide-react";
+import { STORE } from "@/lib/contact";
+import { productImages } from "@/lib/productImages";
 import { Tooltip } from 'react-tooltip';
 import { useCart, useFavorites, useAuth } from "@/lib/context";
 import { authUrl } from "@/lib/redirect";
@@ -21,8 +25,96 @@ import DialogContentText from "@mui/material/DialogContentText";
 import DialogActions from "@mui/material/DialogActions";
 import Button from "@mui/material/Button";
 
-// جزئیات محصول؛ داده و نظرهای تأییدشده را صفحهٔ سروری (app/products/[slug]/page.jsx) می‌دهد تا در همان HTML اولیه باشند
-export default function ProductDetails({ product, initialComments = [] }) {
+const fa = (n) => Number(n).toLocaleString("fa-IR");
+
+// فلش‌های قبلی/بعدی گالری روی تصویر (جهت راست‌به‌چپ: «بعدی» سمت چپ)
+const arrowClass =
+  "absolute top-1/2 z-[1] grid h-10 w-10 -translate-y-1/2 cursor-pointer place-items-center rounded-full bg-white/90 text-gray-700 shadow ring-1 ring-gray-200 transition hover:bg-white hover:text-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500";
+
+// امتیاز و تعداد نظر کنار عنوان؛ همان حساب نمایه‌های دیگر (میانگین نظرهای تأییدشده، مثل JSON-LD و کارت محصول).
+// لینک به بخش نظرها می‌رود؛ بدون نظر هم همان لینک دعوت به نوشتن اولین نظر است.
+function RatingSummary({ comments }) {
+  const votes = comments.length;
+  const average = votes > 0 ? comments.reduce((sum, c) => sum + (Number(c.rating) || 0), 0) / votes : 0;
+
+  const goToComments = (event) => {
+    const section = document.getElementById("comments");
+    if (!section) return;
+    event.preventDefault();
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    section.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" });
+    section.focus({ preventScroll: true });
+  };
+
+  return (
+    <a
+      href="#comments"
+      onClick={goToComments}
+      aria-label={
+        votes === 0
+          ? "هنوز نظری ثبت نشده؛ رفتن به بخش نظرها"
+          : average > 0
+          ? `امتیاز ${fa(average.toFixed(1))} از ۵ بر اساس ${fa(votes)} نظر؛ رفتن به بخش نظرها`
+          : `${fa(votes)} نظر؛ رفتن به بخش نظرها`
+      }
+      className="inline-flex w-fit items-center gap-2 rounded-lg text-sm text-gray-600 transition hover:text-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+    >
+      {votes === 0 ? (
+        <>
+          <MessageSquare className="h-4 w-4 text-gray-400" aria-hidden="true" />
+          هنوز نظری ثبت نشده؛ اولین نظر را شما بنویسید
+        </>
+      ) : (
+        <>
+          {average > 0 && (
+            <>
+              <span className="flex" aria-hidden="true">
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <Star key={n} className={`h-4 w-4 ${n <= Math.round(average) ? "fill-amber-400 text-amber-400" : "text-gray-300"}`} />
+                ))}
+              </span>
+              <span className="font-semibold text-gray-800">{Number(average.toFixed(1)).toLocaleString("fa-IR", { minimumFractionDigits: 1 })}</span>
+            </>
+          )}
+          <span>({fa(votes)} نظر)</span>
+        </>
+      )}
+    </a>
+  );
+}
+
+// نوار خرید چسبان پایین صفحه، فقط روی موبایل: قیمت + دکمهٔ اصلی + تماس. visible از IntersectionObserverهای ProductDetails می‌آید؛
+// نوار پنهان با visibility از فوکوس و خواننده‌ها کنار است. با «کاهش حرکت» بدون لغزش ظاهر می‌شود.
+function StickyBuyBar({ visible, oldPrice, price, callHref, callLabel, children }) {
+  return (
+    <div
+      aria-hidden={!visible}
+      className={`fixed inset-x-0 bottom-0 z-40 transition-[transform,visibility] duration-300 ease-out motion-reduce:transition-none md:hidden ${
+        visible ? "visible translate-y-0" : "invisible translate-y-full"
+      }`}
+    >
+      <div className="border-t border-gray-200 bg-white/95 px-4 pt-3 shadow-[0_-8px_24px_-12px_rgb(0_0_0/0.3)] backdrop-blur pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+        <div className="mx-auto flex max-w-xl items-center gap-3" dir="rtl">
+          <div className="shrink-0 leading-tight">
+            {oldPrice && <div className="text-xs text-gray-400 line-through">{oldPrice}</div>}
+            <div className="whitespace-nowrap text-sm font-bold text-brand-600">{price} تومان</div>
+          </div>
+          {children}
+          <a
+            href={callHref}
+            aria-label={callLabel}
+            className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-gray-300 bg-white text-brand-600 transition hover:border-brand-200 hover:bg-brand-50 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+          >
+            <Phone className="h-5 w-5" aria-hidden="true" />
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// جزئیات محصول؛ داده، نظرهای تأییدشده و محصولات مرتبط را صفحهٔ سروری (app/products/[slug]/page.jsx) می‌دهد تا در همان HTML اولیه باشند
+export default function ProductDetails({ product, initialComments = [], related = [] }) {
   const router = useRouter();
   const { currentUser } = useAuth();
   const { addToCart, cartItems = [], removeFromCart } = useCart();
@@ -31,6 +123,37 @@ export default function ProductDetails({ product, initialComments = [] }) {
   const [isFavorite, setIsFavorite] = useState(false);
   const [isInCart, setIsInCart] = useState(false);
   const [quantity, setQuantity] = useState(1);
+  const [zoomOpen, setZoomOpen] = useState(false);
+  // گالری: تصویر اصلی + بقیه به ترتیب؛ active شمارهٔ تصویر نمایش‌داده‌شده (دیالوگ بزرگ‌نمایی هم همین را می‌خواند و می‌نویسد).
+  // سوییچ اول صفحه بدون انیمیشن می‌آید (LCP)؛ بعد از اولین تعویض، تصویرها نرم محو می‌شوند
+  const photos = productImages(product);
+  const [active, setActive] = useState(0);
+  const [swapped, setSwapped] = useState(false);
+  const swipeStart = useRef(null);
+  const current = Math.min(active, Math.max(photos.length - 1, 0));
+  const many = photos.length > 1;
+  const showPhoto = (index) => {
+    setActive(index);
+    setSwapped(true);
+  };
+  const stepPhoto = (step) => showPhoto((current + step + photos.length) % photos.length);
+  const photoAlt = (index) => (index === 0 ? product.name : `${product.name} (تصویر ${fa(index + 1)})`);
+  // کشیدن انگشت روی تصویر (راست‌به‌چپ: کشیدن به راست = بعدی)
+  const onSwipeStart = (event) => {
+    swipeStart.current = event.touches.length === 1 ? { x: event.touches[0].clientX, y: event.touches[0].clientY } : null;
+  };
+  const onSwipeEnd = (event) => {
+    const start = swipeStart.current;
+    swipeStart.current = null;
+    if (!start || !many) return;
+    const point = event.changedTouches[0];
+    const dx = point.clientX - start.x;
+    const dy = point.clientY - start.y;
+    if (Math.abs(dx) >= 50 && Math.abs(dx) > Math.abs(dy) * 1.5) stepPhoto(dx > 0 ? 1 : -1);
+  };
+  // نوار خرید چسبان موبایل: وقتی دکمه‌های اصلی خرید از دید بیرون‌اند نشان داده می‌شود، و وقتی فوتر دیده می‌شود پنهان
+  const actionsRef = useRef(null);
+  const [barVisible, setBarVisible] = useState(false);
 
   // Dialog state برای تأییدیه‌های حذف
   const [dialog, setDialog] = useState({ open: false, type: null }); // type: 'cart' | 'favorite'
@@ -51,6 +174,37 @@ export default function ProductDetails({ product, initialComments = [] }) {
     }
     setIsFavorite(Array.isArray(favorites) && favorites.some((item) => item.id === product?.id));
   }, [cartItems, favorites, product]);
+
+  useEffect(() => {
+    const actions = actionsRef.current;
+    if (!actions || typeof IntersectionObserver === "undefined") return;
+    let actionsOut = false;
+    let footerIn = false;
+    const update = () => setBarVisible(actionsOut && !footerIn);
+    // هدر چسبان بالای صفحه چیزی را که زیرش رفته می‌پوشاند: دکمه‌هایی که زیر هدرند «دیده‌نشده» حساب می‌شوند
+    const headerHeight = Math.round(document.querySelector("header")?.getBoundingClientRect().height ?? 0);
+    const actionsObserver = new IntersectionObserver(
+      ([entry]) => {
+        actionsOut = !entry.isIntersecting;
+        update();
+      },
+      { rootMargin: `-${headerHeight}px 0px 0px 0px` }
+    );
+    actionsObserver.observe(actions);
+    const footer = document.querySelector("footer");
+    let footerObserver = null;
+    if (footer) {
+      footerObserver = new IntersectionObserver(([entry]) => {
+        footerIn = entry.isIntersecting;
+        update();
+      });
+      footerObserver.observe(footer);
+    }
+    return () => {
+      actionsObserver.disconnect();
+      footerObserver?.disconnect();
+    };
+  }, []);
 
   // موجودی کالا؛ قاعده همان lib/stock.js است (null = پیگیری نمی‌شود، «لوازم جانبی» معاف است)
   const stock = product?.stock;
@@ -165,48 +319,127 @@ export default function ProductDetails({ product, initialComments = [] }) {
     toast("محصول موردنظر از علاقه‌مندی‌های شما حذف شد.", { icon: "🗑️" });
   };
 
+  const hasDiscount = product.discount > 0;
+  const finalPriceText = fa(hasDiscount ? product.price - (product.price * product.discount) / 100 : product.price);
+  const categoryHref = product.Category?.slug ? `/categories/${encodeURIComponent(product.Category.slug)}` : null;
+  const callPhone = STORE.phones.find((phone) => phone.label.includes("همراه")) ?? STORE.phones[0];
+
+  // دکمهٔ اصلی نوار چسبان با همان وضعیت‌ها و همان کنترل‌کننده‌های دکمهٔ اصلی صفحه
+  const stickyAction = isOutOfStock ? (
+    <button type="button" disabled className="h-11 flex-1 cursor-not-allowed rounded-xl bg-gray-400 text-sm font-medium text-white">
+      ناموجود
+    </button>
+  ) : isInCart ? (
+    <button
+      type="button"
+      onClick={() => router.push("/cart")}
+      className="flex h-11 flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl bg-gray-900 text-sm font-medium text-white transition hover:bg-gray-800 active:scale-[0.98]"
+    >
+      <BaggageClaim className="h-5 w-5" />
+      مشاهده سبد خرید
+    </button>
+  ) : (
+    <button
+      type="button"
+      onClick={handleAddToCart}
+      className="flex h-11 flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl bg-brand-600 text-sm font-medium text-white transition hover:bg-brand-700 active:scale-[0.98]"
+    >
+      <AddShoppingCartIcon className="h-5 w-5" />
+      افزودن به سبد خرید
+    </button>
+  );
+
   return (
     <div className="container mx-auto px-2 sm:px-4 md:px-6 py-2 sm:py-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-        <div className="relative bg-white rounded-xl shadow-lg p-4 flex justify-center items-center">
-          {product.discount && product.discount > 0 && (
-            <div className="absolute top-4 left-4 w-12 h-12 bg-pink-500 rounded-full flex items-center justify-center overflow-hidden">
-            {/* افکت برق زدن (شاین) */}
-            <div className="absolute inset-0 w-full h-full shine-animation"></div>
-              <span className="text-white font-bold text-sm z-10">{product.discount.toLocaleString("fa-IR")}%</span>
-            </div>
-          )}
-          {product.image ? (
-            <AppImage
-              src={product.image}
-              alt={product.name}
-              width={500}
-              height={500}
-              sizes="(max-width: 768px) 100vw, 500px"
-              priority
-              className="w-full h-72 md:h-96 object-contain"
-            />
+        <div className="relative bg-white rounded-xl shadow-lg p-4">
+          {photos.length > 0 ? (
+            <>
+              {/* touch-pan-y: کشیدن افقی را خودمان برای تعویض عکس می‌خوانیم و مرورگر آن را «برگشت به صفحهٔ قبل» نمی‌کند؛ بزرگ‌نمایی با دو انگشت می‌ماند */}
+              <div className="relative touch-pan-y touch-pinch-zoom" onTouchStart={onSwipeStart} onTouchEnd={onSwipeEnd}>
+                <button
+                  type="button"
+                  onClick={() => setZoomOpen(true)}
+                  aria-label="بزرگ‌نمایی تصویر محصول"
+                  className="group relative block w-full cursor-zoom-in rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+                >
+                  <AppImage
+                    key={photos[current]}
+                    src={photos[current]}
+                    alt={photoAlt(current)}
+                    width={500}
+                    height={500}
+                    sizes="(max-width: 768px) 100vw, 500px"
+                    priority={current === 0}
+                    className={`w-full h-72 md:h-96 object-contain ${swapped ? "gallery-fade" : ""}`}
+                  />
+                  <span
+                    aria-hidden="true"
+                    className="absolute bottom-2 left-2 grid h-10 w-10 place-items-center rounded-full bg-white/90 text-gray-700 shadow ring-1 ring-gray-200 transition duration-300 group-hover:scale-110 group-hover:text-brand-600"
+                  >
+                    <ZoomIn className="h-5 w-5" />
+                  </span>
+                </button>
+                {many && (
+                  <>
+                    <button type="button" onClick={() => stepPhoto(1)} aria-label="تصویر بعدی" className={`${arrowClass} left-1`}>
+                      <ChevronLeft className="h-5 w-5" aria-hidden="true" />
+                    </button>
+                    <button type="button" onClick={() => stepPhoto(-1)} aria-label="تصویر قبلی" className={`${arrowClass} right-1`}>
+                      <ChevronRight className="h-5 w-5" aria-hidden="true" />
+                    </button>
+                  </>
+                )}
+              </div>
+              {many && (
+                <ul className="no-scrollbar mx-auto mt-3 flex w-max max-w-full gap-2 overflow-x-auto p-1" aria-label="تصویرهای محصول">
+                  {photos.map((src, index) => (
+                    <li key={src} className="shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => showPhoto(index)}
+                        aria-label={`نمایش تصویر ${fa(index + 1)} از ${fa(photos.length)}`}
+                        aria-current={index === current ? "true" : undefined}
+                        className={`relative block h-16 w-16 cursor-pointer overflow-hidden rounded-lg border bg-white transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 ${
+                          index === current ? "border-brand-600 ring-1 ring-brand-600" : "border-gray-200 opacity-75 hover:border-gray-300 hover:opacity-100"
+                        }`}
+                      >
+                        <AppImage src={src} alt="" fill sizes="64px" className="object-contain p-1" />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <ImageLightbox open={zoomOpen} onClose={() => setZoomOpen(false)} images={photos} index={current} onIndexChange={showPhoto} alt={product.name} />
+            </>
           ) : (
             <div className="w-full h-72 md:h-96 bg-gray-200 flex items-center justify-center">
               بدون تصویر
             </div>
           )}
+          {hasDiscount && (
+            <div className="discount-chip left-3 top-3">
+              <span className="text-lg font-extrabold leading-none">{fa(product.discount)}٪</span>
+              <span className="mt-1 text-[0.625rem] font-bold leading-none">تخفیف</span>
+            </div>
+          )}
         </div>
         <div className="flex flex-col gap-4" dir="rtl">
           <h1 className="text-2xl font-bold text-gray-800">{product.name}</h1>
+          <RatingSummary comments={initialComments} />
           <div className="flex items-center gap-3 text-xl font-semibold">
             {product.discount > 0 ? (
               <>
                 <span className="line-through text-gray-400 text-lg">
                   {product.price.toLocaleString("fa-IR")} تومان
                 </span>
-                <span className="text-pink-600 text-2xl">
+                <span className="text-brand-600 text-2xl">
                   {(product.price - (product.price * product.discount) / 100).toLocaleString("fa-IR")}{" "}
                   تومان
                 </span>
               </>
             ) : (
-              <span className="text-pink-600 text-2xl">
+              <span className="text-brand-600 text-2xl">
                 {product.price.toLocaleString("fa-IR")} تومان
               </span>
             )}
@@ -237,14 +470,14 @@ export default function ProductDetails({ product, initialComments = [] }) {
               </div>
             </div>
           )}
-          <div className="flex gap-2">
+          <div ref={actionsRef} className="flex gap-2">
             {!isOutOfStock && (
               <>
                 {isInCart ? (
                   <div className="flex gap-2 flex-1">
                     <button
                       onClick={() => router.push("/cart")}
-                      className="w-full flex items-center justify-center gap-1 py-3 rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition cursor-pointer"
+                      className="w-full flex items-center justify-center gap-1 py-3 rounded-lg bg-gray-900 text-white hover:bg-gray-800 transition cursor-pointer"
                     >
                       <BaggageClaim className="w-5 h-5" />
                       مشاهده سبد خرید
@@ -262,7 +495,7 @@ export default function ProductDetails({ product, initialComments = [] }) {
                 ) : (
                   <button
                     onClick={handleAddToCart}
-                    className="flex items-center justify-center gap-1 flex-1 py-3 rounded-lg bg-pink-500 text-white hover:bg-pink-600 transition cursor-pointer"
+                    className="flex items-center justify-center gap-1 flex-1 py-3 rounded-lg bg-brand-600 text-white hover:bg-brand-700 transition cursor-pointer"
                   >
                     <AddShoppingCartIcon className="w-5 h-5" />
                     افزودن به سبد خرید
@@ -288,9 +521,37 @@ export default function ProductDetails({ product, initialComments = [] }) {
               )}
             </button>
           </div>
-          <div className="flex items-center gap-4 text-sm text-gray-600">
-            <span className="flex items-center gap-1">🚚 ارسال به سراسر کشور</span>
-            <span className="flex items-center gap-1">📦 ارسال رایگان در تهران</span>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-600">
+            <span className="flex items-center gap-1.5">
+              <Truck className="h-4 w-4 text-brand-600" aria-hidden="true" />
+              ارسال به سراسر کشور
+            </span>
+            <span className="flex items-center gap-1.5">
+              <PackageCheck className="h-4 w-4 text-brand-600" aria-hidden="true" />
+              ارسال رایگان در تهران
+            </span>
+          </div>
+          {/* تماس: اگر کاربر سؤال یا نیاز به خرید تلفنی دارد؛ روی موبایل با لمس شماره‌گیر باز می‌شود */}
+          <div className="rounded-xl border border-brand-100 bg-brand-50/50 p-3">
+            <p className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-800">
+              <Headset className="h-4 w-4 text-brand-600" aria-hidden="true" />
+              برای مشاوره و خرید تلفنی تماس بگیرید
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {STORE.phones.map((phone) => (
+                <a
+                  key={phone.href}
+                  href={phone.href}
+                  className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 text-sm text-gray-700 transition hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+                >
+                  <Phone className="h-4 w-4 text-brand-600" aria-hidden="true" />
+                  <span className="text-gray-500">{phone.label}</span>
+                  <span dir="ltr" className="font-medium">
+                    {phone.display}
+                  </span>
+                </a>
+              ))}
+            </div>
           </div>
           <SellerBox sellerName={product.seller || "فروشگاه چرخ خیاطی ارکیده"} />
           {inventoryText && (
@@ -329,8 +590,34 @@ export default function ProductDetails({ product, initialComments = [] }) {
             )}
           </div>
         )}
-        <ProductComments productId={product.id} initialComments={initialComments} />
+        {related.length > 0 && (
+          // ردیف برای لبه‌به‌لبه شدن -mx-4 دارد و پدینگ ۱۶ پیکسلی لازم دارد؛ این صفحه روی موبایل فقط ۸ پیکسل دارد، پس ۸ پیکسل دیگر از همین‌جا
+          <div className="px-2 sm:px-0">
+            <ProductRail
+              id="related-products"
+              title="محصولات مرتبط"
+              subtitle={product.Category?.name ? `از دستهٔ ${product.Category.name}` : undefined}
+              href={categoryHref}
+              hint={product.Category?.name ? `همهٔ محصولات ${product.Category.name}` : undefined}
+              products={related}
+            />
+          </div>
+        )}
+        {/* تکیه‌گاه لینک امتیاز بالای صفحه: scroll-mt جای هدر ثابت را نگه می‌دارد */}
+        <section id="comments" tabIndex={-1} aria-label="نظرات کاربران" className="scroll-mt-24 outline-none">
+          <ProductComments productId={product.id} initialComments={initialComments} />
+        </section>
       </div>
+
+      <StickyBuyBar
+        visible={barVisible}
+        oldPrice={hasDiscount ? fa(product.price) : null}
+        price={finalPriceText}
+        callHref={callPhone.href}
+        callLabel={`تماس با ${callPhone.label}`}
+      >
+        {stickyAction}
+      </StickyBuyBar>
 
       {/* Tooltip Definitions - فقط برای ۵ مورد درخواستی */}
       <Tooltip id="decrease-tooltip" />
@@ -414,26 +701,6 @@ export default function ProductDetails({ product, initialComments = [] }) {
         80%  { transform: translateX(5px); }
         100% { transform: translateX(0); }
       }
-  
-      @keyframes shine {
-        0% {
-          transform: translateX(-150%) translateY(-150%) rotate(30deg);
-        }
-        30%, 100% {
-          transform: translateX(150%) translateY(150%) rotate(30deg);
-        }
-      }
-  
-      .shine-animation {
-        background: linear-gradient(
-          120deg,
-        rgba(255, 255, 255, 0) 0%,
-        rgba(255, 255, 255, 0.6) 50%,
-        rgba(255, 255, 255, 0) 100%
-      );
-      animation: shine 3s infinite ease-in-out;
-      pointer-events: none;
-    }
     `}</style>
   </div>
   );

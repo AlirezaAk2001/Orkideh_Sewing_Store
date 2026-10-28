@@ -4,6 +4,18 @@ import { requireAdmin } from "@/lib/auth";
 import { parseStock } from "@/lib/stock";
 import { toLatinSlug } from "@/lib/slug";
 import { shapeProduct } from "@/lib/products";
+import { MAX_PRODUCT_IMAGES, parseImageList, productImages } from "@/lib/productImages";
+import { removeUnusedUploads } from "@/lib/uploads";
+
+// گالری ارسالی ادمین را بررسی می‌کند: { gallery } (undefined = فرستاده نشده) یا { error } برای پاسخ ۴۰۰
+function checkGallery(image, images) {
+  const gallery = parseImageList(images, image);
+  if (gallery === null) return { error: "فهرست تصویرها نامعتبر است" };
+  if ((image ? 1 : 0) + (gallery?.length ?? 0) > MAX_PRODUCT_IMAGES) {
+    return { error: `هر محصول حداکثر ${MAX_PRODUCT_IMAGES} تصویر می‌تواند داشته باشد` };
+  }
+  return { gallery };
+}
 
 export async function GET(req) {
   try {
@@ -48,12 +60,15 @@ export async function POST(req) {
   if (auth.error) return auth.error;
 
   const body = await req.json();
-  const { name, price, stock, categoryId, image, additionalFeatures, material, size, weight, color, suitableFor, discount, voltage, powerConsumption } = body;
+  const { name, price, stock, categoryId, image, images, additionalFeatures, material, size, weight, color, suitableFor, discount, voltage, powerConsumption } = body;
 
   if (!name || !price || isNaN(parseFloat(price))) {
     console.warn("Invalid input in POST:", { name, price });
     return NextResponse.json({ error: "نام و قیمت محصول الزامی و معتبر هستند" }, { status: 400 });
   }
+
+  const galleryCheck = checkGallery(image, images);
+  if (galleryCheck.error) return NextResponse.json({ error: galleryCheck.error }, { status: 400 });
 
   const slug = `${toLatinSlug(name)}-${Date.now()}`;
 
@@ -83,6 +98,7 @@ export async function POST(req) {
         categoryId: categoryId ? parseInt(categoryId) : null,
         categoryName: categoryId ? (await prisma.category.findUnique({ where: { id: parseInt(categoryId) } }))?.name : null,
         image: image ? image.replace(/\/$/, '') : null,
+        ...(galleryCheck.gallery && { images: galleryCheck.gallery }),
         additionalFeatures,
         material,
         size,
@@ -115,15 +131,18 @@ export async function PUT(req) {
       return NextResponse.json({ error: "شناسه محصول نامعتبر است" }, { status: 400 });
     }
 
-    const { name, price, stock, categoryId, image, additionalFeatures, material, size, weight, color, suitableFor, discount, voltage, powerConsumption } = body;
+    const { name, price, stock, categoryId, image, images, additionalFeatures, material, size, weight, color, suitableFor, discount, voltage, powerConsumption } = body;
     const parsedPrice = parseFloat(price);
     if (!name || isNaN(parsedPrice)) {
       return NextResponse.json({ error: "نام و قیمت محصول الزامی و معتبر هستند" }, { status: 400 });
     }
+    // images فرستاده نشده باشد (فرم‌ها و درخواست‌های قدیمی) گالری همان می‌ماند
+    const galleryCheck = checkGallery(image, images);
+    if (galleryCheck.error) return NextResponse.json({ error: galleryCheck.error }, { status: 400 });
     const parsedDiscount = discount && !isNaN(parseInt(discount)) ? parseInt(discount) : null;
     const finalPrice = parsedDiscount ? parsedPrice * (1 - parsedDiscount / 100) : parsedPrice;
 
-    const existing = await prisma.product.findUnique({ where: { id: productId }, select: { slug: true } });
+    const existing = await prisma.product.findUnique({ where: { id: productId }, select: { slug: true, image: true, images: true } });
     if (!existing) {
       return NextResponse.json({ error: "محصول یافت نشد" }, { status: 404 });
     }
@@ -133,6 +152,7 @@ export async function PUT(req) {
       price: parsedPrice,
       stock: parseStock(stock),
       image: image ? image.replace(/\/$/, '') : null,
+      ...(galleryCheck.gallery && { images: galleryCheck.gallery }),
       additionalFeatures,
       material,
       size,
@@ -156,6 +176,10 @@ export async function PUT(req) {
       where: { id: productId },
       data: updateData,
     });
+
+    // تصویرهای آپلودشده‌ای که از محصول برداشته شده‌اند (و جای دیگری استفاده نمی‌شوند) از دیسک هم پاک می‌شوند
+    const kept = new Set(productImages(updatedProduct));
+    await removeUnusedUploads(productImages(existing).filter((src) => !kept.has(src)));
 
     return NextResponse.json(updatedProduct);
   } catch (error) {
@@ -203,6 +227,7 @@ export async function DELETE(req) {
       prisma.comment.deleteMany({ where: { productId } }),
       prisma.product.delete({ where: { id: productId } }),
     ]);
+    await removeUnusedUploads(productImages(existingProduct));
     return NextResponse.json({ message: "محصول حذف شد" });
   } catch (error) {
     console.error("Error deleting product:", {
