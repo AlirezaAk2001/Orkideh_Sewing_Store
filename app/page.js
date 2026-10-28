@@ -1,7 +1,7 @@
 import HomeContent from "./components/HomeContent";
 import { listBanners } from "@/lib/banners";
 import { listCategories } from "@/lib/categories";
-import { listHomeRails } from "@/lib/products";
+import { listBrandSummaries, listHomeRails } from "@/lib/products";
 import { listLatestReviews } from "@/lib/comments";
 
 // بنرها، دسته‌بندی‌ها و محصولات در هر درخواست تازه از دیتابیس خوانده می‌شوند، نه هنگام build
@@ -21,11 +21,12 @@ async function load(read, logMessage, message, fallback = []) {
 }
 
 export default async function Home() {
-  const [banners, categories, rails, reviews] = await Promise.all([
+  const [banners, categories, rails, reviews, brands] = await Promise.all([
     load(listBanners, "خطا در دریافت بنرها:", "خطا در بارگذاری بنرها"),
     load(listCategories, "خطا در دریافت دسته‌بندی‌ها:", "خطا در دریافت دسته‌بندی‌ها"),
     load(listHomeRails, "خطا در دریافت محصولات صفحهٔ اصلی:", null, NO_RAILS),
     load(listLatestReviews, "خطا در دریافت نظرهای صفحهٔ اصلی:", null),
+    load(listBrandSummaries, "خطا در دریافت برندها:", null),
   ]);
 
   return (
@@ -36,6 +37,7 @@ export default async function Home() {
       categoriesError={categories.error}
       rails={rails.data}
       reviews={reviews.data}
+      brands={brands.data}
     />
   );
 }

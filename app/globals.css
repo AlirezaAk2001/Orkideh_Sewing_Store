@@ -57,6 +57,56 @@ main {
   }
 }
 
+/* ورود نرم کارت‌های فهرست محصولات (ProductListing.jsx)؛ با «کاهش حرکت» کارت‌ها همان اول و بدون انیمیشن دیده می‌شوند */
+@keyframes product-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .product-in {
+    animation: product-in 0.5s ease-out both;
+  }
+}
+
+/* دکمهٔ سه‌بعدی (چیپ دسته‌ها در ProductListing.jsx): با hover نرم بالا می‌آید، کمی به سمت بیننده کج می‌شود و لبهٔ ضخامتش
+   زیرش پیدا می‌شود، انگار از صفحه بیرون می‌زند. --edge رنگ لبه است. روی صفحهٔ لمسی hover نداریم. با «کاهش حرکت» فقط سایه عوض می‌شود. */
+.chip-3d {
+  --edge: var(--color-gray-300);
+  position: relative;
+  transform: perspective(420px) translate3d(0, 0, 0);
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+.chip-3d[aria-current="page"] {
+  --edge: var(--color-brand-700);
+}
+@media (hover: hover) {
+  .chip-3d:not([aria-current="page"]):hover {
+    --edge: var(--color-brand-200);
+  }
+  .chip-3d:hover {
+    z-index: 1;
+    box-shadow: 0 5px 0 -1px var(--edge), 0 16px 24px -8px rgb(0 0 0 / 0.32);
+  }
+  .chip-3d:active {
+    box-shadow: 0 2px 0 -1px var(--edge), 0 6px 10px -6px rgb(0 0 0 / 0.25);
+  }
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .chip-3d:hover {
+    transform: perspective(420px) translate3d(0, -4px, 26px) rotateX(10deg);
+  }
+  .chip-3d:active {
+    transform: perspective(420px) translate3d(0, -1px, 8px) rotateX(4deg);
+  }
+}
+
 /* دو دایرهٔ تزئینی کاشی «مشاهده همه» (home/ProductRail.jsx): با hover جایشان را عوض می‌کنند و با برداشتن موس برمی‌گردند.
    موقعیت‌ها بر پایهٔ درصد عرض و ارتفاع کاشی‌اند تا در هر اندازه‌ای درست بنشینند. افقی زودتر و عمودی دیرتر حرکت می‌کنند،
    پس مسیر هر دایره خمیده است و دو دایره از دو سوی مخالف از کنار هم رد می‌شوند (نه از وسط هم). */
