@@ -3,10 +3,9 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowUpDown, BadgePercent, Banknote, BookOpen, Boxes, Check, ChevronDown, ChevronLeft, ChevronRight, FunnelX, LayoutGrid, Package, PackageCheck, Search, SlidersHorizontal, X } from "lucide-react";
+import { ArrowUpDown, BadgePercent, Banknote, BookOpen, Boxes, Check, FunnelPlus, ChevronDown, ChevronLeft, ChevronRight, FunnelX, LayoutGrid, Package, PackageCheck, SlidersHorizontal, X, PackageSearch  } from "lucide-react";
 import CategoryIcon from "@/app/components/CategoryIcon";
 import ProductCard from "@/app/components/ProductCard";
-import { findBrandByQuery } from "@/lib/brands";
 import { SORTS, activeFilterCount, buildListUrl, pageItems, parsePrice } from "@/lib/productQuery";
 
 const fa = (n) => Number(n).toLocaleString("fa-IR");
@@ -45,16 +44,27 @@ function FilterPanel({ params, bounds, onApply, clearHref }) {
   const [text, setText] = useState(params.q);
 
   // مقدار خالی یعنی بدون حد؛ متنی که عدد نیست اعمال نمی‌شود و خطا نشان می‌دهد
+  const lo = min.trim() === "" ? null : parsePrice(min);
+  const hi = max.trim() === "" ? null : parsePrice(max);
+  const badPrice = (min.trim() !== "" && lo == null) || (max.trim() !== "" && hi == null);
   const apply = (extra = {}) => {
-    const lo = min.trim() === "" ? null : parsePrice(min);
-    const hi = max.trim() === "" ? null : parsePrice(max);
-    if ((min.trim() !== "" && lo == null) || (max.trim() !== "" && hi == null)) {
+    if (badPrice) {
       setInvalid(true);
       return;
     }
     setInvalid(false);
     onApply({ q: text.trim(), min: lo, max: hi, ...extra });
   };
+
+  // «اعمال فیلتر» فقط وقتی کار دارد که فرم با فیلتر اعمال‌شدهٔ آدرس فرق کند (چیزی نوشته یا پاک شده)؛ «پاک‌کردن» فقط وقتی فیلتری واقعاً اعمال شده.
+  // متن قیمت نامعتبر هم تغییر حساب می‌شود تا دکمه فعال بماند و خطا را نشان بدهد. کاشی‌های «موجود/تخفیف‌دار» همان لحظه اعمال می‌شوند و جزو این حساب نیستند.
+  const dirty = text.trim() !== params.q || badPrice || lo !== (params.min ?? null) || hi !== (params.max ?? null);
+  const appliedCount = activeFilterCount(params);
+  const hasApplied = appliedCount > 0;
+  // برچسب دکمه‌ها با شمار فیلترها مفرد/جمع می‌شود: «اعمال» شمار انتخاب‌های فرم (متن، قیمت و کاشی‌ها) را می‌شمارد و «پاک کردن» شمار فیلترهای اعمال‌شده را
+  const selectedCount = (text.trim() !== "" ? 1 : 0) + (min.trim() !== "" || max.trim() !== "" ? 1 : 0) + (params.available ? 1 : 0) + (params.discount ? 1 : 0);
+  const applyLabel = selectedCount > 1 ? "اعمال فیلترها" : "اعمال فیلتر";
+  const clearLabel = appliedCount > 1 ? "پاک کردن فیلترها" : "پاک کردن فیلتر";
 
   // «از» و «تومان» داخل خود فیلت‌اند؛ پدینگ‌های ps/pe جا برایشان نگه می‌دارند و متن عدد زیرشان نمی‌رود
   const priceField = (value, setValue, label, prefix, placeholder) => {
@@ -82,7 +92,7 @@ function FilterPanel({ params, bounds, onApply, clearHref }) {
     <form
       onSubmit={(e) => {
         e.preventDefault();
-        apply();
+        if (dirty) apply();
       }}
       className="rounded-2xl border border-brand-100 bg-gradient-to-br from-white via-white to-brand-50/60 p-4 shadow-sm sm:p-5"
     >
@@ -90,7 +100,7 @@ function FilterPanel({ params, bounds, onApply, clearHref }) {
       <div className="mb-4 rounded-xl bg-white/80 p-4 ring-1 ring-gray-200">
         <label htmlFor="product-search" className="mb-3 flex items-center gap-2 text-sm font-medium text-gray-800">
           <span className="grid h-8 w-8 place-items-center rounded-lg bg-brand-50 text-brand-600">
-            <Search className="h-5 w-5" aria-hidden="true" />
+            <PackageSearch className="h-5 w-5" aria-hidden="true" />
           </span>
           نام برند یا نام محصول
         </label>
@@ -102,7 +112,7 @@ function FilterPanel({ params, bounds, onApply, clearHref }) {
             enterKeyHint="search"
             autoComplete="off"
             maxLength={60}
-            placeholder="مثلاً ژانومه یا ۶۲۵"
+            placeholder="مثلاً ژانومه یا ژانومه ۶۲۵"
             value={text}
             onChange={(e) => setText(e.target.value)}
             className={`${FIELD} min-h-11 border-gray-300 pe-10 focus:border-brand-500 focus:ring-brand-200`}
@@ -157,19 +167,33 @@ function FilterPanel({ params, bounds, onApply, clearHref }) {
         <div className="flex gap-2 lg:w-36 lg:flex-col lg:justify-center">
           <button
             type="submit"
-            className="inline-flex h-10 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-brand-600 px-3 text-sm font-medium text-white shadow-sm transition hover:bg-brand-700 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 lg:flex-none"
+            disabled={!dirty}
+            title={dirty ? undefined : "تغییری برای اعمال وجود ندارد"}
+            className="inline-flex h-10 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-brand-600 px-3 text-sm font-medium text-white shadow-sm transition enabled:hover:bg-brand-700 enabled:active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-400 disabled:shadow-none lg:flex-none"
           >
-            <Check className="h-4 w-4" aria-hidden="true" />
-            اعمال فیلتر
+            <FunnelPlus className="h-4 w-4" aria-hidden="true" />
+            {applyLabel}
           </button>
-          <Link
-            href={clearHref}
-            scroll={false}
-            className="inline-flex h-10 flex-1 items-center justify-center gap-1.5 rounded-lg border border-red-700 bg-red-600 px-3 text-sm font-medium text-white shadow-sm transition hover:border-red-800 hover:bg-red-700 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 lg:flex-none"
-          >
-            <FunnelX className="h-4 w-4" aria-hidden="true" />
-            پاک‌کردن
-          </Link>
+          {hasApplied ? (
+            <Link
+              href={clearHref}
+              scroll={false}
+              className="inline-flex h-10 flex-1 items-center justify-center gap-1.5 rounded-lg border border-red-700 bg-red-600 px-3 text-sm font-medium text-white shadow-sm transition hover:border-red-800 hover:bg-red-700 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 lg:flex-none"
+            >
+              <FunnelX className="h-4 w-4" aria-hidden="true" />
+              {clearLabel}
+            </Link>
+          ) : (
+            <button
+              type="button"
+              disabled
+              title="هیچ فیلتری اعمال نشده است"
+              className="inline-flex h-10 flex-1 cursor-not-allowed items-center justify-center gap-1.5 rounded-lg border border-gray-200 bg-gray-100 px-3 text-sm font-medium text-gray-400 lg:flex-none"
+            >
+              <FunnelX className="h-4 w-4" aria-hidden="true" />
+              {clearLabel}
+            </button>
+          )}
         </div>
       </div>
     </form>
@@ -358,18 +382,6 @@ export default function ProductListing({ title, accent, category, basePath, cate
   const clearFilters = { q: "", min: null, max: null, available: false, discount: false, page: 1 };
   const clearHref = buildListUrl(basePath, params, clearFilters);
 
-  const activeChips = [];
-  if (params.q) {
-    const brand = findBrandByQuery(params.q);
-    activeChips.push({ key: "q", label: brand ? `برند: ${brand.name}` : `نام: «${params.q}»`, remove: { q: "" } });
-  }
-  if (params.min != null || params.max != null) {
-    const range = [params.min != null && `از ${fa(params.min)}`, params.max != null && `تا ${fa(params.max)}`].filter(Boolean).join(" ");
-    activeChips.push({ key: "price", label: `قیمت ${range} تومان`, remove: { min: null, max: null } });
-  }
-  if (params.available) activeChips.push({ key: "available", label: "فقط کالاهای موجود", remove: { available: false } });
-  if (params.discount) activeChips.push({ key: "discount", label: "فقط کالاهای تخفیف‌دار", remove: { discount: false } });
-
   const { items, total, scopeTotal, page, pageCount, bounds } = result;
   const countText = filterCount > 0 ? `${fa(total)} محصول از ${fa(scopeTotal)}` : `${fa(total)} محصول`;
 
@@ -488,28 +500,6 @@ export default function ProductListing({ title, accent, category, basePath, cate
             </div>
           </div>
 
-          {activeChips.length > 0 && (
-            <ul className="mb-4 flex flex-wrap items-center gap-2" aria-label="فیلترهای فعال">
-              {activeChips.map((chip) => (
-                <li key={chip.key}>
-                  <button
-                    type="button"
-                    onClick={() => go(chip.remove)}
-                    aria-label={`حذف فیلتر: ${chip.label}`}
-                    className="inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-brand-50 px-3 py-1 text-sm text-brand-700 transition hover:bg-brand-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
-                  >
-                    {chip.label}
-                    <X className="h-3.5 w-3.5" aria-hidden="true" />
-                  </button>
-                </li>
-              ))}
-              <li>
-                <Link href={clearHref} scroll={false} className="text-sm text-gray-500 underline-offset-4 hover:text-brand-600 hover:underline">
-                  حذف همه فیلترها
-                </Link>
-              </li>
-            </ul>
-          )}
         </>
       )}
 
