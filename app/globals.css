@@ -107,46 +107,76 @@ main {
   }
 }
 
-/* چیپ تخفیف صفحهٔ محصول (ProductDetails.jsx): سکه‌ای برجسته با حلقهٔ سفید، انعکاس نور بالا و لبهٔ ضخامت زیرش. روی عکس می‌نشیند،
-   پس z-index دارد (دکمهٔ زوم هم موقعیت‌دار است و بدون آن چیپ را می‌پوشاند) و کلیک را به همان دکمه رد می‌کند.
-   برق (::after) نرم و کند از رویش می‌گذرد: حدود نیمی از هر چرخه حرکت و نیم دیگر مکث است. با «کاهش حرکت» برق نمی‌زند. */
+/* چیپ تخفیف (ProductDetails.jsx و ProductCard.jsx): سکه‌ای برجسته با حلقهٔ سفید، انعکاس نور بالا و لبهٔ ضخامت زیرش. اندازه فقط با --chip عوض می‌شود
+   (صفحهٔ محصول ۳٫۵rem، کارت ۳rem) و متن، حلقه و سایه‌ها با همان متناسب می‌مانند. روی عکس می‌نشیند، پس z-index دارد (دکمهٔ زوم موقعیت‌دار است و
+   بدون آن چیپ را می‌پوشاند) و کلیک را به لایهٔ زیرش (دکمهٔ زوم، لینک کارت) رد می‌کند.
+   برق (::after) مثل بازتاب نور روی سطح براق از رویش می‌گذرد: نوار پهن و نرم با هستهٔ روشن و یک خط نازک پشت سرش. حالت ترکیب screen نور را به رنگ
+   سطح اضافه می‌کند (نه اینکه یک نوار سفید مات رویش بیفتد) و حدود نیمی از هر چرخه حرکت و نیم دیگر مکث است. با «کاهش حرکت» برق نمی‌زند. */
 .discount-chip {
+  --chip: 3.5rem;
   position: absolute;
   z-index: 10;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 4.25rem;
-  height: 4.25rem;
+  gap: 0.12em;
+  width: var(--chip);
+  height: var(--chip);
+  font-size: calc(var(--chip) * 0.3);
+  line-height: 1;
   overflow: hidden;
   isolation: isolate;
   pointer-events: none;
   border-radius: 9999px;
   color: #fff;
   background: radial-gradient(circle at 32% 22%, var(--color-brand-500), var(--color-brand-600) 58%, var(--color-brand-700));
-  box-shadow: 0 0 0 3px #fff, 0 5px 0 3px var(--color-brand-700), 0 12px 20px -4px rgb(0 0 0 / 0.35),
-    inset 0 2px 1px rgb(255 255 255 / 0.55), inset 0 -4px 6px rgb(0 0 0 / 0.18);
+  box-shadow: 0 0 0 calc(var(--chip) * 0.04) #fff, 0 calc(var(--chip) * 0.075) 0 calc(var(--chip) * 0.04) var(--color-brand-700),
+    0 calc(var(--chip) * 0.17) calc(var(--chip) * 0.28) calc(var(--chip) * -0.07) rgb(0 0 0 / 0.35),
+    inset 0 calc(var(--chip) * 0.03) calc(var(--chip) * 0.018) rgb(255 255 255 / 0.55),
+    inset 0 calc(var(--chip) * -0.06) calc(var(--chip) * 0.09) rgb(0 0 0 / 0.18);
+}
+.discount-chip--card {
+  --chip: 3rem;
+}
+.discount-chip__value {
+  font-weight: 800;
+}
+.discount-chip__label {
+  font-size: 0.6em;
+  font-weight: 700;
 }
 .discount-chip::after {
   content: "";
   position: absolute;
-  top: -20%;
-  bottom: -20%;
+  top: -25%;
+  bottom: -25%;
   left: 0;
-  width: 50%;
+  width: 56%;
   opacity: 0;
-  background: linear-gradient(100deg, transparent 0%, rgb(255 255 255 / 0.75) 50%, transparent 100%);
-  transform: translateX(-180%) skewX(-18deg);
+  mix-blend-mode: screen;
+  background: linear-gradient(
+    100deg,
+    transparent 0%,
+    rgb(255 255 255 / 0.4) 6%,
+    transparent 13%,
+    rgb(255 255 255 / 0.1) 25%,
+    rgb(255 255 255 / 0.5) 42%,
+    rgb(255 255 255 / 0.95) 50%,
+    rgb(255 255 255 / 0.5) 58%,
+    rgb(255 255 255 / 0.1) 75%,
+    transparent 100%
+  );
+  transform: translateX(-140%) skewX(-20deg);
 }
-/* مسیر برق فقط از بیرون لبهٔ چپ تا بیرون لبهٔ راست چیپ است و منحنی سینوسی دارد؛ پس بیش از یک ثانیه و نیم روی چیپ دیده می‌شود، نه یک جهش سریع */
+/* مسیر برق از بیرون لبهٔ چپ تا بیرون لبهٔ راست چیپ است (درصدها نسبت به عرض خود نوارند، پس با هر اندازهٔ چیپ درست می‌ماند) و منحنی سینوسی دارد */
 @keyframes discount-shine {
   0% {
-    transform: translateX(-180%) skewX(-18deg);
+    transform: translateX(-140%) skewX(-20deg);
   }
   60%,
   100% {
-    transform: translateX(250%) skewX(-18deg);
+    transform: translateX(240%) skewX(-20deg);
   }
 }
 @media (prefers-reduced-motion: no-preference) {
@@ -154,6 +184,110 @@ main {
     opacity: 1;
     animation: discount-shine 4.4s cubic-bezier(0.37, 0, 0.63, 1) 0.8s infinite;
   }
+}
+
+/* اسلایدر تصویر محصول (ImageSlider.jsx): فلش‌ها و نقطه‌ها همان ظاهر بنر صفحهٔ اصلی (.hero-swiper پایین‌تر): فلش دایرهٔ شیشه‌ایِ تیره با حاشیهٔ سفید که با
+   موس به رنگ برند درمی‌آید، و نقطه‌های سفید که نقطهٔ جاری کشیده و به رنگ برند است. تفاوت‌ها: اینجا خودکار عوض نمی‌شود، و روی موبایل مثل بنر فلش نیست
+   (کشیدن انگشت و نقطه‌ها کافی‌اند). در کارت محصول کوچک‌تر است و فلش فقط با موس روی کارت دیده می‌شود (روی لمسی نه). */
+.img-slider-arrow {
+  position: absolute;
+  top: 50%;
+  z-index: 2;
+  display: grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  margin-top: -1.375rem;
+  place-items: center;
+  padding: 0;
+  color: #fff;
+  border: 1px solid rgb(255 255 255 / 0.5);
+  border-radius: 9999px;
+  background: rgb(0 0 0 / 0.35);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 6px 18px rgb(0 0 0 / 0.25);
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s, transform 0.2s, opacity 0.2s;
+}
+.img-slider-arrow:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+@media (hover: hover) {
+  .img-slider-arrow:hover {
+    border-color: var(--color-brand-600);
+    background: var(--color-brand-600);
+    transform: scale(1.08);
+  }
+}
+@media (max-width: 639px) {
+  .img-slider-arrow--page {
+    display: none;
+  }
+}
+.img-slider-arrow--card {
+  width: 2rem;
+  height: 2rem;
+  margin-top: -1rem;
+  opacity: 0;
+}
+@media (hover: none) {
+  .img-slider-arrow--card {
+    display: none;
+  }
+}
+@media (hover: hover) {
+  .group:hover .img-slider-arrow--card,
+  .img-slider-arrow--card:focus-visible {
+    opacity: 1;
+  }
+}
+.img-slider-dots {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0.875rem;
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  pointer-events: none;
+}
+.img-slider--card .img-slider-dots {
+  bottom: 0.5rem;
+  gap: 6px;
+}
+.img-slider-dot {
+  position: relative;
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #fff;
+  opacity: 0.65;
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.12), 0 1px 3px rgb(0 0 0 / 0.35);
+  cursor: pointer;
+  pointer-events: auto;
+  transition: width 0.3s, background-color 0.3s, opacity 0.3s;
+}
+/* ناحیهٔ لمس نقطه‌ها از خود نقطه بزرگ‌تر است */
+.img-slider-dot::after {
+  content: "";
+  position: absolute;
+  inset: -8px -3px;
+}
+.img-slider--card .img-slider-dot {
+  width: 6px;
+  height: 6px;
+}
+.img-slider-dot[aria-current="true"] {
+  width: 26px;
+  border-radius: 9999px;
+  background: var(--color-brand-500);
+  opacity: 1;
+}
+.img-slider--card .img-slider-dot[aria-current="true"] {
+  width: 18px;
 }
 
 /* تعویض تصویر گالری صفحهٔ محصول (ProductDetails.jsx): تصویر تازه نرم ظاهر می‌شود؛ با «کاهش حرکت» فوری عوض می‌شود */

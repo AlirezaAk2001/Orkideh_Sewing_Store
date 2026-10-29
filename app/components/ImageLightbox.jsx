@@ -15,7 +15,7 @@ const SWIPE_MIN = 50; // حداقل جابه‌جایی افقی انگشت (پ�
 
 const fa = (n) => Number(n).toLocaleString("fa-IR");
 
-export default function ImageLightbox({ open, onClose, images, index = 0, onIndexChange, alt }) {
+export default function ImageLightbox({ open, onClose, images, index = 0, onIndexChange, onExited, alt }) {
   const [zoomed, setZoomed] = useState(false);
   const box = useRef(null);
   const focus = useRef({ x: 0.5, y: 0.5 });
@@ -87,8 +87,8 @@ export default function ImageLightbox({ open, onClose, images, index = 0, onInde
 
   const iconButton =
     "grid h-10 w-10 cursor-pointer place-items-center rounded-full bg-white/10 text-white transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white";
-  const arrowButton =
-    "absolute top-1/2 z-10 grid h-11 w-11 -translate-y-1/2 cursor-pointer place-items-center rounded-full bg-black/40 text-white backdrop-blur transition hover:bg-black/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white";
+  // فلش‌ها همان ظاهر فلش بنر و گالری صفحهٔ محصول (.img-slider-arrow در globals.css)
+  const arrowButton = "img-slider-arrow";
 
   return (
     <Dialog
@@ -96,7 +96,14 @@ export default function ImageLightbox({ open, onClose, images, index = 0, onInde
       open={open}
       onClose={onClose}
       onKeyDown={onKeyDown}
-      TransitionProps={{ onExited: () => setZoomed(false) }}
+      // فوکوس را فراخواننده برمی‌گرداند (onExited): با رفتن بین عکس‌ها دکمهٔ بازکنندهٔ اولیه شاید دیگر اسلاید جاری نباشد
+      disableRestoreFocus
+      TransitionProps={{
+        onExited: () => {
+          setZoomed(false);
+          onExited?.();
+        },
+      }}
       // نام دیالوگ همان عنوان بالای تصویر است (MUI خودش aria-labelledby را به عنوانی که وجود ندارد وصل می‌کرد) و aria-modal را صریح می‌گوییم
       aria-labelledby="image-lightbox-title"
       PaperProps={{ sx: { bgcolor: "rgb(17 24 39 / 0.97)" }, "aria-modal": "true" }}
@@ -138,7 +145,7 @@ export default function ImageLightbox({ open, onClose, images, index = 0, onInde
               style={{ width: `${zoomed ? ZOOM * 100 : 100}%`, height: `${zoomed ? ZOOM * 100 : 100}%` }}
             >
               {/* sizes: تا بزرگ‌نمایی نشده همان اندازهٔ صفحه را می‌گیرد؛ با بزرگ‌نمایی next/image نسخهٔ بزرگ‌تر را می‌خواهد */}
-              {src && <AppImage key={src} src={src} alt={alt} fill sizes={zoomed ? `${ZOOM * 100}vw` : "100vw"} className="object-contain p-4" />}
+              {src && <AppImage key={src} src={src} alt={alt} fill sizes={zoomed ? `${ZOOM * 100}vw` : "100vw"} className="object-contain p-4 gallery-fade" />}
             </button>
           </div>
           {many && (

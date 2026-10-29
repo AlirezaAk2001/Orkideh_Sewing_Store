@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import AppImage from "./AppImage";
+import ImageSlider from "./ImageSlider";
+import { productImages } from "@/lib/productImages";
 import { useRouter } from "next/navigation";
 import { useCart, useAuth } from "@/lib/context";
 import { authUrl } from "@/lib/redirect";
@@ -31,6 +33,9 @@ export default function ProductCard({ product, priority = false }) {
   const isOutOfStock = isSoldOut(product);
 
   const slug = product.slug || toLatinSlug(product.name);
+  const photos = productImages(product);
+  const imageClass = `object-cover transition duration-500 group-hover:scale-105 ${isOutOfStock ? "opacity-50 grayscale" : ""}`;
+  const imageSizes = "(min-width: 1024px) 300px, (min-width: 640px) 36vw, 64vw";
 
   const handleAddToCart = () => {
     if (!currentUser) {
@@ -58,18 +63,31 @@ export default function ProductCard({ product, priority = false }) {
     // کل کارت قابل کلیک است: لینک روی نام محصول با ::after تمام کارت را می‌پوشاند و دکمهٔ سبد (z-10) بالاتر از آن می‌ماند
     <article className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white transition duration-300 hover:-translate-y-1 hover:shadow-xl has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-brand-500">
       <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-b from-gray-50 to-white">
-        {product.image ? (
-          <AppImage
-            src={product.image}
-            alt={product.name}
-            width={300}
-            height={200}
-            priority={priority}
-            sizes="(min-width: 1024px) 300px, (min-width: 640px) 36vw, 64vw"
-            className={`h-full w-full object-contain p-3 transition duration-500 group-hover:scale-105 ${
-              isOutOfStock ? "opacity-50 grayscale" : ""
-            }`}
+        {photos.length > 1 ? (
+          // چند تصویر: اسلایدر (خودکار عوض نمی‌شود). از کل کارت-لینک بالاتر است (z-10) تا کشیدن و فلش‌ها کار کنند و خود تصویر هم همان لینک محصول است
+          <ImageSlider
+            variant="card"
+            images={photos}
+            label={product.name}
+            className="absolute inset-0 z-10"
+            dotsClassName={isOutOfStock ? "bottom-8!" : ""}
+            renderSlide={(src, index, { load }) => (
+              <Link href={`/products/${slug}`} tabIndex={-1} aria-hidden="true" className="block h-full w-full">
+                {load && (
+                  <AppImage
+                    src={src}
+                    alt={index === 0 ? product.name : `${product.name} (تصویر ${(index + 1).toLocaleString("fa-IR")})`}
+                    fill
+                    priority={priority && index === 0}
+                    sizes={imageSizes}
+                    className={imageClass}
+                  />
+                )}
+              </Link>
+            )}
           />
+        ) : photos.length === 1 ? (
+          <AppImage src={photos[0]} alt={product.name} fill priority={priority} sizes={imageSizes} className={imageClass} />
         ) : (
           <div className="flex h-full flex-col items-center justify-center gap-1 text-gray-400">
             <ImageOff className="h-8 w-8" aria-hidden="true" />
@@ -77,12 +95,13 @@ export default function ProductCard({ product, priority = false }) {
           </div>
         )}
         {hasDiscount && (
-          <span className="absolute right-2 top-2 rounded-full bg-rose-600 px-2.5 py-0.5 text-xs font-bold text-white shadow-sm">
-            {discount.toLocaleString("fa-IR")}٪ تخفیف
-          </span>
+          <div className="discount-chip discount-chip--card left-2 top-2">
+            <span className="discount-chip__value">{discount.toLocaleString("fa-IR")}٪</span>
+            <span className="discount-chip__label">تخفیف</span>
+          </div>
         )}
         {isOutOfStock && (
-          <span className="absolute inset-x-0 bottom-0 bg-gray-900/70 py-1 text-center text-xs font-medium text-white">
+          <span className="pointer-events-none absolute inset-x-0 bottom-0 z-20 bg-gray-900/70 py-1 text-center text-xs font-medium text-white">
             ناموجود
           </span>
         )}

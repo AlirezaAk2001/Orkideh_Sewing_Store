@@ -4,8 +4,9 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import AppImage from "./AppImage";
 import ImageLightbox from "./ImageLightbox";
+import ImageSlider from "./ImageSlider";
 import ProductRail from "./home/ProductRail";
-import { ChevronDown, ChevronLeft, ChevronRight, BaggageClaim, Headset, MessageSquare, PackageCheck, Phone, Star, Truck, ZoomIn } from "lucide-react";
+import { ChevronDown, BaggageClaim, Headset, MessageSquare, PackageCheck, Phone, Star, Truck, ZoomIn } from "lucide-react";
 import { STORE } from "@/lib/contact";
 import { productImages } from "@/lib/productImages";
 import { Tooltip } from 'react-tooltip';
@@ -26,10 +27,6 @@ import DialogActions from "@mui/material/DialogActions";
 import Button from "@mui/material/Button";
 
 const fa = (n) => Number(n).toLocaleString("fa-IR");
-
-// فلش‌های قبلی/بعدی گالری روی تصویر (جهت راست‌به‌چپ: «بعدی» سمت چپ)
-const arrowClass =
-  "absolute top-1/2 z-[1] grid h-10 w-10 -translate-y-1/2 cursor-pointer place-items-center rounded-full bg-white/90 text-gray-700 shadow ring-1 ring-gray-200 transition hover:bg-white hover:text-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500";
 
 // امتیاز و تعداد نظر کنار عنوان؛ همان حساب نمایه‌های دیگر (میانگین نظرهای تأییدشده، مثل JSON-LD و کارت محصول).
 // لینک به بخش نظرها می‌رود؛ بدون نظر هم همان لینک دعوت به نوشتن اولین نظر است.
@@ -124,33 +121,21 @@ export default function ProductDetails({ product, initialComments = [], related 
   const [isInCart, setIsInCart] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [zoomOpen, setZoomOpen] = useState(false);
-  // گالری: تصویر اصلی + بقیه به ترتیب؛ active شمارهٔ تصویر نمایش‌داده‌شده (دیالوگ بزرگ‌نمایی هم همین را می‌خواند و می‌نویسد).
-  // سوییچ اول صفحه بدون انیمیشن می‌آید (LCP)؛ بعد از اولین تعویض، تصویرها نرم محو می‌شوند
+  // گالری: تصویر اصلی + بقیه به ترتیب. active شمارهٔ تصویر جاری است؛ اسلایدر هنگام کشیدن یا فلش خبرش می‌دهد (onIndexChange)
+  // و کوچک‌نماها و دیالوگ بزرگ‌نمایی با sliderRef.goTo اسلایدر را می‌برند
   const photos = productImages(product);
   const [active, setActive] = useState(0);
-  const [swapped, setSwapped] = useState(false);
-  const swipeStart = useRef(null);
+  const sliderRef = useRef(null);
+  const stageRef = useRef(null);
   const current = Math.min(active, Math.max(photos.length - 1, 0));
   const many = photos.length > 1;
-  const showPhoto = (index) => {
+  const showPhoto = (index, options) => {
     setActive(index);
-    setSwapped(true);
+    sliderRef.current?.goTo(index, options);
   };
-  const stepPhoto = (step) => showPhoto((current + step + photos.length) % photos.length);
+  // بعد از بستن دیالوگ فوکوس به دکمهٔ بزرگ‌نمایی اسلاید جاری برمی‌گردد (اسلایدهای دیگر inert‌اند)
+  const focusZoomButton = () => stageRef.current?.querySelector('[data-active="true"] button[aria-label="بزرگ‌نمایی تصویر محصول"]')?.focus({ preventScroll: true });
   const photoAlt = (index) => (index === 0 ? product.name : `${product.name} (تصویر ${fa(index + 1)})`);
-  // کشیدن انگشت روی تصویر (راست‌به‌چپ: کشیدن به راست = بعدی)
-  const onSwipeStart = (event) => {
-    swipeStart.current = event.touches.length === 1 ? { x: event.touches[0].clientX, y: event.touches[0].clientY } : null;
-  };
-  const onSwipeEnd = (event) => {
-    const start = swipeStart.current;
-    swipeStart.current = null;
-    if (!start || !many) return;
-    const point = event.changedTouches[0];
-    const dx = point.clientX - start.x;
-    const dy = point.clientY - start.y;
-    if (Math.abs(dx) >= 50 && Math.abs(dx) > Math.abs(dy) * 1.5) stepPhoto(dx > 0 ? 1 : -1);
-  };
   // نوار خرید چسبان موبایل: وقتی دکمه‌های اصلی خرید از دید بیرون‌اند نشان داده می‌شود، و وقتی فوتر دیده می‌شود پنهان
   const actionsRef = useRef(null);
   const [barVisible, setBarVisible] = useState(false);
@@ -352,47 +337,37 @@ export default function ProductDetails({ product, initialComments = [], related 
   return (
     <div className="container mx-auto px-2 sm:px-4 md:px-6 py-2 sm:py-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-        <div className="relative bg-white rounded-xl shadow-lg p-4">
+        <div ref={stageRef} className="relative overflow-hidden rounded-xl bg-white shadow-lg">
           {photos.length > 0 ? (
             <>
-              {/* touch-pan-y: کشیدن افقی را خودمان برای تعویض عکس می‌خوانیم و مرورگر آن را «برگشت به صفحهٔ قبل» نمی‌کند؛ بزرگ‌نمایی با دو انگشت می‌ماند */}
-              <div className="relative touch-pan-y touch-pinch-zoom" onTouchStart={onSwipeStart} onTouchEnd={onSwipeEnd}>
-                <button
-                  type="button"
-                  onClick={() => setZoomOpen(true)}
-                  aria-label="بزرگ‌نمایی تصویر محصول"
-                  className="group relative block w-full cursor-zoom-in rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
-                >
-                  <AppImage
-                    key={photos[current]}
-                    src={photos[current]}
-                    alt={photoAlt(current)}
-                    width={500}
-                    height={500}
-                    sizes="(max-width: 768px) 100vw, 500px"
-                    priority={current === 0}
-                    className={`w-full h-72 md:h-96 object-contain ${swapped ? "gallery-fade" : ""}`}
-                  />
-                  <span
-                    aria-hidden="true"
-                    className="absolute bottom-2 left-2 grid h-10 w-10 place-items-center rounded-full bg-white/90 text-gray-700 shadow ring-1 ring-gray-200 transition duration-300 group-hover:scale-110 group-hover:text-brand-600"
+              {/* تصویر کل کادر را پر می‌کند (object-cover، کادر ۴:۳ مثل بیشتر عکس‌های محصول)؛ اسلایدر مثل بنر صفحهٔ اصلی ولی بدون جابه‌جایی خودکار */}
+              <ImageSlider
+                ref={sliderRef}
+                images={photos}
+                label={product.name}
+                className="relative aspect-[4/3] w-full bg-gray-100"
+                onIndexChange={setActive}
+                renderSlide={(src, index, { load }) => (
+                  <button
+                    type="button"
+                    onClick={() => setZoomOpen(true)}
+                    aria-label="بزرگ‌نمایی تصویر محصول"
+                    className="group relative block h-full w-full cursor-zoom-in focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-500"
                   >
-                    <ZoomIn className="h-5 w-5" />
-                  </span>
-                </button>
-                {many && (
-                  <>
-                    <button type="button" onClick={() => stepPhoto(1)} aria-label="تصویر بعدی" className={`${arrowClass} left-1`}>
-                      <ChevronLeft className="h-5 w-5" aria-hidden="true" />
-                    </button>
-                    <button type="button" onClick={() => stepPhoto(-1)} aria-label="تصویر قبلی" className={`${arrowClass} right-1`}>
-                      <ChevronRight className="h-5 w-5" aria-hidden="true" />
-                    </button>
-                  </>
+                    {load && (
+                      <AppImage src={src} alt={photoAlt(index)} fill priority={index === 0} sizes="(max-width: 768px) 100vw, 600px" className="object-cover" />
+                    )}
+                    <span
+                      aria-hidden="true"
+                      className="absolute bottom-3 left-3 grid h-10 w-10 place-items-center rounded-full bg-white/90 text-gray-700 shadow ring-1 ring-gray-200 transition duration-300 group-hover:scale-110 group-hover:text-brand-600"
+                    >
+                      <ZoomIn className="h-5 w-5" />
+                    </span>
+                  </button>
                 )}
-              </div>
+              />
               {many && (
-                <ul className="no-scrollbar mx-auto mt-3 flex w-max max-w-full gap-2 overflow-x-auto p-1" aria-label="تصویرهای محصول">
+                <ul className="no-scrollbar mx-auto flex w-max max-w-full gap-2 overflow-x-auto p-3" aria-label="تصویرهای محصول">
                   {photos.map((src, index) => (
                     <li key={src} className="shrink-0">
                       <button
@@ -404,23 +379,21 @@ export default function ProductDetails({ product, initialComments = [], related 
                           index === current ? "border-brand-600 ring-1 ring-brand-600" : "border-gray-200 opacity-75 hover:border-gray-300 hover:opacity-100"
                         }`}
                       >
-                        <AppImage src={src} alt="" fill sizes="64px" className="object-contain p-1" />
+                        <AppImage src={src} alt="" fill sizes="64px" className="object-cover" />
                       </button>
                     </li>
                   ))}
                 </ul>
               )}
-              <ImageLightbox open={zoomOpen} onClose={() => setZoomOpen(false)} images={photos} index={current} onIndexChange={showPhoto} alt={product.name} />
+              <ImageLightbox open={zoomOpen} onClose={() => setZoomOpen(false)} images={photos} index={current} onIndexChange={(index) => showPhoto(index, { instant: true })} onExited={focusZoomButton} alt={product.name} />
             </>
           ) : (
-            <div className="w-full h-72 md:h-96 bg-gray-200 flex items-center justify-center">
-              بدون تصویر
-            </div>
+            <div className="flex aspect-[4/3] w-full items-center justify-center bg-gray-200">بدون تصویر</div>
           )}
           {hasDiscount && (
             <div className="discount-chip left-3 top-3">
-              <span className="text-lg font-extrabold leading-none">{fa(product.discount)}٪</span>
-              <span className="mt-1 text-[0.625rem] font-bold leading-none">تخفیف</span>
+              <span className="discount-chip__value">{fa(product.discount)}٪</span>
+              <span className="discount-chip__label">تخفیف</span>
             </div>
           )}
         </div>
