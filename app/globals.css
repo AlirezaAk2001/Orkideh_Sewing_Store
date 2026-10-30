@@ -777,6 +777,41 @@ main {
   }
 }
 
+/* لیست‌های پنل (app/admin/_list): ردیف‌ها یکی‌یکی با ۳۰ میلی‌ثانیه فاصله بالا می‌آیند (تأخیر از style هر ردیف) و دکمه‌های آیکونی هنگام هاور
+   یک حرکت کوتاه دارند: قلم می‌نویسد، سطل زباله تکان می‌خورد. همه فقط بدون «کاهش حرکت» */
+@keyframes admin-row-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes icon-write {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  25% { transform: translate(-2px, -2px) rotate(-10deg); }
+  50% { transform: translate(0, 0) rotate(0deg); }
+  75% { transform: translate(2px, -1px) rotate(6deg); }
+}
+
+@keyframes icon-shake {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-9deg); }
+  60% { transform: rotate(8deg); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .admin-row-in {
+    animation: admin-row-in 0.28s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+
+  .icon-action:hover .icon-write {
+    animation: icon-write 0.6s ease-in-out;
+  }
+
+  .icon-action:hover .icon-trash {
+    animation: icon-shake 0.5s ease-in-out;
+    transform-origin: 50% 80%;
+  }
+}
+
 /* ───── لوگوی فروشگاه (components/SiteLogo.jsx) ─────
    هر چند ثانیه SiteLogo صفت data-sewing را برای ۱٫۸ ثانیه روی لوگو می‌گذارد: میلهٔ سوزن ۶ بار بالا و پایین می‌رود (۱۶ واحد از ۲۵۶) و بخیه‌ها به
    اندازهٔ ۶ دوخت (۶×۱۳) جلو می‌روند؛ چون الگوی خط‌چین هر ۱۳ واحد تکرار می‌شود، پایان حرکت با شروع یکی است و پرشی دیده نمی‌شود.
