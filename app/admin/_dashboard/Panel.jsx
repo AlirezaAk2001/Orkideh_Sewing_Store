@@ -2,12 +2,13 @@ import { demoAllowed } from "@/lib/demoFlag";
 
 // کارت سفید هر نمودار (سطح خود نمودار همیشه سفید است تا رنگ‌ها و کنتراست همان باشد که اعتبارسنجی شده)؛ busy = داده در حال تازه‌شدن است:
 // نمودار قبلی با کم‌رنگی می‌ماند و جابه‌جا نمی‌شود (بدون اسکلتون)
-export default function Panel({ title, subtitle, icon: Icon, actions, busy = false, index = 0, className = "", children }) {
+export default function Panel({ title, titleId, subtitle, icon: Icon, actions, busy = false, index = 0, className = "", children }) {
   return (
     <section
       className={`dash-rise rounded-2xl bg-white p-4 shadow-sm ring-1 ring-gray-200 sm:p-5 ${className}`}
       style={{ "--i": index }}
       aria-busy={busy || undefined}
+      aria-labelledby={titleId}
     >
       <header className="mb-4 flex flex-wrap items-start justify-between gap-2">
         <div className="flex min-w-0 items-center gap-2.5">
@@ -17,7 +18,7 @@ export default function Panel({ title, subtitle, icon: Icon, actions, busy = fal
             </span>
           )}
           <div className="min-w-0">
-            <h2 className="text-base font-bold text-gray-900">{title}</h2>
+            <h2 id={titleId} className="text-base font-bold text-gray-900">{title}</h2>
             {subtitle && <p className="mt-0.5 text-xs text-gray-500">{subtitle}</p>}
           </div>
         </div>

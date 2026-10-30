@@ -2,7 +2,7 @@
 
 import { Trophy } from "lucide-react";
 import { Empty } from "./Panel";
-import { compactText, fa } from "./format";
+import { fa } from "./format";
 
 // پرفروش‌ترین کالاها: میلهٔ افقی با یک رنگ برای همهٔ میله‌ها (کالاها ترتیب طبیعی ندارند، پس رنگ شیب‌دار نمی‌دهیم)، عدد در نوک میله.
 // میله از خط پایهٔ سمت راست رشد می‌کند و سر آزادش (چپ) ۴px گرد است. نام کامل و مبلغ فروش با موس یا فوکوس هم در tooltip می‌آید
@@ -23,7 +23,7 @@ export default function TopProducts({ items }) {
                 <p className="min-w-0 truncate text-sm text-gray-800">
                   <span className="text-gray-400">{fa(i + 1)}.</span> {p.name}
                 </p>
-                <p className="shrink-0 text-xs text-gray-500">{compactText(p.revenue)} تومان</p>
+                <p className="shrink-0 text-xs text-gray-500">{fa(Math.round(p.revenue))} تومان</p>
               </div>
               <div className="mt-1.5 flex items-center gap-2">
                 <div className="dash-bar h-2.5 rounded-e-[4px] transition-[filter] group-hover:brightness-110 group-focus-within:brightness-110" style={{ width: `${width}%`, background: "var(--viz-series)" }} />

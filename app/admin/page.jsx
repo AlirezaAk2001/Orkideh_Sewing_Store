@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
 import dynamic from "next/dynamic";
 import axios from "axios";
 import toast from "react-hot-toast";
@@ -9,15 +8,20 @@ import { useRouter } from "next/navigation";
 import Icon from '@mdi/react';
 import { mdiPanoramaVariantOutline, mdiCommentAccountOutline, mdiAccountFileText } from '@mdi/js';
 import CategoryOutlinedIcon from "@mui/icons-material/CategoryOutlined";
-import { Banknote, FlaskConical, MessageSquareText, PackageX, ShoppingBag, Truck, UserPlus, Wallet } from "lucide-react";
+import { Banknote, BellRing, FlaskConical, MessageSquareText, PackageX, ShoppingBag, Truck, UserPlus, Wallet } from "lucide-react";
 import { demoAllowed } from "@/lib/demoFlag";
+import AttentionItem from "./_dashboard/AttentionItem";
 import DashboardHero from "./_dashboard/DashboardHero";
+import Panel from "./_dashboard/Panel";
 import ShortcutCard from "./_dashboard/ShortcutCard";
 import StatTile from "./_dashboard/StatTile";
-import { compactText, compactToman, fa } from "./_dashboard/format";
+import { fa } from "./_dashboard/format";
 
 // حالت نمونه (آمار ساختگی برای دیدن نمودارها) فقط در توسعه هست؛ انتخاب کاربر در localStorage می‌ماند و بار اول روشن است
 const DEMO_OK = demoAllowed();
+
+// ستون‌های پنل «نیازمند توجه» از lg به بالا به تعداد موردها (کلاس کامل نوشته شده تا Tailwind بشناسد)؛ پایین‌تر زیر هم‌اند
+const ATTENTION_COLS = { 1: "lg:grid-cols-1", 2: "lg:grid-cols-2", 3: "lg:grid-cols-3" };
 
 // بسته‌ی نمودارها جدا و دیرتر بارگذاری می‌شود (SVG ساده است ولی لازم نیست جلوی دیده‌شدن شاخص‌ها را بگیرد)
 const Skel = ({ className = "" }) => <div className={`animate-pulse rounded-2xl bg-white/70 ring-1 ring-gray-200 ${className}`} />;
@@ -35,11 +39,8 @@ const ChartsSkeleton = () => (
 );
 const DashboardCharts = dynamic(() => import("./_dashboard/DashboardCharts"), { ssr: false, loading: ChartsSkeleton });
 
-// «۱۲٫۵ میلیون» + «تومان» به شکل { num, unit }
-const money = (n) => {
-  const { num, unit } = compactToman(n);
-  return { num, unit: unit ? `${unit} تومان` : "تومان" };
-};
+// مبلغ کامل مثل بقیهٔ فروشگاه («۷٬۳۰۰٬۰۰۰» + «تومان») به شکل { num, unit }؛ فقط محور نمودار فشرده می‌ماند چون جا ندارد
+const money = (n) => ({ num: fa(Math.round(n)), unit: "تومان" });
 
 export default function AdminHome() {
   const [days, setDays] = useState(30);
@@ -129,21 +130,21 @@ export default function AdminHome() {
   const tiles = data && [
     { id: "revenue", icon: Banknote, tone: "brand", label: `فروش ${fa(shown)} روز اخیر`, value: money(k.revenue.value), zero: !k.revenue.value, change: k.revenue.change, spark: spark("revenue") },
     { id: "orders", icon: ShoppingBag, tone: "blue", label: "سفارش‌های پرداخت‌شده", value: { num: fa(k.orders.value), unit: "سفارش" }, zero: !k.orders.value, change: k.orders.change, spark: spark("orders") },
-    { id: "aov", icon: Wallet, tone: "violet", label: "میانگین هر سفارش", value: money(k.aov.value), zero: !k.aov.value, change: k.aov.change },
-    { id: "customers", icon: UserPlus, tone: "emerald", label: "مشتریان جدید", value: { num: fa(k.customers.value), unit: "نفر" }, zero: !k.customers.value, change: k.customers.change },
+    { id: "aov", icon: Wallet, tone: "violet", label: "میانگین هر سفارش", value: money(k.aov.value), zero: !k.aov.value, change: k.aov.change, spark: spark("aov"), sparkBaseline: "min" },
+    { id: "customers", icon: UserPlus, tone: "emerald", label: "مشتریان جدید", value: { num: fa(k.customers.value), unit: "نفر" }, zero: !k.customers.value, change: k.customers.change, spark: spark("customers") },
   ];
 
   const summary = !data
     ? ""
     : k.revenue.value > 0
-      ? `در ${fa(shown)} روز اخیر ${fa(k.orders.value)} سفارش پرداخت‌شده و ${compactText(k.revenue.value)} تومان فروش ثبت شده است.`
+      ? `در ${fa(shown)} روز اخیر ${fa(k.orders.value)} سفارش پرداخت‌شده و ${fa(Math.round(k.revenue.value))} تومان فروش ثبت شده است.`
       : `در ${fa(shown)} روز اخیر هنوز فروشی ثبت نشده است.`;
 
   // کارهای منتظر ادمین؛ فقط آنچه صفر نیست نشان داده می‌شود
   const attention = data && [
-    { href: "/admin/orders", icon: Truck, count: data.attention.processingOrders, text: "سفارش جاری در انتظار رسیدگی" },
-    { href: "/admin/comments", icon: MessageSquareText, count: data.attention.pendingComments, text: "نظر در انتظار تأیید" },
-    { href: "/admin/products", icon: PackageX, count: data.attention.soldOut, text: "کالای ناموجود" },
+    { href: "/admin/orders", icon: Truck, tone: "blue", count: data.attention.processingOrders, text: "سفارش جاری در انتظار رسیدگی" },
+    { href: "/admin/comments", icon: MessageSquareText, tone: "amber", count: data.attention.pendingComments, text: "نظر در انتظار تأیید" },
+    { href: "/admin/products", icon: PackageX, tone: "red", count: data.attention.soldOut, text: "کالای ناموجود" },
   ].filter((a) => a.count > 0);
 
   const quick = data && [
@@ -213,20 +214,15 @@ export default function AdminHome() {
           </div>
 
           {attention.length > 0 && (
-            <ul className="flex flex-wrap gap-2" aria-label="نیازمند توجه">
-              {attention.map(({ href, icon: AttentionIcon, count, text }, i) => (
-                <li key={href} className="dash-rise" style={{ "--i": 9 + i }}>
-                  <Link
-                    href={href}
-                    className="inline-flex items-center gap-2 rounded-xl bg-white px-3 py-2 text-sm text-gray-700 shadow-sm ring-1 ring-gray-200 transition hover:-translate-y-0.5 hover:bg-gray-50 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
-                  >
-                    <AttentionIcon className="h-4 w-4 text-gray-500" aria-hidden="true" />
-                    <span className="font-bold text-gray-900">{fa(count)}</span>
-                    {text}
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            <Panel title="نیازمند توجه" titleId="attention-title" subtitle="کارهایی که منتظر شما هستند" icon={BellRing} index={9}>
+              <ul className={`grid grid-cols-1 divide-y divide-gray-100 lg:divide-x lg:divide-y-0 ${ATTENTION_COLS[attention.length]}`}>
+                {attention.map((a) => (
+                  <li key={a.href} className="p-1 lg:px-1.5">
+                    <AttentionItem {...a} />
+                  </li>
+                ))}
+              </ul>
+            </Panel>
           )}
 
           <DashboardCharts data={data} busy={refreshing} />
