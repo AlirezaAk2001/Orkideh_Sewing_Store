@@ -1,5 +1,6 @@
 "use client";
 
+import { LOGO_PNG } from "@/lib/siteLogo";
 import { useState, useEffect, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import axios from "axios";
@@ -8,6 +9,7 @@ import { Box, Button, TextField, CircularProgress } from "@mui/material";
 import { Save } from "lucide-react";
 import Image from "next/image";
 import Icon from '@mdi/react';
+import PageHeader from "@/app/admin/_shell/PageHeader";
 import { mdiShapeOutline, mdiImageOffOutline, mdiImagePlusOutline } from '@mdi/js';
 import { getImagePath } from "@/app/utils/getImagePath";
 import AppImage from "@/app/components/AppImage";
@@ -152,7 +154,7 @@ export default function EditCategory() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] fixed inset-0">
         <Image
-          src="/image/logo.png"
+          src={LOGO_PNG}
           alt="در حال بارگذاری..."
           width={80}
           height={80}
@@ -293,28 +295,11 @@ export default function EditCategory() {
           box-shadow: none !important;
         }
 
-        .category-header-card {
-          background: #fff;
-          border-radius: 16px;
-          box-shadow: 0 2px 8px rgba(0,0,0,.07);
-          padding: 12px 20px;
-          margin-bottom: 10px;
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          font-family: Vazirmatn, sans-serif;
-          font-size: 1rem;
-          font-weight: 700;
-        }
       `}</style>
 
       <Box sx={{ p: 0 }} dir="rtl">
 
-        {/* ── عنوان صفحه ── */}
-        <div className="category-header-card">
-          <Icon path={mdiShapeOutline} size={1} />
-          ویرایش دسته‌بندی
-        </div>
+        <PageHeader icon={<Icon path={mdiShapeOutline} size="22px" />} title="ویرایش دسته‌بندی" />
 
         {/* ── کارت اصلی ── */}
         <div className="category-card">

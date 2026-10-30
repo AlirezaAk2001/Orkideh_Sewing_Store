@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { PackageCheck, Undo2, CalendarCheck, Clock } from "lucide-react";
 import Icon from '@mdi/react';
+import PageHeader from "@/app/admin/_shell/PageHeader";
 import {
   mdiAccountFileText,
   mdiAccountFileTextOutline,
@@ -329,42 +330,6 @@ export default function AdminOrders() {
     <div style={{ padding: "16px" }} dir="rtl">
       <style>
         {`
-          .orders-header-card {
-            background: #fff;
-            border-radius: 16px;
-            box-shadow: 0 2px 8px rgba(0,0,0,.07);
-            padding: 12px 20px;
-            margin-bottom: 10px;
-          }
-          .orders-header-title {
-            font-family: Vazirmatn, sans-serif;
-            font-size: 1rem;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            margin: 0 0 2px 0;
-          }
-          .orders-header-subtitle {
-            font-family: Vazirmatn, sans-serif;
-            font-size: 14px;
-            color: #78909c;
-            margin-right: 8px;
-            display: inline-block;
-            overflow: hidden;
-            white-space: nowrap;
-            max-width: 0;
-            animation: typewriter 0.9s steps(25, end) forwards;
-          }
-          .orders-header-subtitle b { font-size: 16px; }
-          @keyframes typewriter {
-            from { max-width: 0; }
-            to   { max-width: 300px; }
-          }
-          @keyframes shimmer {
-            0%   { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-          }
           @keyframes pulse-scale {
             0%, 100% { transform: scale(0.8); opacity: 0.5; }
             50%       { transform: scale(1);   opacity: 1;   }
@@ -383,25 +348,14 @@ export default function AdminOrders() {
         `}
       </style>
 
-      <div className="orders-header-card">
-        <p className="orders-header-title">
-          <Icon path={mdiAccountFileText} size={1.3} />
-          مدیریت سفارش‌های کاربران
-        </p>
-        {isFirstLoad ? (
-          <div style={{
-            height: 16, width: 120, borderRadius: 4,
-            background: "linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%)",
-            backgroundSize: "200% 100%",
-            animation: "shimmer 1.5s infinite",
-            marginRight: 8,
-          }} />
-        ) : (
-          <span className="orders-header-subtitle" key={typewriterKey} style={{ color: tabColor(activeTab) }}>
-            <b>{filteredOrders.length.toLocaleString("fa-IR")}</b> {tabLabel(activeTab)} یافت شد
-          </span>
-        )}
-      </div>
+      <PageHeader
+        icon={<Icon path={mdiAccountFileText} size="22px" />}
+        title="مدیریت سفارش‌های کاربران"
+        loading={isFirstLoad}
+        subtitleKey={typewriterKey}
+        subtitleColor={tabColor(activeTab)}
+        subtitle={<><b>{filteredOrders.length.toLocaleString("fa-IR")}</b> {tabLabel(activeTab)} یافت شد</>}
+      />
 
       <div className="orders-card">
         <div className="orders-card-body">

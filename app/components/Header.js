@@ -10,9 +10,11 @@ import { useAuth, useFavorites, useCart } from "../../lib/context";
 import { AnimatePresence, motion } from "framer-motion";
 import { Tooltip } from 'react-tooltip';
 import AppImage from "./AppImage";
+import SiteLogo from "./SiteLogo";
+import { LOGO } from "../../lib/siteLogo";
 
-// لوگوی هدر در همهٔ صفحه‌ها هست؛ از optimizer می‌گذرد تا PNG چند مگابایتی برای یک دایرهٔ کوچک دانلود نشود
-const MotionAppImage = motion.create(AppImage);
+// لوگوی هدر در همهٔ صفحه‌ها هست: لوگوی پیش‌فرض SVG انیمیشن‌دار است و لوگوی دیگر از optimizer می‌گذرد تا PNG سنگین برای یک دایرهٔ کوچک دانلود نشود
+const MotionSiteLogo = motion.create(SiteLogo);
 
 export default function Header() {
   const router = useRouter();
@@ -41,7 +43,7 @@ export default function Header() {
     fetch("/api/background")
       .then((resp) => resp.json())
       .then((data) => {
-        setLogoUrl(data.data || "/img/default-logo.png");
+        setLogoUrl(data.data || LOGO);
         setLogoLoaded(true); // ← اضافه کن
       })
       .catch((err) => {
@@ -167,7 +169,7 @@ export default function Header() {
           <Link href="/" className={`flex-shrink-0 ${isMaintenance ? 'pointer-events-none' : ''}`}>
             <AnimatePresence>
               {logoUrl ? (
-                <MotionAppImage
+                <MotionSiteLogo
                   src={logoUrl}
                   alt="لوگو"
                   width={64}

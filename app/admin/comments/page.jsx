@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import { CheckCircle2, Clock, Send, X, Edit3 } from "lucide-react";
 import moment from "moment-jalaali";
 import Icon from "@mdi/react";
+import PageHeader from "@/app/admin/_shell/PageHeader";
 import {
   mdiAccountBoxEditOutline,
   mdiCommentRemoveOutline,
@@ -520,46 +521,6 @@ export default function AdminComments() {
     <div style={{ padding: "16px" }} dir="rtl">
 
       <style>{`
-        /* ── هدر کارت سبک (manage-users style) ── */
-        .comments-header-card {
-          background: #fff;
-          border-radius: 16px;
-          box-shadow: 0 2px 8px rgba(0,0,0,.07);
-          padding: 12px 20px;
-          margin-bottom: 10px;
-        }
-        .comments-header-title {
-          font-family: Vazirmatn, sans-serif;
-          font-size: 1rem;
-          font-weight: 700;
-          // color: #673ab7;
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          margin: 0 0 2px 0;
-        }
-        .comments-header-subtitle {
-          font-family: Vazirmatn, sans-serif;
-          font-size: 14px;
-          color: #78909c;
-          margin-right: 8px;
-          display: inline-block;
-          overflow: hidden;
-          white-space: nowrap;
-          max-width: 0;
-          animation: typewriter 0.9s steps(25, end) forwards;
-        }
-        .comments-header-subtitle b {
-          font-size: 16px;
-        }
-        @keyframes typewriter {
-          from { max-width: 0; }
-          to   { max-width: 300px; }
-        }
-        @keyframes shimmer {
-          0%   { background-position: 200% 0; }
-          100% { background-position: -200% 0; }
-        }
 
         /* ── کارت اصلی ── */
         .comment-card {
@@ -579,29 +540,20 @@ export default function AdminComments() {
       `}</style>
 
       {/* ── هدر جدا — سبک لایت مشابه manage-users ── */}
-      <div className="comments-header-card">
-        <p className="comments-header-title">
-          <Icon path={mdiAccountBoxEditOutline} size={1} />
-          مدیریت نظرات کاربران
-        </p>
-        {loading ? (
-          <div style={{
-            height: 16, width: 120, borderRadius: 4,
-            background: "linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%)",
-            backgroundSize: "200% 100%",
-            animation: "shimmer 1.5s infinite",
-            marginRight: 8,
-          }} />
-        ) : (
-          <span className="comments-header-subtitle" key={typewriterKey} style={{ color: filterLabel ? filterLabel.color : "#1e2a2f" }}>
-            {filterLabel ? (
-              <><b>{filteredComments.length.toLocaleString("fa-IR")}</b> {filterLabel.text} یافت شد</>
-            ) : (
-              <><b>{comments.length.toLocaleString("fa-IR")}</b> نظر یافت شد</>
-            )}
-          </span>
-        )}
-      </div>
+      <PageHeader
+        icon={<Icon path={mdiAccountBoxEditOutline} size="22px" />}
+        title="مدیریت نظرات کاربران"
+        loading={loading}
+        subtitleKey={typewriterKey}
+        subtitleColor={filterLabel?.color}
+        subtitle={
+          filterLabel ? (
+            <><b>{filteredComments.length.toLocaleString("fa-IR")}</b> {filterLabel.text} یافت شد</>
+          ) : (
+            <><b>{comments.length.toLocaleString("fa-IR")}</b> نظر یافت شد</>
+          )
+        }
+      />
 
       {/* ── کارت اصلی ── */}
       <div className="comment-card">

@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { Mail, MapPin, Phone, Smartphone } from "lucide-react";
 import { FaInstagram } from "react-icons/fa";
-import AppImage from "./AppImage";
+import SiteLogo from "./SiteLogo";
+import { LOGO } from "@/lib/siteLogo";
 import { STORE } from "@/lib/contact";
 
 const LINKS = [
@@ -23,8 +24,8 @@ export default function Footer() {
       <div className="container mx-auto grid gap-10 px-4 py-12 md:grid-cols-12" dir="rtl">
         <div className="md:col-span-5">
           <div className="flex items-center gap-3">
-            <AppImage
-              src="/image/logo.png"
+            <SiteLogo
+              src={LOGO}
               alt="لوگوی فروشگاه ارکیده"
               width={48}
               height={48}

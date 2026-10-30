@@ -26,6 +26,7 @@ import toast from "react-hot-toast";
 import { getImagePath } from "@/app/utils/getImagePath";
 import AppImage from "@/app/components/AppImage";
 import Icon from '@mdi/react';
+import PageHeader from "@/app/admin/_shell/PageHeader";
 import {
   mdiStoreCogOutline,
   mdiStorePlusOutline,
@@ -635,42 +636,6 @@ export default function AdminProducts() {
           z-index: 20;
         }
 
-        .products-header-card {
-          background: #fff;
-          border-radius: 16px;
-          box-shadow: 0 2px 8px rgba(0,0,0,.07);
-          padding: 12px 20px;
-          margin-bottom: 10px;
-        }
-        .products-header-title {
-          font-family: Vazirmatn, sans-serif;
-          font-size: 1rem;
-          font-weight: 700;
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          margin: 0 0 2px 0;
-        }
-        .products-header-subtitle {
-          font-family: Vazirmatn, sans-serif;
-          font-size: 14px;
-          color: #78909c;
-          margin-right: 8px;
-          display: inline-block;
-          overflow: hidden;
-          white-space: nowrap;
-          max-width: 0;
-          animation: typewriter 0.9s steps(25, end) forwards;
-        }
-        .products-header-subtitle b { font-size: 16px; }
-        @keyframes typewriter {
-          from { max-width: 0; }
-          to   { max-width: 300px; }
-        }
-        @keyframes shimmer {
-          0%   { background-position: 200% 0; }
-          100% { background-position: -200% 0; }
-        }
       `}</style>
 
       <Box sx={{ p: 2, height: "100%", display: "flex", flexDirection: "column" }}>
@@ -714,25 +679,13 @@ export default function AdminProducts() {
         </Dialog>
 
         {/* ===== هدر ===== */}
-        <div className="products-header-card">
-          <p className="products-header-title">
-            <Icon path={mdiStoreCogOutline} size={1.2} />
-            مدیریت محصولات
-          </p>
-          {isFirstLoad ? (
-            <div style={{
-              height: 16, width: 120, borderRadius: 4,
-              background: "linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%)",
-              backgroundSize: "200% 100%",
-              animation: "shimmer 1.5s infinite",
-              marginRight: 8,
-            }} />
-          ) : (
-            <span className="products-header-subtitle" key={total}>
-              <b style={{ color: "#1e2a2f" }}>{total.toLocaleString("fa-IR")}</b> محصول یافت شد
-            </span>
-          )}
-        </div>
+        <PageHeader
+          icon={<Icon path={mdiStoreCogOutline} size="22px" />}
+          title="مدیریت محصولات"
+          loading={isFirstLoad}
+          subtitleKey={total}
+          subtitle={<><b>{total.toLocaleString("fa-IR")}</b> محصول یافت شد</>}
+        />
 
         {/* ===== کارت اصلی ===== */}
         <Paper elevation={0} className="products-table-wrapper" sx={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>

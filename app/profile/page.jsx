@@ -1,5 +1,6 @@
 "use client";
 
+import { LOGO_PNG } from "@/lib/siteLogo";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/context";
@@ -87,7 +88,7 @@ export default function ProfilePage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
         <Image
-          src="/image/logo.png"
+          src={LOGO_PNG}
           alt="در حال بارگذاری اطلاعات کاربر..."
           width={80}
           height={80}

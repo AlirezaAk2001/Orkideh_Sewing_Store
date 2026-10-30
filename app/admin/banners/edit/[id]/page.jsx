@@ -1,5 +1,6 @@
 "use client";
 
+import { LOGO_PNG } from "@/lib/siteLogo";
 import { useEffect, useState } from "react";
 import { Box, Button, TextField, CircularProgress } from "@mui/material";
 import { useRouter, useParams } from "next/navigation";
@@ -7,6 +8,7 @@ import toast from "react-hot-toast";
 import { Save } from "lucide-react";
 import Image from "next/image";
 import Icon from '@mdi/react';
+import PageHeader from "@/app/admin/_shell/PageHeader";
 import { mdiImageEditOutline, mdiImageOffOutline, mdiPanoramaVariantOutline } from '@mdi/js';
 import { getImagePath } from "@/app/utils/getImagePath";
 import AppImage from "@/app/components/AppImage";
@@ -113,7 +115,7 @@ export default function EditBannerPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] fixed inset-0">
         <Image
-          src="/image/logo.png"
+          src={LOGO_PNG}
           alt="در حال بارگذاری..."
           width={80}
           height={80}
@@ -254,28 +256,11 @@ export default function EditBannerPage() {
           box-shadow: none !important;
         }
 
-        .banner-header-card {
-          background: #fff;
-          border-radius: 16px;
-          box-shadow: 0 2px 8px rgba(0,0,0,.07);
-          padding: 12px 20px;
-          margin-bottom: 10px;
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          font-family: Vazirmatn, sans-serif;
-          font-size: 1rem;
-          font-weight: 700;
-        }
       `}</style>
 
       <Box sx={{ p: 0 }} dir="rtl">
 
-        {/* ── عنوان صفحه ── */}
-        <div className="banner-header-card">
-          <Icon path={mdiImageEditOutline} size={1} />
-          ویرایش اطلاعات بنر
-        </div>
+        <PageHeader icon={<Icon path={mdiImageEditOutline} size="22px" />} title="ویرایش اطلاعات بنر" />
 
         {/* ── کارت اصلی ── */}
         <div className="banner-card">

@@ -28,9 +28,8 @@ export const metadata = {
     images: [previewImage()],
   },
   icons: {
-    icon: "/iamge/logo2.ico",
-    shortcut: "/image/logo2.ico",
-    apple: "/iamge/logo2.ico",
+    // فاویکون از app/favicon.ico می‌آید (نکست خودش هش می‌گذارد، پس کش مرورگر قدیمی نمی‌ماند)؛ apple-touch-icon باید PNG مربع باشد
+    apple: "/image/apple-touch-icon.png",
   },
 };
 

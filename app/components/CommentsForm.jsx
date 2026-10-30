@@ -1,5 +1,6 @@
 "use client";
 
+import { LOGO_PNG } from "@/lib/siteLogo";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
@@ -121,7 +122,7 @@ export default function CommentsForm({ productId, onSubmit }) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[20vh]">
         <Image
-          src="/image/logo.png"
+          src={LOGO_PNG}
           alt="در حال بررسی مجوز..."
           width={80}
           height={80}

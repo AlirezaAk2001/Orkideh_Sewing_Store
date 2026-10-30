@@ -25,6 +25,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import AppImage from "@/app/components/AppImage";
 import Icon from '@mdi/react';
+import PageHeader from "@/app/admin/_shell/PageHeader";
 import {
   mdiShapeOutline,
   mdiShapePlusOutline,
@@ -350,42 +351,6 @@ export default function AdminCategories() {
         .category-row:last-child td { border-bottom: none; }
         .category-row:nth-child(even) { background: #f8fafc; }
 
-        .categories-header-card {
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 2px 8px rgba(0,0,0,.07);
-  padding: 12px 20px;
-  margin-bottom: 10px;
-}
-.categories-header-title {
-  font-family: Vazirmatn, sans-serif;
-  font-size: 1rem;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin: 0 0 2px 0;
-}
-.categories-header-subtitle {
-  font-family: Vazirmatn, sans-serif;
-  font-size: 14px;
-  color: #78909c;
-  margin-right: 8px;
-  display: inline-block;
-  overflow: hidden;
-  white-space: nowrap;
-  max-width: 0;
-  animation: typewriter 0.9s steps(25, end) forwards;
-}
-.categories-header-subtitle b { font-size: 16px; }
-@keyframes typewriter {
-  from { max-width: 0; }
-  to   { max-width: 300px; }
-}
-@keyframes shimmer {
-  0%   { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
       `}</style>
 
       <Box sx={{ p: 2 }}>
@@ -435,25 +400,13 @@ export default function AdminCategories() {
         </Dialog>
 
         {/* ===== هدر صفحه ===== */}
-        <div className="categories-header-card">
-  <p className="categories-header-title">
-    <Icon path={mdiShapeOutline} size={1.2} />
-    مدیریت دسته‌بندی‌ها
-  </p>
-  {isFirstLoad ? (
-    <div style={{
-      height: 16, width: 120, borderRadius: 4,
-      background: "linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%)",
-      backgroundSize: "200% 100%",
-      animation: "shimmer 1.5s infinite",
-      marginRight: 8,
-    }} />
-  ) : (
-    <span className="categories-header-subtitle" key={total}>
-      <b style={{ color: "#1e2a2f" }}>{total.toLocaleString("fa-IR")}</b> دسته‌بندی یافت شد
-    </span>
-  )}
-</div>
+        <PageHeader
+          icon={<Icon path={mdiShapeOutline} size="22px" />}
+          title="مدیریت دسته‌بندی‌ها"
+          loading={isFirstLoad}
+          subtitleKey={total}
+          subtitle={<><b>{total.toLocaleString("fa-IR")}</b> دسته‌بندی یافت شد</>}
+        />
 
         {/* ===== کارت جدول ===== */}
         <Paper elevation={0} className="categories-table-wrapper">

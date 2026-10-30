@@ -4,9 +4,9 @@ const prisma = new PrismaClient();
 async function main() {
   await prisma.setting.upsert({
     where: { key: "logo_url" },
-    update: { value: "/image/logo.png" },
-    create: { key: "logo_url", value: "/image/logo.png" },
-    background_image: "/image/logo.png"
+    update: { value: "/image/orkideh-logo.svg" },
+    create: { key: "logo_url", value: "/image/orkideh-logo.svg" },
+    background_image: "/image/orkideh-logo.svg"
   });
 }
 

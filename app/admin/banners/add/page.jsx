@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { Save } from "lucide-react";
 import Icon from '@mdi/react';
+import PageHeader from "@/app/admin/_shell/PageHeader";
 import { mdiImagePlusOutline, mdiImageOffOutline, mdiImageOutline } from '@mdi/js';
 import { getImagePath } from "@/app/utils/getImagePath";
 import AppImage from "@/app/components/AppImage";
@@ -229,28 +230,11 @@ export default function AddBannerPage() {
           box-shadow: none !important;
         }
 
-        .banner-header-card {
-          background: #fff;
-          border-radius: 16px;
-          box-shadow: 0 2px 8px rgba(0,0,0,.07);
-          padding: 12px 20px;
-          margin-bottom: 10px;
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          font-family: Vazirmatn, sans-serif;
-          font-size: 1rem;
-          font-weight: 700;
-        }
       `}</style>
 
       <Box sx={{ p: 0 }} dir="rtl">
 
-        {/* ── عنوان صفحه ── */}
-        <div className="banner-header-card">
-          <Icon path={mdiImagePlusOutline} size={1} />
-          افزودن بنر جدید
-        </div>
+        <PageHeader icon={<Icon path={mdiImagePlusOutline} size="22px" />} title="افزودن بنر جدید" />
 
         {/* ── کارت اصلی ── */}
         <div className="banner-card">

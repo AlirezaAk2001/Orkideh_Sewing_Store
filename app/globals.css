@@ -734,3 +734,80 @@ main {
     animation-delay: calc(var(--i, 0) * 60ms);
   }
 }
+
+/* ───── پوستهٔ پنل ادمین (app/admin/layout.jsx و app/admin/_shell) ─────
+   زمینهٔ آرام و روشن به‌جای عکس: دو درخشش بسیار کم‌رنگ صورتی در دو گوشه و بافت نقطه‌ای شبیه پارچه که به سمت پایین محو می‌شود (همان بافت پنل‌های
+   صورتی صفحه‌های ورود و سربرگ داشبورد). کارت‌های سفید روی آن خوانا و تمیز می‌نشینند و هیچ تصویری با داده‌ها رقابت نمی‌کند. */
+.admin-canvas {
+  background:
+    radial-gradient(52rem 32rem at 100% -12%, color-mix(in oklab, var(--color-brand-100) 65%, transparent), transparent 65%),
+    radial-gradient(44rem 30rem at 0% 108%, color-mix(in oklab, var(--color-brand-50) 90%, transparent), transparent 62%),
+    #f8f6f7;
+}
+
+.admin-canvas::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(color-mix(in oklab, var(--color-brand-600) 22%, transparent) 1px, transparent 1.5px);
+  background-size: 24px 24px;
+  mask-image: linear-gradient(to bottom, #000, transparent 50%);
+  opacity: 0.55;
+}
+
+/* ورود نرم هر صفحهٔ پنل (یک بار با رفتن به آن صفحه) و ورود زیرعنوان سربرگ هنگام عوض‌شدن شمار؛ با «کاهش حرکت» بی‌حرکت */
+@keyframes admin-rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes admin-swap {
+  from { opacity: 0; transform: translateY(-3px); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .admin-page-in {
+    animation: admin-rise 0.35s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+
+  .admin-swap {
+    animation: admin-swap 0.3s ease-out both;
+  }
+}
+
+/* ───── لوگوی فروشگاه (components/SiteLogo.jsx) ─────
+   هر چند ثانیه SiteLogo صفت data-sewing را برای ۱٫۸ ثانیه روی لوگو می‌گذارد: میلهٔ سوزن ۶ بار بالا و پایین می‌رود (۱۶ واحد از ۲۵۶) و بخیه‌ها به
+   اندازهٔ ۶ دوخت (۶×۱۳) جلو می‌روند؛ چون الگوی خط‌چین هر ۱۳ واحد تکرار می‌شود، پایان حرکت با شروع یکی است و پرشی دیده نمی‌شود.
+   بین دو دوخت هیچ انیمیشنی اجرا نمی‌شود. مدت‌ها باید با SEW_DURATION_MS در lib/siteLogo.js یکی باشد */
+@keyframes logo-needle {
+  0% { transform: translateY(0px); }
+  8.33% { transform: translateY(16px); }
+  16.67% { transform: translateY(0px); }
+  25% { transform: translateY(16px); }
+  33.33% { transform: translateY(0px); }
+  41.67% { transform: translateY(16px); }
+  50% { transform: translateY(0px); }
+  58.33% { transform: translateY(16px); }
+  66.67% { transform: translateY(0px); }
+  75% { transform: translateY(16px); }
+  83.33% { transform: translateY(0px); }
+  91.67% { transform: translateY(16px); }
+  100% { transform: translateY(0px); }
+}
+
+@keyframes logo-feed {
+  from { stroke-dashoffset: 0; }
+  to { stroke-dashoffset: -78px; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .logo-art[data-sewing] .logo-needle {
+    animation: logo-needle 1.82s cubic-bezier(0.45, 0, 0.55, 1) both;
+  }
+
+  .logo-art[data-sewing] .logo-stitch {
+    animation: logo-feed 1.82s linear both;
+  }
+}

@@ -1,5 +1,6 @@
 "use client";
 
+import { LOGO_PNG } from "@/lib/siteLogo";
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import axios from "axios";
@@ -8,6 +9,7 @@ import { Box, Button, TextField, MenuItem, CircularProgress } from "@mui/materia
 import { Save } from "lucide-react";
 import Image from "next/image";
 import Icon from '@mdi/react';
+import PageHeader from "@/app/admin/_shell/PageHeader";
 import { mdiStoreEditOutline, mdiStoreOutline } from '@mdi/js';
 import ProductImagesField from "@/app/components/ProductImagesField";
 import { productImages } from "@/lib/productImages";
@@ -225,7 +227,7 @@ export default function EditProduct() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] fixed inset-0">
         <Image
-          src="/image/logo.png"
+          src={LOGO_PNG}
           alt="در حال بارگذاری..."
           width={80}
           height={80}
@@ -299,29 +301,11 @@ export default function EditProduct() {
           box-shadow: none !important;
         }
 
-        /* ── هدر مخصوص صفحه محصول ── */
-        .product-header-card {
-          background: #fff;
-          border-radius: 16px;
-          box-shadow: 0 2px 8px rgba(0,0,0,.07);
-          padding: 12px 20px;
-          margin-bottom: 10px;
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          font-family: Vazirmatn, sans-serif;
-          font-size: 1rem;
-          font-weight: 700;
-        }
       `}</style>
 
       <Box sx={{ p: 0 }} dir="rtl">
 
-        {/* ── عنوان صفحه (دقیقاً مانند بنرها) ── */}
-        <div className="product-header-card">
-          <Icon path={mdiStoreEditOutline} size={1} />
-          ویرایش اطلاعات محصول
-        </div>
+        <PageHeader icon={<Icon path={mdiStoreEditOutline} size="22px" />} title="ویرایش اطلاعات محصول" />
 
         {/* ── کارت اصلی ── */}
         <div className="product-card">

@@ -1,0 +1,138 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="فروشگاه چرخ خیاطی ارکیده">
+<defs>
+  <radialGradient id="l-bg" cx="88" cy="60" r="260" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ff6bb8"/><stop offset=".42" stop-color="#e00a78"/><stop offset="1" stop-color="#860846"/></radialGradient>
+  <radialGradient id="l-vig" cx="128" cy="128" r="128" gradientUnits="userSpaceOnUse"><stop offset=".6" stop-color="#34001a" stop-opacity="0"/><stop offset="1" stop-color="#34001a" stop-opacity=".55"/></radialGradient>
+  <linearGradient id="l-cloth" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff9ccb"/><stop offset="1" stop-color="#d8176f"/></linearGradient>
+  <pattern id="l-weave" width="4" height="4" patternUnits="userSpaceOnUse"><path d="M0 1H4M0 3H4" stroke="#fff" stroke-opacity=".16" stroke-width=".9"/><path d="M1 0V4M3 0V4" stroke="#7a0840" stroke-opacity=".14" stroke-width=".9"/></pattern>
+  <pattern id="l-weaveFabric" width="3" height="3" patternUnits="userSpaceOnUse"><path d="M0 .75H3M0 2.25H3" stroke="#fff" stroke-opacity=".55" stroke-width=".7"/><path d="M.75 0V3M2.25 0V3" stroke="#e58bb7" stroke-opacity=".55" stroke-width=".7"/></pattern>
+  <linearGradient id="l-enamel" x1="40" y1="58" x2="212" y2="212" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ffffff"/><stop offset=".38" stop-color="#f6f0f3"/><stop offset=".72" stop-color="#dcd1d8"/><stop offset="1" stop-color="#b3a5b0"/></linearGradient>
+  <linearGradient id="l-armTop" x1="0" y1="58" x2="0" y2="86" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#fff" stop-opacity=".95"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+  <linearGradient id="l-armUnder" x1="0" y1="86" x2="0" y2="110" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#6b4660" stop-opacity="0"/><stop offset="1" stop-color="#6b4660" stop-opacity=".5"/></linearGradient>
+  <linearGradient id="l-pillarShade" x1="148" y1="0" x2="206" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#6b4660" stop-opacity="0"/><stop offset=".3" stop-color="#6b4660" stop-opacity="0"/><stop offset=".72" stop-color="#6b4660" stop-opacity="0"/><stop offset="1" stop-color="#6b4660" stop-opacity=".5"/></linearGradient>
+  <linearGradient id="l-baseShade" x1="0" y1="176" x2="0" y2="212" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#fff" stop-opacity=".9"/><stop offset=".18" stop-color="#fff" stop-opacity="0"/><stop offset=".6" stop-color="#6b4660" stop-opacity="0"/><stop offset="1" stop-color="#6b4660" stop-opacity=".45"/></linearGradient>
+  <linearGradient id="l-chrome" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#6c727c"/><stop offset=".18" stop-color="#f7f9fc"/><stop offset=".42" stop-color="#a9b0ba"/><stop offset=".62" stop-color="#fdfdff"/><stop offset=".84" stop-color="#7a818b"/><stop offset="1" stop-color="#454b54"/></linearGradient>
+  <linearGradient id="l-chromeV" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f6fa"/><stop offset=".35" stop-color="#a7aeb8"/><stop offset=".55" stop-color="#eef1f5"/><stop offset="1" stop-color="#7f8691"/></linearGradient>
+  <linearGradient id="l-steel" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#8e959f"/><stop offset=".4" stop-color="#f1f4f8"/><stop offset=".75" stop-color="#b5bcc6"/><stop offset="1" stop-color="#6d747e"/></linearGradient>
+  <linearGradient id="l-slot" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#1c1f24"/><stop offset=".5" stop-color="#555b64"/><stop offset="1" stop-color="#1c1f24"/></linearGradient>
+  <linearGradient id="l-threadG" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#d4146f"/><stop offset=".5" stop-color="#ff7ab8"/><stop offset="1" stop-color="#d4146f"/></linearGradient>
+  <linearGradient id="l-spoolCap" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#cfc6cc"/><stop offset=".45" stop-color="#ffffff"/><stop offset="1" stop-color="#b4a9b1"/></linearGradient>
+  <radialGradient id="l-petalG" cx="0.3" cy="0.5" r="0.9"><stop offset="0" stop-color="#ffffff"/><stop offset=".55" stop-color="#ffc4e0"/><stop offset="1" stop-color="#f0589f"/></radialGradient>
+  <radialGradient id="l-sepalG" cx="0.2" cy="0.5" r="1"><stop offset="0" stop-color="#ffe7f2"/><stop offset="1" stop-color="#f77ab4"/></radialGradient>
+  <radialGradient id="l-lipG" cx="0.5" cy="0.3" r="0.9"><stop offset="0" stop-color="#ff9ccb"/><stop offset="1" stop-color="#b8106a"/></radialGradient>
+  <radialGradient id="l-knob" cx="0.35" cy="0.3" r="0.9"><stop offset="0" stop-color="#ffffff"/><stop offset=".5" stop-color="#b9c0ca"/><stop offset="1" stop-color="#5d646e"/></radialGradient>
+  <filter id="l-shadow" x="-15%" y="-15%" width="130%" height="140%"><feDropShadow dx="0" dy="7" stdDeviation="5" flood-color="#38001c" flood-opacity=".5"/></filter>
+  <filter id="l-decalShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy=".8" stdDeviation=".9" flood-color="#7a0840" flood-opacity=".4"/></filter>
+  <filter id="l-blur6" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="6"/></filter>
+  <filter id="l-blur2" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="2"/></filter>
+  <clipPath id="l-disc"><circle cx="128" cy="128" r="128"/></clipPath>
+  <clipPath id="l-body"><path d="M38 72 C38 63 45 58 55 58 L172 58 C190 58 204 70 204 90 L204 176 C216 176 224 184 224 194 C224 204 216 210 206 210 L38 210 C28 210 20 204 20 194 C20 184 28 176 38 176 L148 176 L148 108 L84 108 C79 108 76 111 76 116 L76 122 C76 128 72 132 64 132 L52 132 C43 132 38 126 38 118 Z"/></clipPath>
+  <clipPath id="l-belowHead"><rect x="0" y="132" width="256" height="124"/></clipPath>
+  <clipPath id="l-sewn"><rect x="0" y="170" width="58" height="40"/></clipPath>
+</defs>
+
+<g clip-path="url(#l-disc)">
+  <!-- room: deep pink backdrop with vignette, soft light from the upper left -->
+  <rect width="256" height="256" fill="url(#l-bg)"/>
+  <ellipse cx="78" cy="44" rx="104" ry="40" transform="rotate(-22 78 44)" fill="#fff" opacity=".16" filter="url(#l-blur6)"/>
+  <!-- cloth the machine stands on -->
+  <path d="M0 208 C60 198 196 198 256 208 L256 256 L0 256Z" fill="url(#l-cloth)"/>
+  <path d="M0 208 C60 198 196 198 256 208 L256 256 L0 256Z" fill="url(#l-weave)"/>
+  <path d="M0 208 C60 198 196 198 256 208" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="1.4"/>
+  <rect width="256" height="256" fill="url(#l-vig)"/>
+
+  <g transform="translate(128 140) scale(.95) translate(-128 -140) translate(0 -2)">
+    <!-- contact shadow on the cloth -->
+    <ellipse cx="124" cy="214" rx="104" ry="8" fill="#2c0016" opacity=".55" filter="url(#l-blur6)"/>
+
+    <!-- hand wheel (behind the body, sticking out at the right end) -->
+    <g>
+      <rect x="196" y="68" width="30" height="46" rx="9" fill="url(#l-chromeV)" stroke="#3b4048" stroke-opacity=".45" stroke-width="1"/>
+      <path d="M200 80H222M200 89H222M200 98H222M200 107H222" stroke="#3b4048" stroke-opacity=".28" stroke-width="1.2"/>
+      <path d="M201 71 Q211 67 221 71" stroke="#fff" stroke-opacity=".85" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    </g>
+
+    <!-- machine body: white enamel with soft studio shading -->
+    <g filter="url(#l-shadow)"><path d="M38 72 C38 63 45 58 55 58 L172 58 C190 58 204 70 204 90 L204 176 C216 176 224 184 224 194 C224 204 216 210 206 210 L38 210 C28 210 20 204 20 194 C20 184 28 176 38 176 L148 176 L148 108 L84 108 C79 108 76 111 76 116 L76 122 C76 128 72 132 64 132 L52 132 C43 132 38 126 38 118 Z" fill="url(#l-enamel)"/></g>
+    <g clip-path="url(#l-body)">
+      <rect x="0" y="58" width="256" height="30" fill="url(#l-armTop)"/>
+      <rect x="0" y="86" width="256" height="24" fill="url(#l-armUnder)"/>
+      <rect x="148" y="58" width="76" height="120" fill="url(#l-pillarShade)"/>
+      <rect x="0" y="176" width="256" height="36" fill="url(#l-baseShade)"/>
+      <ellipse cx="148" cy="176" rx="22" ry="9" fill="#5b3a52" opacity=".28" filter="url(#l-blur2)"/>
+      <ellipse cx="86" cy="64" rx="60" ry="3.2" fill="#fff" opacity=".9" filter="url(#l-blur2)"/>
+    </g>
+    <path d="M38 72 C38 63 45 58 55 58 L172 58 C190 58 204 70 204 90 L204 176 C216 176 224 184 224 194 C224 204 216 210 206 210 L38 210 C28 210 20 204 20 194 C20 184 28 176 38 176 L148 176 L148 108 L84 108 C79 108 76 111 76 116 L76 122 C76 128 72 132 64 132 L52 132 C43 132 38 126 38 118 Z" fill="none" stroke="#7a6572" stroke-opacity=".35" stroke-width="1"/>
+    <!-- gold pin-stripe under the arm -->
+    <path d="M84 103 L146 103 M156 103 C175 104 192 103 200 100" stroke="#d6a63c" stroke-width="1.6" stroke-linecap="round" fill="none" opacity=".95"/>
+
+    <!-- bed: top face, pink cloth under the needle, and the stitched seam -->
+    <path d="M40 176 L148 176 L154 194 L26 194 C22 194 21 188 25 184 Z" fill="url(#l-enamel)" opacity=".9"/>
+    <path d="M34 178 L140 178 L148 192 L24 192 Z" fill="#ffd3e8"/>
+    <path d="M34 178 L140 178 L148 192 L24 192 Z" fill="url(#l-weaveFabric)"/>
+    <path d="M24 192 L148 192 L148 196 L24 196 Z" fill="#e0589a"/>
+    <path d="M34 178 L140 178" stroke="#fff" stroke-opacity=".6" stroke-width="1"/>
+    <g clip-path="url(#l-sewn)">
+      <path class="logo-stitch" d="M140 185 L24 185" fill="none" stroke="#ff2f92" stroke-width="2.2" stroke-linecap="round" stroke-dasharray="7 6"/>
+      <path class="logo-stitch" d="M140 184.2 L24 184.2" fill="none" stroke="#ffc2e0" stroke-width=".7" stroke-linecap="round" stroke-dasharray="7 6"/>
+    </g>
+
+    <!-- presser foot (static) -->
+    <rect x="70" y="132" width="4" height="38" rx="1.5" fill="url(#l-steel)"/>
+    <path d="M47 182 C47 178 50 176 54 176 L80 176 C84 176 86 178 86 181 L86 183 L47 183 Z" fill="url(#l-steel)" stroke="#424852" stroke-opacity=".5" stroke-width=".8"/>
+    <rect x="55.4" y="176" width="5.2" height="7" fill="url(#l-slot)"/>
+
+    <!-- needle bar, clamp, needle and the thread end (they move together; clipped so the bar emerges from the head) -->
+    <g clip-path="url(#l-belowHead)">
+      <g class="logo-needle">
+        <rect x="54.5" y="100" width="7" height="42" rx="2" fill="url(#l-chrome)"/>
+        <rect x="51.5" y="138" width="13" height="9" rx="2" fill="url(#l-steel)" stroke="#424852" stroke-opacity=".5" stroke-width=".8"/>
+        <circle cx="61" cy="142.5" r="1.7" fill="url(#l-knob)" stroke="#424852" stroke-opacity=".6" stroke-width=".4"/>
+        <path d="M56.5 147 H59.5 V164 L58 169 L56.5 164 Z" fill="url(#l-steel)" stroke="#424852" stroke-opacity=".55" stroke-width=".5"/>
+        <path d="M58 100 L64 118 L64 152" fill="none" stroke="url(#l-threadG)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M64 152 L58 156" fill="none" stroke="#ff2f92" stroke-width="1.2" stroke-linecap="round"/>
+      </g>
+    </g>
+
+    <!-- chrome faceplate on the head -->
+    <rect x="43" y="74" width="28" height="46" rx="6" fill="url(#l-chrome)" stroke="#3b4048" stroke-opacity=".5" stroke-width="1"/>
+    <rect x="53" y="82" width="8" height="30" rx="4" fill="url(#l-slot)"/>
+    <circle cx="57" cy="79" r="2.2" fill="url(#l-knob)" stroke="#2f343b" stroke-opacity=".6" stroke-width=".5"/>
+    <circle cx="57" cy="115" r="2.2" fill="url(#l-knob)" stroke="#2f343b" stroke-opacity=".6" stroke-width=".5"/>
+    <path d="M45 77 H69" stroke="#fff" stroke-opacity=".9" stroke-width="1.2" stroke-linecap="round"/>
+
+    <!-- stitch selector dial -->
+    <circle cx="112" cy="84" r="12.5" fill="url(#l-chromeV)" stroke="#3b4048" stroke-opacity=".5" stroke-width="1"/>
+    <circle cx="112" cy="84" r="8.6" fill="url(#l-enamel)" stroke="#8a7a86" stroke-opacity=".5" stroke-width=".8"/>
+    <path d="M112 76.6V79.4M118.6 84H115.8M112 91.4V88.6M105.4 84H108.2" stroke="#6b4660" stroke-width="1.1" stroke-linecap="round"/>
+    <circle cx="112" cy="84" r="2.6" fill="url(#l-knob)" stroke="#424852" stroke-opacity=".6" stroke-width=".5"/>
+
+    <!-- orchid decal on the pillar -->
+    <g filter="url(#l-decalShadow)">
+<path transform="translate(176 96) scale(0.82) rotate(-90)" d="M0 0 C3 -6 10 -7.5 17 -3 C20 -1 20 1 17 3 C10 7.5 3 6 0 0Z" fill="url(#l-sepalG)" stroke="#fff" stroke-opacity=".75" stroke-width="1.10" stroke-linejoin="round"/>
+<path transform="translate(176 96) scale(0.82) rotate(50)" d="M0 0 C3 -6 10 -7.5 17 -3 C20 -1 20 1 17 3 C10 7.5 3 6 0 0Z" fill="url(#l-sepalG)" stroke="#fff" stroke-opacity=".75" stroke-width="1.10" stroke-linejoin="round"/>
+<path transform="translate(176 96) scale(0.82) scale(-1 1) rotate(50)" d="M0 0 C3 -6 10 -7.5 17 -3 C20 -1 20 1 17 3 C10 7.5 3 6 0 0Z" fill="url(#l-sepalG)" stroke="#fff" stroke-opacity=".75" stroke-width="1.10" stroke-linejoin="round"/>
+<path transform="translate(176 96) scale(0.82) rotate(-8)" d="M0 0 C2 -8 9 -12 17 -11 C24 -10 27 -4 26 0 C27 4 24 10 17 11 C9 12 2 8 0 0Z" fill="url(#l-petalG)" stroke="#fff" stroke-opacity=".75" stroke-width="1.10" stroke-linejoin="round"/><path transform="translate(176 96) scale(0.82) rotate(-8)" d="M3 0 C9 -2 16 -2 23 0 M4 -1 C9 -5 15 -6 20 -5 M4 1 C9 5 15 6 20 5" fill="none" stroke="#c4207a" stroke-opacity=".35" stroke-width="0.67" stroke-linecap="round"/>
+<path transform="translate(176 96) scale(0.82) scale(-1 1) rotate(-8)" d="M0 0 C2 -8 9 -12 17 -11 C24 -10 27 -4 26 0 C27 4 24 10 17 11 C9 12 2 8 0 0Z" fill="url(#l-petalG)" stroke="#fff" stroke-opacity=".75" stroke-width="1.10" stroke-linejoin="round"/><path transform="translate(176 96) scale(0.82) scale(-1 1) rotate(-8)" d="M3 0 C9 -2 16 -2 23 0 M4 -1 C9 -5 15 -6 20 -5 M4 1 C9 5 15 6 20 5" fill="none" stroke="#c4207a" stroke-opacity=".35" stroke-width="0.67" stroke-linecap="round"/>
+<path transform="translate(176 96) scale(0.82) translate(0 2)" d="M0 -4 C4 -4 6 0 4.5 4 C3.5 6.5 1.5 8 0 8 C-1.5 8 -3.5 6.5 -4.5 4 C-6 0 -4 -4 0 -4Z" fill="url(#l-lipG)" stroke="#fff" stroke-opacity=".6" stroke-width="0.85"/>
+<circle cx="176" cy="94.688" r="1.72" fill="#f4c542" stroke="#b9892a" stroke-width=".4"/>
+</g>
+
+    <!-- spool of pink thread on the spool pin, thread running to the guide above the head -->
+    <rect x="126.5" y="52" width="3" height="8" fill="url(#l-steel)"/>
+    <g>
+      <rect x="112" y="33" width="32" height="4.4" rx="1.6" fill="url(#l-spoolCap)" stroke="#8a7a86" stroke-opacity=".55" stroke-width=".6"/>
+      <rect x="112" y="53.6" width="32" height="4.4" rx="1.6" fill="url(#l-spoolCap)" stroke="#8a7a86" stroke-opacity=".55" stroke-width=".6"/>
+      <rect x="115.4" y="37.2" width="25.2" height="16.6" fill="url(#l-threadG)"/>
+      <path d="M115.4 40L140.6 38.6M115.4 43.4L140.6 42M115.4 46.8L140.6 45.4M115.4 50.2L140.6 48.8" stroke="#8c0a49" stroke-opacity=".38" stroke-width=".7"/>
+      <path d="M118 37.6V53.4" stroke="#fff" stroke-opacity=".35" stroke-width="1.2"/>
+    </g>
+    <rect x="53.5" y="44" width="3" height="14" rx="1" fill="url(#l-steel)"/>
+    <circle cx="55" cy="44.6" r="2.6" fill="none" stroke="url(#l-steel)" stroke-width="1.5"/>
+    <path d="M115.4 44 C100 34 74 34 56.4 44.4" fill="none" stroke="url(#l-threadG)" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="M115.4 44 C100 34 74 34 56.4 44.4" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width=".5" stroke-linecap="round"/>
+  </g>
+
+  <!-- rim light -->
+  <circle cx="128" cy="128" r="127.2" fill="none" stroke="#ffd0e6" stroke-opacity=".5" stroke-width="1.2"/>
+</g>
+</svg>

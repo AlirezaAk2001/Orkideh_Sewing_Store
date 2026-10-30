@@ -25,6 +25,7 @@ import Link from "next/link";
 import { getImagePath } from "@/app/utils/getImagePath";
 import AppImage from "@/app/components/AppImage";
 import Icon from '@mdi/react';
+import PageHeader from "@/app/admin/_shell/PageHeader";
 import {
   mdiImageSearchOutline,
   mdiImagePlusOutline,
@@ -348,42 +349,6 @@ export default function AdminBannersPage() {
         .banner-row:last-child td { border-bottom: none; }
         .banner-row:nth-child(even) { background: #f8fafc; }
 
-        .banners-header-card {
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 2px 8px rgba(0,0,0,.07);
-  padding: 12px 20px;
-  margin-bottom: 10px;
-}
-.banners-header-title {
-  font-family: Vazirmatn, sans-serif;
-  font-size: 1rem;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin: 0 0 2px 0;
-}
-.banners-header-subtitle {
-  font-family: Vazirmatn, sans-serif;
-  font-size: 14px;
-  color: #78909c;
-  margin-right: 8px;
-  display: inline-block;
-  overflow: hidden;
-  white-space: nowrap;
-  max-width: 0;
-  animation: typewriter 0.9s steps(25, end) forwards;
-}
-.banners-header-subtitle b { font-size: 16px; }
-@keyframes typewriter {
-  from { max-width: 0; }
-  to   { max-width: 300px; }
-}
-@keyframes shimmer {
-  0%   { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
       `}</style>
 
       <Box sx={{ p: 2 }}>
@@ -427,25 +392,13 @@ export default function AdminBannersPage() {
         </Dialog>
 
         {/* ===== هدر ===== */}
-        <div className="banners-header-card">
-          <p className="banners-header-title">
-            <Icon path={mdiImageSearchOutline} size={1} />
-            مدیریت بنرها
-          </p>
-          {isFirstLoad ? (
-            <div style={{
-              height: 16, width: 120, borderRadius: 4,
-              background: "linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%)",
-              backgroundSize: "200% 100%",
-              animation: "shimmer 1.5s infinite",
-              marginRight: 8,
-            }} />
-          ) : (
-            <span className="banners-header-subtitle" key={total}>
-              <b style={{ color: "#1e2a2f" }}>{total.toLocaleString("fa-IR")}</b> بنر یافت شد
-            </span>
-          )}
-        </div>
+        <PageHeader
+          icon={<Icon path={mdiImageSearchOutline} size="22px" />}
+          title="مدیریت بنرها"
+          loading={isFirstLoad}
+          subtitleKey={total}
+          subtitle={<><b>{total.toLocaleString("fa-IR")}</b> بنر یافت شد</>}
+        />
 
         {/* ===== کارت اصلی — بدون overflow:hidden ===== */}
         <Paper elevation={0} className="banners-table-wrapper">

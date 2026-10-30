@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, CreditCard, Headset, Ruler, Scissors, Spool, Truck, Wrench } from "lucide-react";
-import AppImage from "@/app/components/AppImage";
+import SiteLogo from "@/app/components/SiteLogo";
+import { LOGO } from "@/lib/siteLogo";
 import { STORE } from "@/lib/contact";
 
 // همان مزیت‌هایی که صفحهٔ اصلی نشان می‌دهد
@@ -27,8 +28,8 @@ const STITCHES = [
 function Brand({ className = "" }) {
   return (
     <Link href="/" aria-label={`${STORE.name}، صفحهٔ اصلی`} className={`flex items-center gap-2.5 ${className}`}>
-      <AppImage
-        src="/image/logo.png"
+      <SiteLogo
+        src={LOGO}
         alt=""
         width={40}
         height={40}
@@ -86,8 +87,8 @@ export default function AuthShell({
 
         {/* متن زیر عنوان عمداً در یک خط است (whitespace-nowrap)؛ عرض و اندازهٔ قلم طوری است که طولانی‌ترین متن (۵۳۵px در قلم ۱۶) در پنل ≥۱۲۸۰px و در قلم ۱۴ در پنل ۴۷۳px جا شود */}
         <div className="relative z-10 mx-auto w-full max-w-xl">
-          <AppImage
-            src="/image/logo.png"
+          <SiteLogo
+            src={LOGO}
             alt=""
             width={96}
             height={96}
