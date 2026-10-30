@@ -1,53 +1,16 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { Button, CircularProgress, TextField } from "@mui/material";
-import { ArrowRight, IterationCcw } from "lucide-react";
+import React, { useState } from "react";
+import { ArrowRight, KeyRound, Send } from "lucide-react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import toast from "react-hot-toast"; // 🍞 جایگزین Swal
+import AuthShell from "@/app/components/auth/AuthShell";
+import { AuthCard, AuthTitle, Field, LINK_BUTTON, SubmitButton, TextInput } from "@/app/components/auth/AuthUI";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [backgroundImage, setBackgroundImage] = useState("/image/logo.png");
-  const [isBgLoaded, setIsBgLoaded] = useState(false);
   const router = useRouter();
-
-  const rtlStyles = {
-    InputLabelProps: {
-      sx: {
-        transformOrigin: "right !important",
-        left: "inherit !important",
-        right: "1.75rem !important",
-      },
-    },
-    sx: {
-      "& legend": {
-        textAlign: "right",
-      },
-    },
-  };
-
-  // در قسمت useEffect برای fetchBackground:
-  useEffect(() => {
-    const fetchBackground = async () => {
-      try {
-        const resp = await fetch("/api/background");
-        if (!resp.ok) throw new Error("خطا در دریافت تصویر پس‌زمینه");
-        const data = await resp.json();
-        setBackgroundImage(data.data?.background_image || "/image/logo.png");
-      } catch (err) {
-        console.error("خطا در لود تصویر پس‌زمینه:", err);
-        // در صورت خطا از تصویر پیش‌فرض استفاده کن
-        setBackgroundImage("/image/back-auth.webp");
-      } finally {
-        setIsBgLoaded(true);
-      }
-    };
-    fetchBackground();
-  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -87,113 +50,44 @@ export default function ForgotPasswordPage() {
     }
   };
 
-  if (!isBgLoaded) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh]">
-        <Image
-          src="/image/logo.png"
-          alt="در حال بارگذاری..."
-          width={80}
-          height={80}
-          className="animate-spin object-contain"
-          priority
-        />
-        <p className="mt-4 text-gray-500 text-sm font-medium animate-pulse">
-          در حال بارگذاری...
-        </p>
-      </div>
-    );
-  }
-
   return (
-    <>
-      {/* 🍞 ظرف Toast (باید در بالاترین سطح کامپوننت قرار گیرد) */}
-
-      <div className="fixed inset-0 flex items-center justify-center overflow-hidden mt-8">
-        {/* پس‌زمینه با blur و opacity */}
-        <div
-          className="absolute inset-0 z-0"
-          style={{
-            backgroundImage: `url(/image/back-auth.webp)`,
-            backgroundRepeat: "no-repeat",
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            filter: "blur(6px)",
-            opacity: 0.45,
-            transform: "scale(1.05)",
-          }}
+    <AuthShell
+      heading="رمز عبور را فراموش کرده‌اید؟"
+      lead="مشکلی نیست. ایمیل حساب خود را بنویسید تا لینک تعیین رمز تازه برایتان ارسال شود."
+    >
+      <AuthCard>
+        <AuthTitle
+          icon={KeyRound}
+          title="بازیابی رمز عبور"
+          text="لطفاً ایمیل خود را وارد کنید. لینک تأییدیه رمز عبور به ایمیل شما ارسال خواهد شد."
         />
-        <div className="relative z-20 w-full max-w-md sm:max-w-lg md:max-w-xl backdrop-blur-md bg-white/20 border border-white/30 p-4 sm:p-6 md:p-8 rounded-xl shadow-lg my-auto">
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-          >
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 sm:mb-4 text-center">
-              بازیابی رمز عبور
-            </h2>
 
-            <p className="text-center text-gray-600 mb-6 text-sm sm:text-base">
-              لطفاً ایمیل خود را وارد کنید. لینک تأییدیه رمز عبور به ایمیل شما
-              ارسال خواهد شد.
-            </p>
+        <form onSubmit={handleSubmit} noValidate className="space-y-4">
+          <Field id="forgot-email" label="ایمیل">
+            <TextInput
+              id="forgot-email"
+              ltr
+              type="email"
+              name="email"
+              autoComplete="email"
+              placeholder="example@gmail.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </Field>
 
-            <form onSubmit={handleSubmit} className="space-y-4" dir="rtl">
-              <div>
-                <TextField
-                  {...rtlStyles}
-                  type="email"
-                  label="ایمیل"
-                  className="w-full p-3 sm:p-4 border rounded text-sm sm:text-base"
-                  value={email}
-                  placeholder="example@gmail.com"
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
+          <SubmitButton loading={isSubmitting} loadingText="در حال ارسال..." icon={Send}>
+            ارسال لینک بازیابی
+          </SubmitButton>
 
-              <Button
-                type="submit"
-                variant="contained"
-                color="primary"
-                fullWidth
-                disabled={isSubmitting}
-                sx={{
-                  py: 1.5,
-                  fontSize: "1rem",
-                  borderRadius: "10px",
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  gap: "3px",
-                }}
-              >
-                {isSubmitting ? (
-                  <>
-                    <CircularProgress size={24} color="inherit" />
-                    در حال ارسال...
-                  </>
-                ) : (
-                  <>
-                    <ArrowRight size={20} />
-                    ادامه
-                  </>
-                )}
-              </Button>
-
-              <div className="text-center mt-4">
-                <button
-                  type="button"
-                  onClick={() => router.push("/auth")}
-                  className="flex items-center justify-center gap-1 text-blue-600 hover:text-blue-800 transition-colors font-medium text-sm sm:text-base cursor-pointer mx-auto"
-                >
-                  <IterationCcw className="w-5 h-5" />
-                  بازگشت به صفحه ورود
-                </button>
-              </div>
-            </form>
-          </motion.div>
-        </div>
-      </div>
-    </>
+          <div className="text-center">
+            <button type="button" onClick={() => router.push("/auth")} className={LINK_BUTTON}>
+              <ArrowRight className="h-4 w-4" aria-hidden="true" />
+              بازگشت به صفحه ورود
+            </button>
+          </div>
+        </form>
+      </AuthCard>
+    </AuthShell>
   );
 }

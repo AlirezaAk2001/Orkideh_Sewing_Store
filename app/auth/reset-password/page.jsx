@@ -1,12 +1,16 @@
 "use client";
 
 import React, { useState, useEffect, Suspense } from "react";
-import { motion } from "framer-motion";
-import { Button, CircularProgress, TextField } from "@mui/material";
-import { RotateCcwKey, IterationCcw } from "lucide-react";
+import { ArrowRight, Loader2, RotateCcwKey } from "lucide-react";
 import toast from "react-hot-toast";
 import { useRouter, useSearchParams } from "next/navigation";
-import Image from "next/image";
+import AuthShell from "@/app/components/auth/AuthShell";
+import { AuthCard, AuthTitle, Field, LINK_BUTTON, PasswordInput, SubmitButton } from "@/app/components/auth/AuthUI";
+
+const SHELL = {
+  heading: "رمز عبور تازه بسازید",
+  lead: "رمزی انتخاب کنید که حدس زدنش سخت و یادآوری‌اش برای خودتان آسان باشد.",
+};
 
 function ResetPasswordContent() {
   const [newPassword, setNewPassword] = useState("");
@@ -17,44 +21,8 @@ function ResetPasswordContent() {
   const [token, setToken] = useState("");
   const [email, setEmail] = useState("");
   const [errors, setErrors] = useState({});
-  const [backgroundImage, setBackgroundImage] = useState("/image/logo.png");
-  const [isBgLoaded, setIsBgLoaded] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
-
-  const rtlStyles = {
-    InputLabelProps: {
-      sx: {
-        transformOrigin: "right !important",
-        left: "inherit !important",
-        right: "1.75rem !important",
-      },
-    },
-    sx: {
-      "& legend": {
-        textAlign: "right",
-      },
-    },
-  };
-
-  // در قسمت useEffect برای fetchBackground:
-  useEffect(() => {
-    const fetchBackground = async () => {
-      try {
-        const resp = await fetch("/api/background");
-        if (!resp.ok) throw new Error("خطا در دریافت تصویر پس‌زمینه");
-        const data = await resp.json();
-        setBackgroundImage(data.data?.background_image || "/image/logo.png");
-      } catch (err) {
-        console.error("خطا در لود تصویر پس‌زمینه:", err);
-        // در صورت خطا از تصویر پیش‌فرض استفاده کن
-        setBackgroundImage("/image/back-auth.webp");
-      } finally {
-        setIsBgLoaded(true);
-      }
-    };
-    fetchBackground();
-  }, []);
 
   useEffect(() => {
     const tokenParam = searchParams.get("token");
@@ -154,158 +122,73 @@ function ResetPasswordContent() {
     }
   };
 
-  if (!isBgLoaded || isValidating) {
+  if (isValidating) {
     return (
-      <div className="w-full flex flex-col items-center justify-center min-h-[70vh] bg-gray-100 overflow-hidden">
-        <div className="flex flex-col items-center justify-center min-h-[60vh]">
-          <Image
-            src="/image/logo.png"
-            alt="در حال بارگذاری..."
-            width={80}
-            height={80}
-            className="animate-spin object-contain"
-            priority
-          />
-          <p className="mt-4 text-gray-600 text-base sm:text-lg font-medium animate-pulse">
-            {isValidating ? "در حال بررسی لینک بازیابی..." : "در حال بارگذاری..."}
-          </p>
-        </div>
-      </div>
+      <AuthShell {...SHELL}>
+        <AuthCard className="flex flex-col items-center gap-4 py-12! text-gray-500">
+          <Loader2 className="h-9 w-9 animate-spin text-brand-600" aria-hidden="true" />
+          <p role="status" className="text-sm font-medium">در حال بررسی لینک بازیابی...</p>
+        </AuthCard>
+      </AuthShell>
     );
   }
 
-  if (!isTokenValid && !isValidating) {
+  if (!isTokenValid) {
     return null;
   }
 
-  if (!isBgLoaded) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh]">
-        <Image
-          src="/image/logo.png"
-          alt="در حال بارگذاری..."
-          width={80}
-          height={80}
-          className="animate-spin object-contain"
-          priority
-        />
-        <p className="mt-4 text-gray-500 text-sm font-medium animate-pulse">
-          در حال بارگذاری...
-        </p>
-      </div>
-    );
-  }
-
   return (
-    <div className="fixed inset-0 flex overflow-y-auto px-4 py-6 [@media(max-height:680px)]:pt-36">
-      {/* پس‌زمینه با blur و opacity (overflow-hidden برای مخفی‌کردن لبه‌های scale) */}
-      <div className="fixed inset-0 z-0 overflow-hidden">
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `url(/image/back-auth.webp)`,
-            backgroundRepeat: "no-repeat",
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            filter: "blur(6px)",
-            opacity: 0.45,
-            transform: "scale(1.05)",
-          }}
+    <AuthShell {...SHELL}>
+      <AuthCard>
+        <AuthTitle
+          icon={RotateCcwKey}
+          title="تغییر رمز عبور"
+          text={
+            <>
+              برای حساب کاربری با ایمیل <strong dir="ltr" className="font-semibold text-gray-700">{email}</strong> رمز عبور جدید خود را وارد کنید.
+            </>
+          }
         />
-      </div>
-      {/* m-auto + اسکرول والد: در صفحه‌های کوتاه فرم بریده نمی‌شود؛ pt-36 جا را برای هدر sticky باز می‌کند */}
-      <div className="relative z-20 m-auto w-full max-w-md sm:max-w-lg md:max-w-xl backdrop-blur-md bg-white/20 border border-white/30 p-4 sm:p-6 md:p-8 rounded-xl shadow-lg">
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-        >
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 sm:mb-4 text-center flex gap-1 justify-center">
-            <RotateCcwKey className="w-10 h-10" />
+
+        <form onSubmit={handleSubmit} noValidate className="space-y-4">
+          <Field index={0} id="reset-new" label="رمز عبور جدید" error={errors.newPassword} hint="حداقل ۸ کاراکتر شامل حرف انگلیسی، عدد و یک نماد مانند @">
+            <PasswordInput
+              id="reset-new"
+              name="newPassword"
+              meter
+              autoComplete="new-password"
+              placeholder="A@12865"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              invalid={!!errors.newPassword}
+            />
+          </Field>
+
+          <Field index={1} id="reset-confirm" label="تأیید رمز عبور جدید" error={errors.confirmPassword}>
+            <PasswordInput
+              id="reset-confirm"
+              name="confirmPassword"
+              autoComplete="new-password"
+              placeholder="A@12865"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              invalid={!!errors.confirmPassword}
+            />
+          </Field>
+
+          <SubmitButton loading={isSubmitting} loadingText="در حال تغییر رمز عبور..." icon={RotateCcwKey}>
             تغییر رمز عبور
-          </h2>
+          </SubmitButton>
 
-          <p className="text-center text-gray-600 mb-4 text-sm sm:text-base">
-            برای حساب کاربری با ایمیل: <strong>{email}</strong>
-          </p>
-          <p className="text-center text-gray-500 mb-6 text-xs sm:text-sm">
-            لطفاً رمز عبور جدید خود را وارد کنید.
-          </p>
-
-          <form onSubmit={handleSubmit} className="space-y-4" dir="rtl">
-            <div>
-              <TextField
-                {...rtlStyles}
-                type="password"
-                label="رمز عبور جدید"
-                className="w-full p-3 sm:p-4 border rounded text-sm sm:text-base"
-                value={newPassword}
-                placeholder="مثال: A@12865"
-                onChange={(e) => setNewPassword(e.target.value)}
-              />
-              {errors.newPassword && (
-                <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.newPassword}</p>
-              )}
-            </div>
-
-            <div>
-              <TextField
-                {...rtlStyles}
-                type="password"
-                label="تأیید رمز عبور جدید"
-                className="w-full p-3 sm:p-4 border rounded text-sm sm:text-base"
-                value={confirmPassword}
-                placeholder="مثال: A@12865"
-                onChange={(e) => setConfirmPassword(e.target.value)}
-              />
-              {errors.confirmPassword && (
-                <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.confirmPassword}</p>
-              )}
-            </div>
-
-            <Button
-              type="submit"
-              variant="contained"
-              color="success"
-              fullWidth
-              disabled={isSubmitting}
-              sx={{
-                py: 1.5,
-                fontSize: "1rem",
-                borderRadius: "10px",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                gap: "8px",
-              }}
-            >
-              {isSubmitting ? (
-                <>
-                  <CircularProgress size={24} color="inherit" />
-                  در حال تغییر رمز عبور...
-                </>
-              ) : (
-                <>
-                  <RotateCcwKey size={22} />
-                  تغییر رمز عبور
-                </>
-              )}
-            </Button>
-
-            <div className="text-center mt-4">
-              <button
-                type="button"
-                onClick={() => router.push("/auth")}
-                className="text-blue-600 hover:text-blue-800 transition-colors font-medium text-sm sm:text-base cursor-pointer inline-flex items-center gap-1"
-              >
-                <IterationCcw className="w-5 h-5" />
-                بازگشت به صفحه ورود
-              </button>
-            </div>
-          </form>
-        </motion.div>
-      </div>
-    </div>
+          <div className="text-center">
+            <button type="button" onClick={() => router.push("/auth")} className={LINK_BUTTON}>
+              <ArrowRight className="h-4 w-4" aria-hidden="true" />
+              بازگشت به صفحه ورود
+            </button>
+          </div>
+        </form>
+      </AuthCard>
+    </AuthShell>
   );
 }
 

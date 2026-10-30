@@ -1,12 +1,11 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
-import { Button, CircularProgress, TextField } from "@mui/material";
-import { CheckCircle } from "lucide-react";
-import Image from "next/image";
+import { CheckCircle, MailCheck, RefreshCw } from "lucide-react";
+import AuthShell from "./auth/AuthShell";
+import { AuthCard, AuthTitle, Field, SubmitButton, TextInput } from "./auth/AuthUI";
 
 // حداقل فاصلهٔ دو بار ارسال کد (سرور هم همین‌قدر فاصله می‌خواهد)
 const RESEND_COOLDOWN_SEC = 60;
@@ -30,26 +29,9 @@ export default function VerifyPage({ tempAuth }) {
     setNow(t);
     setCooldownEnd(t + seconds * 1000);
   }, []);
-  const [backgroundImage, setBackgroundImage] = useState("/image/logo.png");
-  const [isBgLoaded, setIsBgLoaded] = useState(false);
   const [shakeCode, setShakeCode] = useState(false); // برای لرزش فیلد کد
   const [touched, setTouched] = useState(false); // برای tracking لمس فیلد
   const router = useRouter();
-
-  const rtlStyles = {
-    InputLabelProps: {
-      sx: {
-        transformOrigin: "right !important",
-        left: "inherit !important",
-        right: "1.75rem !important",
-      },
-    },
-    sx: {
-      "& legend": {
-        textAlign: "right",
-      },
-    },
-  };
 
   // تابع ایجاد لرزش
   const triggerShake = () => {
@@ -58,22 +40,6 @@ export default function VerifyPage({ tempAuth }) {
       setShakeCode(false);
     }, 500);
   };
-
-  useEffect(() => {
-    const fetchBackground = async () => {
-      try {
-        const resp = await fetch("/api/background");
-        if (!resp.ok) throw new Error("خطا در دریافت تصویر پس‌زمینه");
-        const data = await resp.json();
-        setBackgroundImage(data.data?.background_image || "/image/logo.png");
-      } catch (err) {
-        console.error("خطا در لود تصویر پس‌زمینه:", err);
-      } finally {
-        setIsBgLoaded(true);
-      }
-    };
-    fetchBackground();
-  }, []);
 
   // گرفتن ایمیل از tempAuth یا localStorage
   useEffect(() => {
@@ -140,7 +106,7 @@ export default function VerifyPage({ tempAuth }) {
       triggerShake();
       return;
     }
-    
+
     if (verificationCode.length !== 6) {
       setCodeError("کد تأیید باید ۶ رقم باشد");
       setTouched(true);
@@ -209,141 +175,61 @@ export default function VerifyPage({ tempAuth }) {
     }
   };
 
-  // ✅ لودینگ قبل از نمایش فرم
-  if (!isBgLoaded) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh]">
-        <Image
-          src="/image/logo.png"
-          alt="در حال بارگذاری صفحه تأیید..."
-          width={80}
-          height={80}
-          className="animate-spin object-contain"
-          priority
-        />
-        <p className="mt-4 text-gray-500 text-sm font-medium animate-pulse">
-          در حال بارگذاری صفحه تأیید...
-        </p>
-      </div>
-    );
-  }
+  const showError = !!codeError && touched;
 
   return (
-    <>
-      
-      {/* پس‌زمینه با blur و opacity */}
-      <div
-        className="fixed inset-0 z-0"
-        style={{
-          backgroundImage: `url(/image/back-auth.webp)`,
-          backgroundRepeat: "no-repeat",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          filter: "blur(6px)",
-          opacity: 0.45,
-          transform: "scale(1.05)",
-        }}
-      />
+    <AuthShell
+      heading="یک قدم تا ورود"
+      lead="کد ۶ رقمی که به ایمیل شما فرستادیم را وارد کنید تا حساب شما فعال شود."
+    >
+      <AuthCard>
+        <AuthTitle
+          icon={MailCheck}
+          title="تأیید ایمیل"
+          text={
+            <>
+              کد تأیید به ایمیل <strong dir="ltr" className="font-semibold text-gray-700">{email || "نامشخص"}</strong> ارسال شده است.
+            </>
+          }
+        />
 
-      {/* فرم تأیید */}
-      <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
-        <div className="w-full max-w-xs sm:max-w-md md:max-w-lg backdrop-blur-md bg-white/20 border border-white/30 p-4 sm:p-6 md:p-8 rounded-xl shadow-xl">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key="verify"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ duration: 0.4 }}
-            >
-              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 sm:mb-4 text-center">
-                تأیید ایمیل
-              </h2>
+        <form onSubmit={handleVerifyCode} noValidate className="space-y-4">
+          <Field id="verify-code" label="کد تأیید (۶ رقم)" error={showError ? codeError : ""} shake={shakeCode}>
+            <TextInput
+              id="verify-code"
+              ltr
+              type="text"
+              name="code"
+              autoComplete="one-time-code"
+              placeholder="------"
+              className="text-center text-xl tracking-[0.4em]"
+              value={verificationCode}
+              onChange={handleCodeChange}
+              onBlur={handleBlur}
+              invalid={showError}
+              maxLength={6}
+              inputMode="numeric"
+              pattern="[0-9]*"
+            />
+          </Field>
 
-              <form onSubmit={handleVerifyCode} className="space-y-2 sm:space-y-3 md:space-y-4" dir="rtl">
-                <p className="text-center text-gray-600 mb-2 sm:mb-4 text-xs sm:text-sm md:text-base">
-                  کد تأیید به ایمیل <strong>{email || "نامشخص"}</strong> ارسال شده است.
-                </p>
+          <SubmitButton loading={isVerifying} loadingText="در حال تأیید..." icon={CheckCircle}>
+            تأیید
+          </SubmitButton>
 
-                <motion.div
-                  animate={shakeCode ? {
-                    x: [0, -10, 10, -8, 8, -5, 5, 0],
-                    transition: { duration: 0.4 }
-                  } : {}}
-                >
-                  <TextField
-                    {...rtlStyles}
-                    type="text"
-                    label="کد تأیید (۶ رقم)"
-                    className="w-full p-2 sm:p-3 md:p-4 border rounded text-sm sm:text-base"
-                    value={verificationCode}
-                    onChange={handleCodeChange}
-                    onBlur={handleBlur}
-                    error={!!codeError && touched}
-                    inputProps={{
-                      maxLength: 6,
-                      inputMode: "numeric",
-                      pattern: "[0-9]*"
-                    }}
-                  />
-                </motion.div>
-
-                {codeError && touched && (
-                  <motion.p 
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="text-red-500 text-xs sm:text-sm md:text-base mt-1"
-                  >
-                    {codeError}
-                  </motion.p>
-                )}
-
-                <Button
-                  type="submit"
-                  variant="contained"
-                  color="success"
-                  fullWidth
-                  disabled={isVerifying}
-                  sx={{
-                    py: 1.5,
-                    fontSize: "1rem",
-                    borderRadius: "10px",
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    gap: "8px",
-                  }}
-                >
-                  {isVerifying ? (
-                    <>
-                      <CircularProgress size={24} color="inherit" />
-                      در حال تأیید...
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle size={22} />
-                      تأیید
-                    </>
-                  )}
-                </Button>
-
-                <Button
-                  type="button"
-                  variant="text"
-                  fullWidth
-                  onClick={sendNewCode}
-                  disabled={isResending || cooldown > 0}
-                  sx={{ fontSize: "0.9rem", "&.Mui-disabled": { color: "text.secondary" } }}
-                >
-                  {cooldown > 0
-                    ? `ارسال مجدد کد (${cooldown.toLocaleString("fa-IR")} ثانیه)`
-                    : "ارسال مجدد کد"}
-                </Button>
-              </form>
-            </motion.div>
-          </AnimatePresence>
-        </div>
-      </div>
-    </>
+          <button
+            type="button"
+            onClick={sendNewCode}
+            disabled={isResending || cooldown > 0}
+            className="flex h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-xl text-sm font-medium text-brand-700 transition enabled:hover:bg-brand-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 disabled:cursor-not-allowed disabled:text-gray-400"
+          >
+            <RefreshCw className={`h-4 w-4 ${isResending ? "animate-spin" : ""}`} aria-hidden="true" />
+            {cooldown > 0
+              ? `ارسال مجدد کد (${cooldown.toLocaleString("fa-IR")} ثانیه)`
+              : "ارسال مجدد کد"}
+          </button>
+        </form>
+      </AuthCard>
+    </AuthShell>
   );
 }

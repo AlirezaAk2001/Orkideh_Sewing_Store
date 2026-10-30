@@ -493,3 +493,173 @@ main {
   animation: lid-swing 1s infinite alternate ease-in-out;
   transform-origin: top center;
 }
+/* ───── صفحه‌های ورود، ثبت‌نام، تأیید ایمیل و بازیابی رمز (AuthShell) ───── */
+
+/* پنل برند: گرادیان صورتی برند با درخشش نرم و بافت نقطه‌ای شبیه پارچه */
+.auth-panel {
+  background:
+    radial-gradient(90% 60% at 85% 0%, color-mix(in oklab, var(--color-brand-500) 85%, transparent) 0%, transparent 60%),
+    radial-gradient(70% 50% at 0% 100%, color-mix(in oklab, var(--color-brand-500) 55%, transparent) 0%, transparent 65%),
+    linear-gradient(155deg, var(--color-brand-600), var(--color-brand-700) 75%);
+}
+
+.auth-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgb(255 255 255 / 0.16) 1px, transparent 1.5px);
+  background-size: 22px 22px;
+  mask-image: linear-gradient(to bottom, #000, transparent 85%);
+  pointer-events: none;
+}
+
+/* دستهٔ بخیه: خط‌چین سفید که با mask کم‌کم کشیده می‌شود (pathLength=1) و بعد آرام جلو می‌رود */
+.auth-stitch {
+  stroke-dasharray: 10 9;
+}
+
+.auth-stitch-reveal {
+  stroke-dasharray: 1;
+}
+
+/* دکمهٔ اصلی فرم‌ها: همان برق چیپ تخفیف (.discount-chip::after بالاتر): نوار نرم با هستهٔ روشن، حالت ترکیب screen و منحنی سینوسی، ولی فقط وقتی موس
+   روی دکمه است. دکمه پهن است، پس نوار ۳۰٪ عرض آن را می‌گیرد (نه ۵۶٪ مثل چیپ گرد) تا مثل یک خط نور بگذرد و مسیرش تا بیرون لبهٔ راست ادامه دارد. */
+.auth-sheen {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.auth-sheen::after {
+  content: "";
+  position: absolute;
+  top: -25%;
+  bottom: -25%;
+  left: 0;
+  width: 30%;
+  opacity: 0;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  background: linear-gradient(
+    100deg,
+    transparent 0%,
+    rgb(255 255 255 / 0.4) 6%,
+    transparent 13%,
+    rgb(255 255 255 / 0.1) 25%,
+    rgb(255 255 255 / 0.5) 42%,
+    rgb(255 255 255 / 0.95) 50%,
+    rgb(255 255 255 / 0.5) 58%,
+    rgb(255 255 255 / 0.1) 75%,
+    transparent 100%
+  );
+  transform: translateX(-140%) skewX(-20deg);
+}
+
+@keyframes auth-shine {
+  0% {
+    transform: translateX(-140%) skewX(-20deg);
+  }
+  60%,
+  100% {
+    transform: translateX(380%) skewX(-20deg);
+  }
+}
+
+/* حالت فعال زبانهٔ ورود/ثبت‌نام: قرص سفید به ستون دوم می‌لغزد (صفحه راست‌به‌چپ است، پس به چپ) */
+.auth-tab-pill[data-mode="register"] {
+  transform: translateX(-100%);
+}
+
+@keyframes auth-rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes auth-float {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(var(--r, 0deg)); }
+  50% { transform: translate3d(0, -14px, 0) rotate(calc(var(--r, 0deg) + 7deg)); }
+}
+
+@keyframes auth-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgb(255 255 255 / 0.3); }
+  50% { box-shadow: 0 0 0 16px rgb(255 255 255 / 0); }
+}
+
+@keyframes auth-stitch-reveal {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes auth-stitch-march {
+  from { stroke-dashoffset: 0; }
+  to { stroke-dashoffset: -38; }
+}
+
+@keyframes auth-message {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .auth-rise {
+    animation: auth-rise 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    animation-delay: calc(var(--i, 0) * 70ms);
+  }
+
+  .auth-float {
+    animation: auth-float var(--dur, 9s) ease-in-out infinite;
+    animation-delay: var(--delay, 0s);
+  }
+
+  .auth-glow {
+    animation: auth-glow 4.5s ease-in-out infinite;
+  }
+
+  .auth-stitch-reveal {
+    animation: auth-stitch-reveal 2.6s cubic-bezier(0.5, 0, 0.2, 1) 0.4s both;
+  }
+
+  .auth-stitch {
+    animation: auth-stitch-march 6s linear infinite;
+  }
+
+  .auth-message {
+    animation: auth-message 0.25s ease-out both;
+  }
+
+  .auth-tab-pill {
+    transition: transform 0.35s cubic-bezier(0.3, 0.8, 0.3, 1);
+  }
+
+  .auth-sheen:enabled:hover::after {
+    opacity: 1;
+    animation: auth-shine 3.6s cubic-bezier(0.37, 0, 0.63, 1) infinite;
+  }
+
+  .auth-pop--up {
+    animation: auth-pop-up 0.18s ease-out both;
+  }
+
+  .auth-pop--down {
+    animation: auth-pop-down 0.18s ease-out both;
+  }
+}
+
+/* راهنمای رمز عبور (PasswordTips در AuthUI.jsx): از سمت فیلد باز می‌شود؛ مبدأ تبدیل نزدیک فلش است */
+.auth-pop--up {
+  transform-origin: 90% 100%;
+}
+
+.auth-pop--down {
+  transform-origin: 90% 0;
+}
+
+@keyframes auth-pop-up {
+  from { opacity: 0; transform: translateY(6px) scale(0.97); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes auth-pop-down {
+  from { opacity: 0; transform: translateY(-6px) scale(0.97); }
+  to { opacity: 1; transform: none; }
+}
