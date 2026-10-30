@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
 import prisma from "@/lib/prisma";
 import { clientIp, hit, peek, reset, tooManyRequests } from "@/lib/rateLimit";
+import { issueToken } from "@/lib/session";
 
 // فقط تلاش‌های ناموفق شمرده می‌شوند. قفل برای «حساب + IP» است، پس کسی نمی‌تواند از جای دیگر
 // حساب دیگران (مثلاً ادمین) را قفل کند؛ سقف جداگانه‌ای هم برای کل IP هست (پشت NAT چند کاربر یک IP دارند).
@@ -100,11 +100,7 @@ export async function POST(req) {
     }
 
     // 🪙 ساخت توکن
-    const token = jwt.sign(
-      { id: user.id, email: user.email, is_admin: user.is_admin },
-      process.env.JWT_SECRET,
-      { expiresIn: "1h" }
-    );
+    const { token } = issueToken(user);
 
     return NextResponse.json({
       message: "ورود موفق",

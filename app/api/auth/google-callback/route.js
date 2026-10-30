@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import jwt from "jsonwebtoken";
 import prisma from "@/lib/prisma";
 import { limitByIp, tooManyRequests } from "@/lib/rateLimit";
+import { issueToken } from "@/lib/session";
 
 export async function POST(req) {
   const limited = limitByIp(req, "google", 20, 15 * 60);
@@ -61,11 +61,7 @@ export async function POST(req) {
     }
 
     // ساخت JWT
-    const token = jwt.sign(
-      { id: user.id, email: user.email, is_admin: user.is_admin },
-      process.env.JWT_SECRET,
-      { expiresIn: "1h" }
-    );
+    const { token } = issueToken(user);
 
     return NextResponse.json({
       token,

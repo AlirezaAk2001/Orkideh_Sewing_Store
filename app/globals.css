@@ -663,3 +663,74 @@ main {
   from { opacity: 0; transform: translateY(-6px) scale(0.97); }
   to { opacity: 1; transform: none; }
 }
+
+/* ───── داشبورد ادمین (app/admin/_dashboard): رنگ و حرکت نمودارها ─────
+   فقط حالت روشن (سایت حالت تیره ندارد). یک سری داده = رنگ برند. وضعیت سفارش از پالت وضعیت می‌آید: تحویل‌شده سبز، مرجوع قرمز، جاری آبی،
+   و «منتظر پرداخت» که سفارش ناتمام است و هشدار نیست، خاکستری خنثی (زرد هشدار از باند روشنایی پالت بیرون است). رنگ هیچ‌جا تنها حامل معنی نیست:
+   کنار هر رنگ آیکون و برچسب هست. متن‌ها از رنگ‌های متن (ink) هستند، نه رنگ سری. */
+.dash-viz {
+  --viz-surface: #ffffff;
+  --viz-ink: #1f2937;
+  --viz-ink-2: #4b5563;
+  --viz-ink-3: #6b7280;
+  --viz-grid: #ececea;
+  --viz-axis: #d6d5d0;
+  --viz-series: var(--color-brand-600);
+  --viz-st-delivered: #0ca30c;
+  --viz-st-processing: #2a78d6;
+  --viz-st-returned: #d03b3b;
+  --viz-st-pending: #85847e;
+  --viz-good-text: #006300;
+  --viz-bad-text: #d03b3b;
+  --viz-sev-critical: #d03b3b;
+  --viz-sev-serious: #ec835a;
+  --viz-sev-warning: #fab219;
+}
+
+@keyframes dash-draw {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes dash-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes dash-grow {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* خط فروش هنگام ورود کشیده می‌شود (pathLength=1)؛ ناحیهٔ زیرش بعد از آن محو می‌شود */
+  .dash-line {
+    stroke-dasharray: 1;
+    animation: dash-draw 0.9s cubic-bezier(0.4, 0, 0.2, 1) both;
+  }
+  .dash-area {
+    animation: dash-fade 0.6s ease-out 0.4s both;
+  }
+  /* میله‌ها از خط پایه (سمت راست در راست‌به‌چپ) رشد می‌کنند */
+  .dash-bar {
+    transform-origin: right center;
+    animation: dash-grow 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    animation-delay: calc(var(--i, 0) * 70ms);
+  }
+  .dash-seg {
+    transition: stroke-width 0.15s ease-out, opacity 0.15s ease-out;
+  }
+}
+
+/* ورود تدریجی کاشی‌ها، پنل‌ها و کارت‌های داشبورد: هر کدام کمی دیرتر از قبلی (--i)، یک بار هنگام ساخته‌شدن؛ با «کاهش حرکت» بی‌حرکت */
+@keyframes dash-rise {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .dash-rise {
+    animation: dash-rise 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    animation-delay: calc(var(--i, 0) * 60ms);
+  }
+}
