@@ -33,9 +33,11 @@ export default function TopProducts({ items }) {
               {fa(i + 1)}
             </span>
             <div className="min-w-0 flex-1">
-              <div className="flex items-baseline justify-between gap-3">
+              <div className="flex items-center justify-between gap-3">
                 <p className="min-w-0 truncate text-sm font-medium text-gray-800">{p.name}</p>
-                <p className="shrink-0 text-xs text-gray-500">{fa(Math.round(p.revenue))} تومان</p>
+                <span className="shrink-0 whitespace-nowrap rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-bold leading-5 tabular-nums text-brand-700 ring-1 ring-inset ring-brand-200/70">
+                  {fa(Math.round(p.revenue))} <span className="font-medium text-brand-700/80">تومان</span>
+                </span>
               </div>
               <ValueBar className="mt-1.5" value={Math.max(4, (p.quantity / max) * 100)} number={p.quantity} suffix=" عدد" delay={i * 90} shine label={`تعداد فروش ${p.name}`} />
             </div>

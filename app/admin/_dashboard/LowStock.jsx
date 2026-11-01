@@ -4,19 +4,30 @@ import Link from "next/link";
 import { CircleCheck, PackageX, TriangleAlert } from "lucide-react";
 import { fa } from "./format";
 import ValueBar from "@/app/admin/_ui/ValueBar";
+import { usePulseClock } from "@/app/admin/_ui/usePulseClock";
 
 // شدت: ناموجود قرمز، یک تا دو عدد نارنجی، بقیه زرد؛ هر شدت آیکون و برچسب متنی هم دارد (رنگ تنها معنی نمی‌رساند). رنگ نوار از همان شدت می‌آید، ولی
 // تیره‌تر از رنگ‌های نمودار است تا عدد سفید وسط نوار خوانا بماند. نوار به نسبت آستانه پر می‌شود و عدد موجودی وسطش است («ناموجود» برای صفر).
-// آیکون ناموجود با یک حلقهٔ آرام می‌زند تا از میان ردیف‌ها دیده شود. هر ردیف لینک ویرایش کالاست؛ ردیف نمونه (حالت نمونه، بدون شناسه) فقط نمایش است
+// برچسب شدت در یک چیپ هم‌رنگ شدت است (زمینهٔ کم‌رنگ، حلقهٔ نازک، آیکون و نوشتهٔ تیره‌تر از همان رنگ که خوانا بماند؛ ink درصد رنگ اصلی در نوشته است و برای زرد کمتر است
+// چون زرد روشن‌تر است). چیپ «ناموجود» با یک حلقهٔ آرام که از لبه‌اش بیرون می‌رود هر چند ثانیه یک‌بار می‌زند تا از میان ردیف‌ها دیده شود (ساعت مشترک usePulseClock).
+// هر ردیف لینک ویرایش کالاست؛ ردیف نمونه (حالت نمونه، بدون شناسه) فقط نمایش است
 function severity(stock) {
-  if (stock <= 0) return { label: "ناموجود", color: "var(--viz-sev-critical)", tone: "red", icon: PackageX, pulse: true };
-  if (stock <= 2) return { label: "رو به اتمام", color: "var(--viz-sev-serious)", tone: "orange", icon: TriangleAlert };
-  return { label: "کم‌موجود", color: "var(--viz-sev-warning)", tone: "amber", icon: TriangleAlert };
+  if (stock <= 0) return { label: "ناموجود", color: "var(--viz-sev-critical)", ink: 64, tone: "red", icon: PackageX, pulse: true };
+  if (stock <= 2) return { label: "رو به اتمام", color: "var(--viz-sev-serious)", ink: 50, tone: "orange", icon: TriangleAlert };
+  return { label: "کم‌موجود", color: "var(--viz-sev-warning)", ink: 44, tone: "amber", icon: TriangleAlert };
 }
+
+const chipStyle = (sev) => ({
+  background: `color-mix(in srgb, ${sev.color} 13%, white)`,
+  color: `color-mix(in srgb, ${sev.color} ${sev.ink}%, black)`,
+  boxShadow: `inset 0 0 0 1px color-mix(in srgb, ${sev.color} 32%, transparent)`,
+  "--ripple": `color-mix(in srgb, ${sev.color} 45%, transparent)`,
+});
 
 const ROW = "-mx-2 block rounded-xl px-2 py-2.5 outline-none transition-colors";
 
 export default function LowStock({ items, threshold }) {
+  usePulseClock(items.some((p) => p.stock <= 0));
   if (!items.length) {
     return (
       <p className="flex h-40 flex-col items-center justify-center gap-3 text-sm text-gray-500">
@@ -37,13 +48,11 @@ export default function LowStock({ items, threshold }) {
           <>
             <div className="flex items-center justify-between gap-3">
               <p className="min-w-0 truncate text-sm font-medium text-gray-800">{p.name}</p>
-              <p className="flex shrink-0 items-center gap-1.5 text-xs font-medium text-gray-700">
-                <span className="relative grid place-items-center">
-                  {sev.pulse && <span aria-hidden="true" className="sold-ping absolute h-4 w-4 rounded-full" style={{ background: sev.color, opacity: 0.35 }} />}
-                  <Icon className="relative h-4 w-4" style={{ color: sev.color }} aria-hidden="true" />
-                </span>
+              <span className="relative inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-bold leading-5" style={chipStyle(sev)}>
+                {sev.pulse && <span aria-hidden="true" className="chip-ripple pointer-events-none absolute inset-0 rounded-full" />}
+                <Icon className="h-3.5 w-3.5" aria-hidden="true" />
                 {sev.label}
-              </p>
+              </span>
             </div>
             <ValueBar
               className="mt-2"

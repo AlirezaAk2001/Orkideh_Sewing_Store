@@ -107,7 +107,7 @@ export default function StatusDonut({ statuses }) {
               onBlur={() => setActive(null)}
             >
               <div className="flex items-center gap-2">
-                <span aria-hidden="true" className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: m.color }} />
+                <span aria-hidden="true" className="beat-dot h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: m.color }} />
                 <Icon className="h-4 w-4 shrink-0 text-gray-500" aria-hidden="true" />
                 <span className="flex-1 text-gray-700">{m.label}</span>
                 <span className="font-bold text-gray-900">{fa(count)}</span>

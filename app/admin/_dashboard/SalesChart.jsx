@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
-import { ArrowDownLeft, ArrowUpRight, CalendarCheck, ChartLine, ChartNoAxesColumn, Crown, Sigma, Table2, TrendingUp } from "lucide-react";
+import { CalendarCheck, ChartLine, ChartNoAxesColumn, Crown, Sigma, Table2, TrendingDown, TrendingUp } from "lucide-react";
 import { Empty } from "./Panel";
 import { compactText, dayLong, dayShort, fa, niceScale, rtl } from "./format";
 import { useReveal } from "@/app/admin/_ui/useReveal";
 import { useSegmentSlide } from "@/app/admin/_ui/useSegmentSlide";
+import { usePulseClock } from "@/app/admin/_ui/usePulseClock";
 
 // نمودار فروش روزانه (یک سری → منحنی نرم + ناحیهٔ شیب‌دار به رنگ برند، بدون legend چون عنوان پنل همین را می‌گوید).
 // صفحه راست‌به‌چپ است، پس زمان هم راست‌به‌چپ می‌رود: قدیمی‌ترین روز سمت راست و امروز سمت چپ، و محور عمودی کنار راست.
@@ -208,6 +209,7 @@ export default function SalesChart({ daily, view }) {
     const orders = daily.reduce((a, d) => a + d.orders, 0);
     return { max, total, orders, avg: n ? total / n : 0, peak: max > 0 ? revenues.indexOf(max) : -1, scale: niceScale(max) };
   }, [daily, n]);
+  usePulseClock(stats.peak >= 0 && view === "chart"); // حلقهٔ نشانگر اوج هر چند ثانیه یک‌بار می‌زند
 
   if (stats.total === 0) {
     return (
@@ -418,7 +420,7 @@ export default function SalesChart({ daily, view }) {
                       : { background: "color-mix(in srgb, var(--viz-st-returned) 12%, white)", color: "color-mix(in srgb, var(--viz-bad-text) 82%, black)" }
                   }
                 >
-                  {dayChange > 0 ? <ArrowUpRight className="h-3 w-3" aria-hidden="true" /> : <ArrowDownLeft className="h-3 w-3" aria-hidden="true" />}
+                  {dayChange > 0 ? <TrendingUp className="h-3 w-3" aria-hidden="true" /> : <TrendingDown className="h-3 w-3" aria-hidden="true" />}
                   {fa(Math.abs(dayChange))}٪ {dayChange > 0 ? "بیشتر" : "کمتر"}
                 </span>
               )}

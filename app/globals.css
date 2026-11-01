@@ -783,13 +783,50 @@ main {
   100% { transform: scale(3.2); opacity: 0; }
 }
 
+/* حلقهٔ دور چیپ: سایهٔ بی‌تاری که از لبهٔ چیپ بیرون می‌رود و محو می‌شود (رنگ از --ripple) */
+@keyframes chip-ripple {
+  from { box-shadow: 0 0 0 0 var(--ripple); }
+  to { box-shadow: 0 0 0 9px transparent; }
+}
+
+/* نقطهٔ رنگیِ لجند حلقهٔ وضعیت سفارش‌ها: ضربان نرم و بی‌وقفه. خود نقطه کمی بزرگ و کوچک می‌شود و هالهٔ هم‌رنگش بیرون می‌رود و محو می‌شود. فقط transform و opacity، پس روی
+   کارت گرافیک اجرا می‌شود و پردازنده را درگیر نمی‌کند. هر چهار نقطه با هم می‌زنند (مدت یکی، بدون تأخیر) */
+@keyframes dot-throb {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.18); }
+}
+@keyframes dot-halo {
+  0% { transform: scale(1); opacity: 0.5; }
+  75%, 100% { transform: scale(2.7); opacity: 0; }
+}
+.beat-dot {
+  position: relative;
+}
+.beat-dot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: inherit;
+  opacity: 0;
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .beat-dot {
+    animation: dot-throb 2.4s ease-in-out infinite;
+  }
+  .beat-dot::after {
+    animation: dot-halo 2.4s ease-out infinite;
+  }
+}
+
 @keyframes dash-pop {
   from { opacity: 0; transform: translateY(5px) scale(0.96); }
   to { opacity: 1; transform: none; }
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  /* خط فروش کشیده می‌شود (pathLength=1) و ناحیهٔ زیرش هم‌زمان از راست پاک‌شده‌وار باز می‌شود؛ نشانگر اوج بعدش با سه ضرباهنگ حلقه می‌زند */
+  /* خط فروش کشیده می‌شود (pathLength=1) و ناحیهٔ زیرش هم‌زمان از راست پاک‌شده‌وار باز می‌شود؛ نشانگر اوج بعدش مدام و هر چند ثانیه یک‌بار حلقه می‌زند */
   .dash-line {
     stroke-dasharray: 1;
     stroke-dashoffset: 1;
@@ -809,10 +846,15 @@ main {
   [data-in] .dash-peak {
     animation: dash-fade 0.4s ease-out 1s both;
   }
-  [data-in] .dash-ping {
+  /* ضربان دوره‌ای: ساعت مشترک usePulseClock هر ۳٫۶ ثانیه data-pulse را برای یک ضربان روی <html> می‌گذارد؛ حلقهٔ اوج و حلقهٔ چیپ «ناموجود» همان‌جا یک‌بار می‌زنند.
+     مدت ۱٫۶ ثانیه باید با PULSE_MS در usePulseClock.js یکی باشد. بیرون از این پنجره هیچ انیمیشنی اجرا نمی‌شود */
+  :where([data-pulse]) .dash-ping {
     transform-box: fill-box;
     transform-origin: center;
-    animation: dash-ping 1.6s ease-out 1.1s 3 both;
+    animation: dash-ping 1.6s ease-out both;
+  }
+  :where([data-pulse]) .chip-ripple {
+    animation: chip-ripple 1.6s ease-out both;
   }
   .dash-tip {
     animation: dash-pop 0.16s ease-out both;
