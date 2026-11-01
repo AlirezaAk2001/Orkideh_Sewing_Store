@@ -217,13 +217,11 @@ export default function AddProduct() {
           font-weight: 700 !important;
           margin-top: 8px !important;
           background: linear-gradient(135deg, #16a34a, #15803d) !important;
-          box-shadow: 0 4px 14px rgba(22,163,74,.3) !important;
           transition: all .25s ease !important;
           letter-spacing: .01em !important;
         }
-        .save-btn:hover:not(:disabled) {
-          transform: translateY(-1px);
-          box-shadow: 0 6px 20px rgba(22,163,74,.4) !important;
+        button.save-btn:not(:hover) {
+          box-shadow: 0 4px 14px rgba(22,163,74,.3);
         }
         .save-btn:disabled {
           background: linear-gradient(135deg, #94a3b8, #64748b) !important;

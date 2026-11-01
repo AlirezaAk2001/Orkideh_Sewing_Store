@@ -275,7 +275,7 @@ export default function AdminProducts() {
             type="button"
             aria-label="پاک کردن جستجو"
             onClick={() => setSearch("")}
-            className="absolute end-1.5 top-1/2 grid h-7 w-7 -translate-y-1/2 cursor-pointer place-items-center rounded-lg text-gray-400 transition hover:bg-gray-200 hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300"
+            className="btn-flat absolute end-1.5 top-1/2 grid h-7 w-7 -translate-y-1/2 cursor-pointer place-items-center rounded-lg text-gray-400 transition hover:bg-gray-200 hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300"
           >
             <X className="h-4 w-4" aria-hidden="true" />
           </button>

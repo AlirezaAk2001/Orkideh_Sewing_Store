@@ -107,6 +107,41 @@ main {
   }
 }
 
+/* همان حرکت سه‌بعدی چیپ بالا برای همهٔ دکمه‌های سایت: هر <button> خودکار آن را دارد و لینکی که ظاهر دکمه دارد کلاس btn-3d می‌گیرد. چیپ‌های دسته (.chip-3d)
+   مقدار ثابت خودشان را دارند و کلاس btn-flat دکمه‌ای را کنار می‌گذارد که سه‌بعدی‌شدنش بی‌معنی است (دکمهٔ متنیِ بی‌زمینه، دکمهٔ تمام‌عرض روی عکس، دکمهٔ
+   داخل فیلد). دکمهٔ متنی MUI، IconButton، سطل زبالهٔ سبد/علاقه‌مندی‌ها (.delete-btn با انیمیشن خودش) و نقطه‌های اسلایدر هم همین‌طورند.
+   رنگ لبه از رنگ خود دکمه می‌آید: ButtonDepth.jsx رنگ زمینهٔ دکمه را هنگام ورود موس در --face می‌گذارد و لبه همان رنگِ کمی تیره‌تر است (دکمهٔ بی‌زمینه لبهٔ
+   خاکستری می‌گیرد). --s (۰ تا ۱) اندازهٔ بالا آمدن، کج‌شدن و لبه است و --z اندازهٔ بیرون‌آمدن به سمت بیننده (که دکمه را کمی بزرگ می‌کند)؛ همان فایل آن‌ها را کم می‌کند: دکمهٔ
+   پهن نباید از کادرش بیرون بزند و دکمه‌ای که داخل نوار اسکرول یا کادر بریده‌شونده است باید در جای خالی‌اش جا شود. حلقه‌های Tailwind (ring، فوکوس) جزو box-shadow هستند، پس همین‌جا دوباره
+   کنار سایهٔ سه‌بعدی چیده می‌شوند و با hover از بین نمی‌روند. روی صفحهٔ لمسی hover نداریم و با «کاهش حرکت» فقط سایه (لبه) عوض می‌شود. */
+:is(button, .btn-3d):not(.chip-3d, .btn-flat, .delete-btn, .img-slider-dot, .MuiButton-text, .MuiIconButton-root) {
+  --s: 1;
+  --z: 1;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1), scale 0.15s ease,
+    translate 0.15s ease, background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, opacity 0.2s ease;
+}
+@media (hover: hover) {
+  :is(button, .btn-3d):not(.chip-3d, .btn-flat, .delete-btn, .img-slider-dot, .MuiButton-text, .MuiIconButton-root, :disabled, [aria-disabled="true"]):hover {
+    --edge: oklch(from var(--face, #fff) calc(l * 0.86) c h / max(alpha, 0.6));
+    box-shadow: var(--tw-inset-shadow, 0 0 #0000), var(--tw-inset-ring-shadow, 0 0 #0000), var(--tw-ring-offset-shadow, 0 0 #0000),
+      var(--tw-ring-shadow, 0 0 #0000), 0 calc(var(--s) * 5px) 0 -1px var(--edge),
+      0 calc(var(--s) * 16px) calc(var(--s) * 24px) calc(var(--s) * -8px) rgb(0 0 0 / 0.32);
+  }
+  :is(button, .btn-3d):not(.chip-3d, .btn-flat, .delete-btn, .img-slider-dot, .MuiButton-text, .MuiIconButton-root, :disabled, [aria-disabled="true"]):hover:active {
+    box-shadow: var(--tw-inset-shadow, 0 0 #0000), var(--tw-inset-ring-shadow, 0 0 #0000), var(--tw-ring-offset-shadow, 0 0 #0000),
+      var(--tw-ring-shadow, 0 0 #0000), 0 calc(var(--s) * 2px) 0 -1px var(--edge),
+      0 calc(var(--s) * 6px) calc(var(--s) * 10px) calc(var(--s) * -6px) rgb(0 0 0 / 0.25);
+  }
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  :is(button, .btn-3d):not(.chip-3d, .btn-flat, .delete-btn, .img-slider-dot, .MuiButton-text, .MuiIconButton-root, :disabled, [aria-disabled="true"]):hover {
+    transform: perspective(420px) translate3d(0, calc(var(--s) * -4px), calc(var(--s) * var(--z) * 26px)) rotateX(calc(var(--s) * 10deg));
+  }
+  :is(button, .btn-3d):not(.chip-3d, .btn-flat, .delete-btn, .img-slider-dot, .MuiButton-text, .MuiIconButton-root, :disabled, [aria-disabled="true"]):hover:active {
+    transform: perspective(420px) translate3d(0, calc(var(--s) * -1px), calc(var(--s) * var(--z) * 8px)) rotateX(calc(var(--s) * 4deg));
+  }
+}
+
 /* چیپ تخفیف (ProductDetails.jsx و ProductCard.jsx): سکه‌ای برجسته با حلقهٔ سفید، انعکاس نور بالا و لبهٔ ضخامت زیرش. اندازه فقط با --chip عوض می‌شود
    (صفحهٔ محصول ۳٫۵rem، کارت ۳rem) و متن، حلقه و سایه‌ها با همان متناسب می‌مانند. روی عکس می‌نشیند، پس z-index دارد (دکمهٔ زوم موقعیت‌دار است و
    بدون آن چیپ را می‌پوشاند) و کلیک را به لایهٔ زیرش (دکمهٔ زوم، لینک کارت) رد می‌کند.

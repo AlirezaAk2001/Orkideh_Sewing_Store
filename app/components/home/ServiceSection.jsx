@@ -61,14 +61,14 @@ export default function ServiceSection() {
         <div className="mt-6 flex flex-wrap gap-3">
           <a
             href={STORE.phones[0].href}
-            className="inline-flex items-center gap-2 rounded-xl bg-brand-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-brand-700 active:scale-[0.98]"
+            className="btn-3d inline-flex items-center gap-2 rounded-xl bg-brand-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-brand-700 active:scale-[0.98]"
           >
             <Phone className="h-4 w-4" aria-hidden="true" />
             تماس و هماهنگی
           </a>
           <Link
             href="/about"
-            className="inline-flex items-center gap-2 rounded-xl border border-white/30 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-white/10"
+            className="btn-3d inline-flex items-center gap-2 rounded-xl border border-white/30 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-white/10"
           >
             نقشه و اطلاعات تماس
           </Link>

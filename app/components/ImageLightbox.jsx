@@ -141,7 +141,7 @@ export default function ImageLightbox({ open, onClose, images, index = 0, onInde
               type="button"
               onClick={toggle}
               aria-label={zoomed ? "کوچک‌نمایی تصویر" : "بزرگ‌نمایی تصویر"}
-              className={`relative block ${zoomed ? "cursor-zoom-out" : "cursor-zoom-in"}`}
+              className={`btn-flat relative block ${zoomed ? "cursor-zoom-out" : "cursor-zoom-in"}`}
               style={{ width: `${zoomed ? ZOOM * 100 : 100}%`, height: `${zoomed ? ZOOM * 100 : 100}%` }}
             >
               {/* sizes: تا بزرگ‌نمایی نشده همان اندازهٔ صفحه را می‌گیرد؛ با بزرگ‌نمایی next/image نسخهٔ بزرگ‌تر را می‌خواهد */}

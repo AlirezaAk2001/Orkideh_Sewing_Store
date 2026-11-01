@@ -27,7 +27,7 @@ export default function AdminTopBar({ title, onOpenMenu, menuRef, drawerOpen }) 
         rel="noopener noreferrer"
         aria-label="مشاهدهٔ فروشگاه"
         title="مشاهدهٔ فروشگاه"
-        className="grid h-10 w-10 shrink-0 place-items-center rounded-xl text-gray-600 transition hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+        className="btn-3d grid h-10 w-10 shrink-0 place-items-center rounded-xl text-gray-600 transition hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
       >
         <Store className="h-5 w-5" aria-hidden="true" />
       </Link>

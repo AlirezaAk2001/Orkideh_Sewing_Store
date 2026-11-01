@@ -20,14 +20,14 @@ export default function HomeIntro() {
           <div className="mt-5 flex flex-wrap gap-3">
             <Link
               href="/products"
-              className="inline-flex items-center gap-2 rounded-xl bg-brand-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-brand-700 active:scale-[0.98] sm:text-base"
+              className="btn-3d inline-flex items-center gap-2 rounded-xl bg-brand-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-brand-700 active:scale-[0.98] sm:text-base"
             >
               <PackageSearch className="h-5 w-5" aria-hidden="true" />
               مشاهده محصولات
             </Link>
             <a
               href={STORE.phones[0].href}
-              className="inline-flex items-center gap-2 rounded-xl border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 transition hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700 sm:text-base"
+              className="btn-3d inline-flex items-center gap-2 rounded-xl border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 transition hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700 sm:text-base"
             >
               <Phone className="h-5 w-5" aria-hidden="true" />
               تماس با فروشگاه

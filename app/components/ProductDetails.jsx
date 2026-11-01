@@ -100,7 +100,7 @@ function StickyBuyBar({ visible, oldPrice, price, callHref, callLabel, children 
           <a
             href={callHref}
             aria-label={callLabel}
-            className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-gray-300 bg-white text-brand-600 transition hover:border-brand-200 hover:bg-brand-50 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+            className="btn-3d grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-gray-300 bg-white text-brand-600 transition hover:border-brand-200 hover:bg-brand-50 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
           >
             <Phone className="h-5 w-5" aria-hidden="true" />
           </a>
@@ -352,7 +352,7 @@ export default function ProductDetails({ product, initialComments = [], related 
                     type="button"
                     onClick={() => setZoomOpen(true)}
                     aria-label="بزرگ‌نمایی تصویر محصول"
-                    className="group relative block h-full w-full cursor-zoom-in focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-500"
+                    className="btn-flat group relative block h-full w-full cursor-zoom-in focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-500"
                   >
                     {load && (
                       <AppImage src={src} alt={photoAlt(index)} fill priority={index === 0} sizes="(max-width: 768px) 100vw, 600px" className="object-cover" />
@@ -515,7 +515,7 @@ export default function ProductDetails({ product, initialComments = [], related 
                 <a
                   key={phone.href}
                   href={phone.href}
-                  className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 text-sm text-gray-700 transition hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+                  className="btn-3d inline-flex min-h-10 items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 text-sm text-gray-700 transition hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
                 >
                   <Phone className="h-4 w-4 text-brand-600" aria-hidden="true" />
                   <span className="text-gray-500">{phone.label}</span>
@@ -549,7 +549,7 @@ export default function ProductDetails({ product, initialComments = [], related 
           <div className="bg-white p-4 rounded-xl shadow-md">
             <button
               onClick={() => setIsExpanded(!isExpanded)}
-              className="flex justify-between w-full text-gray-700 font-semibold hover:text-pink-500 cursor-pointer"
+              className="btn-flat flex justify-between w-full text-gray-700 font-semibold hover:text-pink-500 cursor-pointer"
             >
               <span>مشاهده ویژگی‌های بیشتر</span>
               <ChevronDown className={`w-5 h-5 transition-transform ${isExpanded ? "rotate-180" : ""}`} />

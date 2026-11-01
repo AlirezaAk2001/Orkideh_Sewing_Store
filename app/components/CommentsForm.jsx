@@ -174,7 +174,7 @@ export default function CommentsForm({ productId, onSubmit }) {
             <button
               type="button"
               onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-              className="absolute top-3 left-3 text-xl cursor-pointer z-10"
+              className="btn-flat absolute top-3 left-3 text-xl cursor-pointer z-10"
             >
               😊
             </button>

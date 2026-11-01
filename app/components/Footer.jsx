@@ -41,7 +41,7 @@ export default function Footer() {
             target="_blank"
             rel="noopener noreferrer"
             aria-label="اینستاگرام فروشگاه ارکیده"
-            className="mt-5 inline-grid h-10 w-10 place-items-center rounded-full bg-white/10 text-white transition hover:bg-brand-600"
+            className="btn-3d mt-5 inline-grid h-10 w-10 place-items-center rounded-full bg-white/10 text-white transition hover:bg-brand-600"
           >
             <FaInstagram size={20} />
           </a>

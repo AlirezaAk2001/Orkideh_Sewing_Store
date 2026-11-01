@@ -55,7 +55,7 @@ export default function AuthShell({
           <Link
             href="/"
             aria-label="بازگشت به فروشگاه"
-            className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium text-gray-500 transition hover:bg-brand-50 hover:text-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+            className="btn-3d inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium text-gray-500 transition hover:bg-brand-50 hover:text-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
           >
             <ArrowRight className="h-4 w-4" aria-hidden="true" />
             <span className="sm:hidden">فروشگاه</span>

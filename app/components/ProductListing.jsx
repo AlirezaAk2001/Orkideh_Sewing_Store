@@ -122,7 +122,7 @@ function FilterPanel({ params, bounds, onApply, clearHref }) {
               type="button"
               onClick={() => setText("")}
               aria-label="پاک‌کردن جستجو"
-              className="absolute inset-y-0 end-1 grid w-9 cursor-pointer place-items-center rounded-lg text-gray-400 transition hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+              className="btn-flat absolute inset-y-0 end-1 grid w-9 cursor-pointer place-items-center rounded-lg text-gray-400 transition hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
             >
               <X className="h-4 w-4" aria-hidden="true" />
             </button>
@@ -178,7 +178,7 @@ function FilterPanel({ params, bounds, onApply, clearHref }) {
             <Link
               href={clearHref}
               scroll={false}
-              className="inline-flex h-10 flex-1 items-center justify-center gap-1.5 rounded-lg border border-red-700 bg-red-600 px-3 text-sm font-medium text-white shadow-sm transition hover:border-red-800 hover:bg-red-700 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 lg:flex-none"
+              className="btn-3d inline-flex h-10 flex-1 items-center justify-center gap-1.5 rounded-lg border border-red-700 bg-red-600 px-3 text-sm font-medium text-white shadow-sm transition hover:border-red-800 hover:bg-red-700 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 lg:flex-none"
             >
               <FunnelX className="h-4 w-4" aria-hidden="true" />
               {clearLabel}
@@ -316,7 +316,7 @@ function SortMenu({ value, onChange }) {
 function Pagination({ basePath, params, page, pageCount }) {
   if (pageCount <= 1) return null;
   const href = (n) => buildListUrl(basePath, params, { page: n });
-  const arrow = "grid h-10 w-10 place-items-center rounded-xl border transition";
+  const arrow = "btn-3d grid h-10 w-10 place-items-center rounded-xl border transition";
   const enabled = `${arrow} border-gray-300 bg-white text-gray-700 hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700`;
   // در اولین و آخرین صفحه دکمهٔ غیرفعال است (نه فقط کمرنگ): خوانندهٔ صفحه آن را «غیرفعال» می‌خواند و نشانگر موس not-allowed می‌شود
   const disabled = `${arrow} cursor-not-allowed border-gray-200 bg-gray-50 text-gray-300`;
@@ -346,7 +346,7 @@ function Pagination({ basePath, params, page, pageCount }) {
             key={item}
             href={href(item)}
             aria-label={`صفحهٔ ${fa(item)}`}
-            className="grid h-10 min-w-10 place-items-center rounded-xl border border-gray-300 bg-white px-2 text-sm text-gray-700 transition hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700"
+            className="btn-3d grid h-10 min-w-10 place-items-center rounded-xl border border-gray-300 bg-white px-2 text-sm text-gray-700 transition hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700"
           >
             {fa(item)}
           </Link>
@@ -508,7 +508,7 @@ export default function ProductListing({ title, accent, category, basePath, cate
       ) : total === 0 ? (
         <div className="mt-10 text-center">
           <p className="text-gray-600">هیچ محصولی با این فیلترها پیدا نشد.</p>
-          <Link href={clearHref} scroll={false} className="mt-4 inline-block rounded-xl bg-brand-600 px-5 py-2 text-sm font-medium text-white transition hover:bg-brand-700">
+          <Link href={clearHref} scroll={false} className="btn-3d mt-4 inline-block rounded-xl bg-brand-600 px-5 py-2 text-sm font-medium text-white transition hover:bg-brand-700">
             پاک‌کردن فیلترها
           </Link>
         </div>

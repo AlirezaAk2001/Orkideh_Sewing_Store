@@ -100,7 +100,7 @@ export default function CommentsItem({ comment, onDelete }) {
         {isAdmin && (
           <button
             onClick={handleDelete}
-            className="text-red-500 hover:text-red-700 text-xs sm:text-sm md:text-base"
+            className="btn-flat text-red-500 hover:text-red-700 text-xs sm:text-sm md:text-base"
           >
             حذف
           </button>

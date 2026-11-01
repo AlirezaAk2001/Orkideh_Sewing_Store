@@ -11,7 +11,7 @@ import { NAV_GROUPS, isActive } from "./nav";
 // همهٔ ردیف‌های منو یک قالب دارند: آیکون ۲۰ پیکسلی همیشه در همان جای خودش می‌ماند (با عرض جمع‌شده درست وسط می‌افتد: ۱۲ + ۱۶ پیکسل از لبه)،
 // فقط برچسب با کم‌رنگ‌شدن کنار می‌رود و از لبه بریده می‌شود
 const ITEM =
-  "group relative flex h-11 w-full items-center gap-3 overflow-hidden whitespace-nowrap rounded-xl px-4 text-sm font-medium transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500";
+  "btn-flat group relative flex h-11 w-full items-center gap-3 overflow-hidden whitespace-nowrap rounded-xl px-4 text-sm font-medium transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500";
 const ICON = "grid shrink-0 place-items-center transition-transform duration-200 group-hover:scale-110";
 
 function Label({ collapsed, children }) {
