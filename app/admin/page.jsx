@@ -40,7 +40,7 @@ const ChartsSkeleton = () => (
 const DashboardCharts = dynamic(() => import("./_dashboard/DashboardCharts"), { ssr: false, loading: ChartsSkeleton });
 
 // مبلغ کامل مثل بقیهٔ فروشگاه («۷٬۳۰۰٬۰۰۰» + «تومان») به شکل { num, unit }؛ فقط محور نمودار فشرده می‌ماند چون جا ندارد
-const money = (n) => ({ num: fa(Math.round(n)), unit: "تومان" });
+const money = (n) => ({ num: fa(Math.round(n)), unit: "تومان", raw: Math.round(n) });
 
 export default function AdminHome() {
   const [days, setDays] = useState(30);
@@ -129,9 +129,9 @@ export default function AdminHome() {
   const k = data?.kpis;
   const tiles = data && [
     { id: "revenue", icon: Banknote, tone: "brand", label: `فروش ${fa(shown)} روز اخیر`, value: money(k.revenue.value), zero: !k.revenue.value, change: k.revenue.change, spark: spark("revenue") },
-    { id: "orders", icon: ShoppingBag, tone: "blue", label: "سفارش‌های پرداخت‌شده", value: { num: fa(k.orders.value), unit: "سفارش" }, zero: !k.orders.value, change: k.orders.change, spark: spark("orders") },
+    { id: "orders", icon: ShoppingBag, tone: "blue", label: "سفارش‌های پرداخت‌شده", value: { num: fa(k.orders.value), unit: "سفارش", raw: k.orders.value }, zero: !k.orders.value, change: k.orders.change, spark: spark("orders") },
     { id: "aov", icon: Wallet, tone: "violet", label: "میانگین هر سفارش", value: money(k.aov.value), zero: !k.aov.value, change: k.aov.change, spark: spark("aov"), sparkBaseline: "min" },
-    { id: "customers", icon: UserPlus, tone: "emerald", label: "مشتریان جدید", value: { num: fa(k.customers.value), unit: "نفر" }, zero: !k.customers.value, change: k.customers.change, spark: spark("customers") },
+    { id: "customers", icon: UserPlus, tone: "emerald", label: "مشتریان جدید", value: { num: fa(k.customers.value), unit: "نفر", raw: k.customers.value }, zero: !k.customers.value, change: k.customers.change, spark: spark("customers") },
   ];
 
   const summary = !data
@@ -156,7 +156,7 @@ export default function AdminHome() {
   ];
 
   return (
-    <div className="dash-viz relative space-y-4 p-4" dir="rtl">
+    <div className="dash-viz relative space-y-4" dir="rtl">
       <DashboardHero
         summary={summary}
         days={days}

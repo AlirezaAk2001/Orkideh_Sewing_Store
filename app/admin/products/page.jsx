@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { LayoutGrid, PackageSearch, PackageX, Search, SearchX, Trash2, TriangleAlert, X } from "lucide-react";
+import { LayoutGrid, PackageSearch, Search, SearchX, Trash2, TriangleAlert, X } from "lucide-react";
 import Icon from "@mdi/react";
 import { mdiStoreCogOutline } from "@mdi/js";
 import { getImagePath } from "@/app/utils/getImagePath";
@@ -19,6 +19,7 @@ import AddButton from "@/app/admin/_list/AddButton";
 import EmptyState from "@/app/admin/_list/EmptyState";
 import Thumb from "@/app/admin/_list/Thumb";
 import Chip from "@/app/admin/_list/Chip";
+import ValueBar from "@/app/admin/_ui/ValueBar";
 import { RowActions } from "@/app/admin/_list/IconAction";
 
 const PAGE_SIZE_OPTIONS = [5, 10, 20];
@@ -44,30 +45,44 @@ const getFinalPrice = (row) => {
 
 const getCategoryName = (row) => row.Category?.name || row.categoryName || "بدون دسته‌بندی";
 
-// قیمت نهایی درشت و اگر تخفیف دارد زیرش قیمت اصلی خط‌خورده کنار چیپ درصد تخفیف
-function Price({ row }) {
+const hasDiscount = (row) => row.discount != null && Number(row.discount) > 0 && Number(getFinalPrice(row)) < Number(row.price);
+
+// درصد تخفیف به شکل نوار: عدد وسط نوار و پرشدن به اندازهٔ همان درصد (ValueBar). withWord = «۱۰٪ تخفیف» وقتی ستون «تخفیف» کنارش نیست و خود نوار باید معنی بدهد
+function DiscountBar({ row, withWord = false, className = "" }) {
+  if (!hasDiscount(row)) return null;
+  return <ValueBar className={className} value={Number(row.discount)} suffix={withWord ? "٪ تخفیف" : "٪"} label={`تخفیف ${row.name || "محصول"}`} />;
+}
+
+// قیمت نهایی درشت و اگر تخفیف دارد زیرش قیمت اصلی خط‌خورده. bar = زیر قیمت نوار تخفیف هم بیاید (جدول باریک، که ستون جدای تخفیف را ندارد)
+function Price({ row, bar = false }) {
   const final = getFinalPrice(row);
-  const hasDiscount = row.discount != null && Number(row.discount) > 0 && Number(final) < Number(row.price);
   return (
     <div className="leading-6">
       <p className="whitespace-nowrap font-bold text-gray-900">
         {formatPrice(final)} <span className="text-xs font-medium text-gray-500">تومان</span>
       </p>
-      {hasDiscount && (
-        <p className="mt-0.5 flex items-center gap-1.5">
-          <span className="whitespace-nowrap text-xs text-gray-400 line-through">{formatPrice(row.price)}</span>
-          <Chip tone="brand">{fa(row.discount)}٪ تخفیف</Chip>
-        </p>
-      )}
+      {hasDiscount(row) && <p className="whitespace-nowrap text-xs text-gray-400 line-through">{formatPrice(row.price)}</p>}
+      {bar && <DiscountBar row={row} withWord className="mt-1.5 w-28 xl:hidden" />}
     </div>
   );
 }
 
-// موجودی با همان قاعدهٔ فروشگاه: بدون پیگیری موجودی («لوازم جانبی» یا خالی) فقط خط تیره (در کارت موبایل هیچ)؛ صفر قرمز؛ تا آستانهٔ داشبورد زرد؛ بقیه سبز
+// موجودی با همان قاعدهٔ فروشگاه: بدون پیگیری موجودی («لوازم جانبی» یا خالی) فقط خط تیره (در کارت موبایل هیچ)؛ صفر قرمز با نقطهٔ ضربان‌دار؛ تا آستانهٔ
+// داشبورد زرد؛ بقیه سبز
 function StockChip({ row, quiet = false }) {
   if (!tracksStock(row)) return quiet ? null : <span className="text-gray-400">—</span>;
   const n = Number(row.stock);
-  if (n <= 0) return <Chip tone="red" icon={PackageX}>ناموجود</Chip>;
+  if (n <= 0) {
+    return (
+      <Chip tone="red">
+        <span className="relative grid h-2 w-2 place-items-center" aria-hidden="true">
+          <span className="sold-ping absolute h-2 w-2 rounded-full bg-red-500/60" />
+          <span className="relative h-2 w-2 rounded-full bg-red-600" />
+        </span>
+        ناموجود
+      </Chip>
+    );
+  }
   if (n <= LOW_STOCK_THRESHOLD) return <Chip tone="amber" icon={TriangleAlert}>{fa(n)} عدد</Chip>;
   return <Chip tone="green">{fa(n)} عدد</Chip>;
 }
@@ -194,7 +209,7 @@ export default function AdminProducts() {
     {
       id: "name",
       label: "محصول",
-      td: "w-full max-w-0",
+      td: "w-[38%] max-w-0",
       sk: "h-11 w-48 rounded-xl",
       cell: (r) => (
         <div className="flex min-w-0 items-center gap-3">
@@ -206,7 +221,15 @@ export default function AdminProducts() {
         </div>
       ),
     },
-    { id: "price", label: "قیمت", sk: "h-8 w-28", cell: (r) => <Price row={r} /> },
+    { id: "price", label: "قیمت", sk: "h-8 w-28", cell: (r) => <Price row={r} bar /> },
+    {
+      id: "discount",
+      label: "تخفیف",
+      th: "hidden w-36 xl:table-cell",
+      td: "hidden xl:table-cell",
+      sk: "h-6 w-28",
+      cell: (r) => (hasDiscount(r) ? <DiscountBar row={r} className="w-28" /> : <span className="text-gray-400">—</span>),
+    },
     { id: "stock", label: "موجودی", sk: "h-6 w-20", cell: (r) => <StockChip row={r} /> },
     { id: "actions", label: "عملیات", th: "w-28", sk: "h-9 w-20 rounded-xl", cell: actions },
   ];
@@ -225,6 +248,7 @@ export default function AdminProducts() {
       <div className="mt-3 flex items-end justify-between gap-3">
         <div className="flex flex-col items-start gap-1.5">
           <Price row={r} />
+          <DiscountBar row={r} withWord className="w-32" />
           <StockChip row={r} quiet />
         </div>
         {actions(r)}

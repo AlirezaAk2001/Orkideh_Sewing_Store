@@ -15,7 +15,7 @@ export default function Thumb({ src, alt = "", className = "h-11 w-11", sizes = 
           alt={alt}
           fill
           sizes={sizes}
-          className="object-cover"
+          className="object-cover transition-transform duration-300 group-hover:scale-110"
           onError={(e) => {
             e.currentTarget.style.display = "none";
           }}

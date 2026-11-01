@@ -10,7 +10,7 @@ export default function DataTable({ label, columns, rows, rowKey, renderCard, lo
       <div aria-busy="true" aria-label={label}>
         <div className="hidden md:block">
           <table className="w-full table-fixed text-sm">
-            <thead className="bg-gray-50/80">
+            <thead className="bg-gradient-to-b from-gray-50 to-gray-100/70 shadow-[inset_0_-1px_0_var(--color-gray-200)]">
               <tr>
                 {columns.map((c) => (
                   <th key={c.id} scope="col" className={`px-4 py-3 text-start text-xs font-semibold text-gray-500 ${c.th || ""}`}>
@@ -52,7 +52,7 @@ export default function DataTable({ label, columns, rows, rowKey, renderCard, lo
       <div className="hidden overflow-x-auto md:block">
         <table className="w-full text-sm">
           <caption className="sr-only">{label}</caption>
-          <thead className="bg-gray-50/80">
+          <thead className="bg-gradient-to-b from-gray-50 to-gray-100/70 shadow-[inset_0_-1px_0_var(--color-gray-200)]">
             <tr>
               {columns.map((c) => (
                 <th key={c.id} scope="col" className={`whitespace-nowrap px-4 py-3 text-start text-xs font-semibold text-gray-500 ${c.th || ""}`}>
@@ -63,7 +63,7 @@ export default function DataTable({ label, columns, rows, rowKey, renderCard, lo
           </thead>
           <tbody>
             {rows.map((row, i) => (
-              <tr key={rowKey(row)} style={stagger(i)} className="admin-row-in border-t border-gray-100 transition-colors hover:bg-brand-50/40">
+              <tr key={rowKey(row)} style={stagger(i)} className="admin-row-in row-accent group border-t border-gray-100 hover:bg-brand-50/40">
                 {columns.map((c) => (
                   <td key={c.id} className={`px-4 py-3 align-middle text-gray-700 ${c.td || ""}`}>
                     {c.cell(row)}
@@ -76,7 +76,7 @@ export default function DataTable({ label, columns, rows, rowKey, renderCard, lo
       </div>
       <ul className="divide-y divide-gray-100 md:hidden" aria-label={label}>
         {rows.map((row, i) => (
-          <li key={rowKey(row)} style={stagger(i)} className="admin-row-in p-4">
+          <li key={rowKey(row)} style={stagger(i)} className="admin-row-in group p-4">
             {renderCard(row)}
           </li>
         ))}

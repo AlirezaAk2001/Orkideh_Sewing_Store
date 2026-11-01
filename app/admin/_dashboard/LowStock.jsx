@@ -3,17 +3,18 @@
 import Link from "next/link";
 import { CircleCheck, PackageX, TriangleAlert } from "lucide-react";
 import { fa } from "./format";
+import ValueBar from "@/app/admin/_ui/ValueBar";
 
-// شدت: ناموجود قرمز، یک تا دو عدد نارنجی، بقیه زرد؛ هر شدت آیکون و برچسب متنی هم دارد (رنگ تنها معنی نمی‌رساند).
-// نوار موجودی نسبت به آستانه پر می‌شود و ریلش (بخش خالی) همان رنگ را کم‌رنگ دارد.
-// هر ردیف لینک ویرایش کالاست؛ ردیف نمونه (حالت نمونه، بدون شناسه) فقط نمایش است
+// شدت: ناموجود قرمز، یک تا دو عدد نارنجی، بقیه زرد؛ هر شدت آیکون و برچسب متنی هم دارد (رنگ تنها معنی نمی‌رساند). رنگ نوار از همان شدت می‌آید، ولی
+// تیره‌تر از رنگ‌های نمودار است تا عدد سفید وسط نوار خوانا بماند. نوار به نسبت آستانه پر می‌شود و عدد موجودی وسطش است («ناموجود» برای صفر).
+// آیکون ناموجود با یک حلقهٔ آرام می‌زند تا از میان ردیف‌ها دیده شود. هر ردیف لینک ویرایش کالاست؛ ردیف نمونه (حالت نمونه، بدون شناسه) فقط نمایش است
 function severity(stock) {
-  if (stock <= 0) return { label: "ناموجود", color: "var(--viz-sev-critical)", icon: PackageX };
-  if (stock <= 2) return { label: "رو به اتمام", color: "var(--viz-sev-serious)", icon: TriangleAlert };
-  return { label: "کم‌موجود", color: "var(--viz-sev-warning)", icon: TriangleAlert };
+  if (stock <= 0) return { label: "ناموجود", color: "var(--viz-sev-critical)", tone: "red", icon: PackageX, pulse: true };
+  if (stock <= 2) return { label: "رو به اتمام", color: "var(--viz-sev-serious)", tone: "orange", icon: TriangleAlert };
+  return { label: "کم‌موجود", color: "var(--viz-sev-warning)", tone: "amber", icon: TriangleAlert };
 }
 
-const ROW = "-mx-2 block rounded-lg px-2 py-2.5 outline-none transition-colors";
+const ROW = "-mx-2 block rounded-xl px-2 py-2.5 outline-none transition-colors";
 
 export default function LowStock({ items, threshold }) {
   if (!items.length) {
@@ -35,16 +36,25 @@ export default function LowStock({ items, threshold }) {
         const content = (
           <>
             <div className="flex items-center justify-between gap-3">
-              <p className="min-w-0 truncate text-sm text-gray-800">{p.name}</p>
+              <p className="min-w-0 truncate text-sm font-medium text-gray-800">{p.name}</p>
               <p className="flex shrink-0 items-center gap-1.5 text-xs font-medium text-gray-700">
-                <Icon className="h-4 w-4" style={{ color: sev.color }} aria-hidden="true" />
+                <span className="relative grid place-items-center">
+                  {sev.pulse && <span aria-hidden="true" className="sold-ping absolute h-4 w-4 rounded-full" style={{ background: sev.color, opacity: 0.35 }} />}
+                  <Icon className="relative h-4 w-4" style={{ color: sev.color }} aria-hidden="true" />
+                </span>
                 {sev.label}
-                <span className="font-bold text-gray-900">{p.stock > 0 ? `${fa(p.stock)} عدد` : ""}</span>
               </p>
             </div>
-            <div className="mt-2 h-1.5 overflow-hidden rounded-full" style={{ background: `color-mix(in srgb, ${sev.color} 16%, white)` }} aria-hidden="true">
-              <div className="h-full rounded-full" style={{ width: `${Math.min(100, (p.stock / threshold) * 100)}%`, background: sev.color }} />
-            </div>
+            <ValueBar
+              className="mt-2"
+              value={Math.min(100, (p.stock / threshold) * 100)}
+              number={p.stock}
+              suffix=" عدد"
+              text={p.stock > 0 ? undefined : "ناموجود"}
+              tone={sev.tone}
+              delay={i * 80}
+              label={`موجودی ${p.name}`}
+            />
           </>
         );
         return (
