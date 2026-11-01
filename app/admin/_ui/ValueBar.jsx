@@ -3,6 +3,7 @@
 import { fa } from "@/app/admin/_dashboard/format";
 import { useReveal } from "./useReveal";
 import { useCountUp } from "./useCountUp";
+import { useShineClock } from "./useShineClock";
 
 // نوار افقی مقدار، همان طراحی «درصد داخل نوار»: عدد درست وسط نوار می‌نشیند و نوار از لبهٔ چپ به سمت راست به اندازهٔ value (۰ تا ۱۰۰) پر می‌شود؛ با کم‌شدن مقدار به همان راه جمع می‌شود.
 // عدد دو نسخه دارد: تیره روی زمینهٔ خاکستری و سفید روی بخش پر؛ نسخهٔ سفید فقط تا لبهٔ پرشدگی دیده می‌شود (clip-path هم‌زمان با پرشدن حرکت می‌کند)،
@@ -15,9 +16,10 @@ const TONES = {
   blue: { c: "#2a78d6" },
   red: { c: "#d03b3b" },
   gray: { c: "#85847e" },
-  // زرد و نارنجی روشن می‌مانند و به‌جای سفید، عددِ روی بخش پر تیره است (سفید روی زرد خوانا نیست)
-  amber: { c: "#f5b00a", ink: "#3b2600", ma: "100%", mb: "86%" },
-  orange: { c: "#ee7f4b", ink: "#3d1a08", ma: "100%", mb: "84%" },
+  // زرد و نارنجی روشن می‌مانند و به‌جای سفید، عددِ روی بخش پر تیره است (سفید روی زرد خوانا نیست)؛ برق (sa = شدت سفید) هم پررنگ‌تر است تا روی زمینهٔ روشن
+  // همان‌قدر دیده شود (پیش‌فرض ۰٫۵)
+  amber: { c: "#f5b00a", ink: "#3b2600", ma: "100%", mb: "86%", sa: 0.9 },
+  orange: { c: "#ee7f4b", ink: "#3d1a08", ma: "100%", mb: "84%", sa: 0.8 },
 };
 
 const SIZES = {
@@ -26,10 +28,12 @@ const SIZES = {
   lg: "h-7 text-[13px]",
 };
 
-// plain = بدون هاشور (کارت وضعیت سفارش‌ها)؛ بقیه هاشور مورب متحرک دارند (استایل در globals.css)
-export default function ValueBar({ value, number = value, suffix = "٪", text, tone = "brand", color, size = "md", delay = 0, plain = false, label, className = "" }) {
+// plain = بدون هاشور (کارت وضعیت سفارش‌ها)؛ بقیه هاشور مورب متحرک دارند (استایل در globals.css).
+// shine = هر چند ثانیه یک برق نرم روی بخش پر؛ برای همهٔ نوارهای دارای shine هم‌زمان است (useShineClock)
+export default function ValueBar({ value, number = value, suffix = "٪", text, tone = "brand", color, size = "md", delay = 0, plain = false, shine = false, label, className = "" }) {
   const t = TONES[tone] ?? TONES.brand;
   const [ref, shown] = useReveal();
+  useShineClock(shine);
   const p = Math.min(100, Math.max(0, Number(value) || 0));
   const count = useCountUp(Number(number) || 0, { run: shown && text === undefined, delay: delay + 150, duration: 1000 });
   const final = text ?? `${fa(Math.round(Number(number) || 0))}${suffix}`;
@@ -46,8 +50,9 @@ export default function ValueBar({ value, number = value, suffix = "٪", text, t
       aria-valuetext={final}
       data-in={shown ? "" : undefined}
       data-plain={plain ? "" : undefined}
+      data-shine={shine ? "" : undefined}
       className={`vbar relative isolate overflow-hidden rounded-full bg-gray-100 ${SIZES[size]} ${className}`}
-      style={{ "--p": shown ? p : 0, "--pb-c": color ?? t.c, "--pb-ma": color ? undefined : t.ma, "--pb-mb": color ? undefined : t.mb, "--pb-ink": color ? undefined : t.ink, "--d": `${delay}ms` }}
+      style={{ "--p": shown ? p : 0, "--pb-c": color ?? t.c, "--pb-ma": color ? undefined : t.ma, "--pb-mb": color ? undefined : t.mb, "--pb-ink": color ? undefined : t.ink, "--pb-sa": color ? undefined : t.sa, "--d": `${delay}ms` }}
     >
       <span className="vbar-fill absolute inset-y-0 left-0 overflow-hidden rounded-full" aria-hidden="true" />
       <span className="vbar-dark absolute inset-0 grid place-items-center whitespace-nowrap font-extrabold tabular-nums text-gray-700" aria-hidden="true">

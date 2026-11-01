@@ -1,12 +1,11 @@
 "use client";
 
-import { LOGO_PNG } from "@/lib/siteLogo";
+import PageLoader from "@/app/components/PageLoader";
 import { useEffect, useState } from "react";
 import { Box, Button, TextField, CircularProgress } from "@mui/material";
 import { useRouter, useParams } from "next/navigation";
 import toast from "react-hot-toast";
 import { Save } from "lucide-react";
-import Image from "next/image";
 import Icon from '@mdi/react';
 import PageHeader from "@/app/admin/_shell/PageHeader";
 import { mdiImageEditOutline, mdiImageOffOutline, mdiPanoramaVariantOutline } from '@mdi/js';
@@ -113,19 +112,7 @@ export default function EditBannerPage() {
   // ⏳ حالت لودینگ
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] fixed inset-0">
-        <Image
-          src={LOGO_PNG}
-          alt="در حال بارگذاری..."
-          width={80}
-          height={80}
-          className="animate-spin object-contain"
-          priority
-        />
-        <p className="mt-4 text-gray-500 text-sm font-medium animate-pulse">
-          در حال بارگذاری جزئیات بنر...
-        </p>
-      </div>
+      <PageLoader className="min-h-[60vh]" label="در حال بارگذاری جزئیات بنر..." />
     );
   }
 

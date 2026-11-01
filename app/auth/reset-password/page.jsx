@@ -1,10 +1,11 @@
 "use client";
 
 import React, { useState, useEffect, Suspense } from "react";
-import { ArrowRight, Loader2, RotateCcwKey } from "lucide-react";
+import { ArrowRight, RotateCcwKey } from "lucide-react";
 import toast from "react-hot-toast";
 import { useRouter, useSearchParams } from "next/navigation";
 import AuthShell from "@/app/components/auth/AuthShell";
+import PageLoader from "@/app/components/PageLoader";
 import { AuthCard, AuthTitle, Field, LINK_BUTTON, PasswordInput, SubmitButton } from "@/app/components/auth/AuthUI";
 
 const SHELL = {
@@ -125,9 +126,8 @@ function ResetPasswordContent() {
   if (isValidating) {
     return (
       <AuthShell {...SHELL}>
-        <AuthCard className="flex flex-col items-center gap-4 py-12! text-gray-500">
-          <Loader2 className="h-9 w-9 animate-spin text-brand-600" aria-hidden="true" />
-          <p role="status" className="text-sm font-medium">در حال بررسی لینک بازیابی...</p>
+        <AuthCard className="py-10!">
+          <PageLoader size="md" label="در حال بررسی لینک بازیابی..." />
         </AuthCard>
       </AuthShell>
     );
@@ -195,7 +195,7 @@ function ResetPasswordContent() {
 // useSearchParams باید داخل Suspense باشد، وگرنه build این صفحه شکست می‌خورد
 export default function ResetPasswordPage() {
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<PageLoader className="min-h-screen" label="در حال بررسی لینک بازیابی..." />}>
       <ResetPasswordContent />
     </Suspense>
   );

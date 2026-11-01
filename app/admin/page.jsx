@@ -8,8 +8,9 @@ import { useRouter } from "next/navigation";
 import Icon from '@mdi/react';
 import { mdiPanoramaVariantOutline, mdiCommentAccountOutline, mdiAccountFileText } from '@mdi/js';
 import CategoryOutlinedIcon from "@mui/icons-material/CategoryOutlined";
-import { Banknote, BellRing, FlaskConical, MessageSquareText, PackageX, ShoppingBag, Truck, UserPlus, Wallet } from "lucide-react";
+import { Banknote, FlaskConical, MessageSquareText, PackageX, ShoppingBag, Truck, UserPlus, Wallet } from "lucide-react";
 import { demoAllowed } from "@/lib/demoFlag";
+import AttentionBell from "./_dashboard/AttentionBell";
 import AttentionItem from "./_dashboard/AttentionItem";
 import DashboardHero from "./_dashboard/DashboardHero";
 import Panel from "./_dashboard/Panel";
@@ -214,7 +215,7 @@ export default function AdminHome() {
           </div>
 
           {attention.length > 0 && (
-            <Panel title="نیازمند توجه" titleId="attention-title" subtitle="کارهایی که منتظر شما هستند" icon={BellRing} index={9}>
+            <Panel title="نیازمند توجه" titleId="attention-title" subtitle="کارهایی که منتظر شما هستند" icon={AttentionBell} index={9}>
               <ul className={`grid grid-cols-1 divide-y divide-gray-100 lg:divide-x lg:divide-y-0 ${ATTENTION_COLS[attention.length]}`}>
                 {attention.map((a) => (
                   <li key={a.href} className="p-1 lg:px-1.5">

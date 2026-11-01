@@ -5,7 +5,7 @@ import { useEffect, useRef } from "react";
 import Icon from "@mdi/react";
 import { mdiAccountTieOutline } from "@mdi/js";
 import { ExternalLink, LogOut, PanelRightClose, PanelRightOpen, Store, X } from "lucide-react";
-import BrandMark from "./BrandMark";
+import BrandMark from "@/app/components/BrandMark";
 import { NAV_GROUPS, isActive } from "./nav";
 
 // همهٔ ردیف‌های منو یک قالب دارند: آیکون ۲۰ پیکسلی همیشه در همان جای خودش می‌ماند (با عرض جمع‌شده درست وسط می‌افتد: ۱۲ + ۱۶ پیکسل از لبه)،

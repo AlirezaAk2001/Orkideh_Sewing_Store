@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Menu, Store } from "lucide-react";
-import BrandMark from "./BrandMark";
+import BrandMark from "@/app/components/BrandMark";
 
 // نوار بالای موبایل و تبلت (زیر lg): دکمهٔ منو، نشان و نام بخش فعلی، میان‌بر فروشگاه. در دسکتاپ منوی کناری جایش را می‌گیرد
 export default function AdminTopBar({ title, onOpenMenu, menuRef, drawerOpen }) {

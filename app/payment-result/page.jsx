@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/lib/context"; // مسیر واقعی خودت رو قرار بده
+import PageLoader from "@/app/components/PageLoader";
 
 export default function PaymentResultPage() {
   const [status, setStatus] = useState("در حال بررسی پرداخت...");
@@ -93,9 +94,13 @@ export default function PaymentResultPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
 
+  // تا وقتی پیام «در حال ...» است (بررسی، تأیید، تکمیل سفارش) حلقهٔ لودینگ نشان داده می‌شود؛ پیام‌های پایانی (موفق/ناموفق) بدون آن می‌آیند
+  const busy = status.includes("در حال");
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 text-center px-4 fixed inset-0">
       <div className="bg-white p-6 rounded-lg shadow-md max-w-sm w-full">
+        {busy && <PageLoader size="md" className="mb-5" />}
         <h2 className="text-xl font-bold mb-4">{status}</h2>
         <p className="text-gray-600">لطفاً تا زمان انتقال به صفحه‌ی سفارش‌ها صبر کنید...</p>
       </div>

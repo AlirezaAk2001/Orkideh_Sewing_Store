@@ -1,6 +1,6 @@
 "use client";
 
-import { LOGO_PNG } from "@/lib/siteLogo";
+import PageLoader from "@/app/components/PageLoader";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/context";
@@ -12,7 +12,6 @@ import { mdiAccountEditOutline, mdiAccountCogOutline, mdiEyeOutline, mdiEyeOffOu
 import { motion, AnimatePresence } from "framer-motion";
 import { TextField, InputAdornment, IconButton } from "@mui/material";
 import axios from "axios";
-import Image from "next/image";
 
 const usernameRegex = /^[a-zA-Z0-9_]+$/;
 const passwordRegex = /^(?=.*[0-9])(?=.*[@_]).{8,}$/;
@@ -278,19 +277,7 @@ export default function SettingsPage() {
 
   if (!currentUser) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh]">
-        <Image
-          src={LOGO_PNG}
-          alt="در حال بارگذاری اطلاعات کاربر..."
-          width={80}
-          height={80}
-          className="animate-spin object-contain"
-          priority
-        />
-        <p className="mt-4 text-gray-500 text-sm font-medium animate-pulse">
-          در حال بارگذاری اطلاعات کاربر...
-        </p>
-      </div>
+      <PageLoader className="min-h-[60vh]" label="در حال بارگذاری اطلاعات کاربر..." />
     );
   }
 

@@ -17,6 +17,7 @@ import { mdiHomePlusOutline } from '@mdi/js';
 import { mdiHomeOutline } from '@mdi/js';
 import { mdiHomeEditOutline } from '@mdi/js';
 import { toPersianDigits } from "@/lib/format";
+import PageLoader from "@/app/components/PageLoader";
 
 const animationStyles = `
   @keyframes spin360FadeOut {
@@ -91,7 +92,7 @@ export default function AddressesPage() {
     setTimeout(() => setShakeFields({}), 500);
   };
 
-  if (loading) return <p className="text-center mt-6">در حال بارگذاری...</p>;
+  if (loading) return <PageLoader className="min-h-[60vh]" label="در حال بارگذاری..." />;
 
   if (!currentUser) {
     router.push("/auth");

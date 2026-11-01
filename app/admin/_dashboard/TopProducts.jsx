@@ -22,9 +22,9 @@ export default function TopProducts({ items }) {
   const max = Math.max(...items.map((p) => p.quantity));
 
   return (
-    <ol className="space-y-1.5">
+    <ol className="bar-list space-y-1.5">
       {items.map((p, i) => (
-        <li key={p.id ?? `${p.name}-${i}`} className="group relative">
+        <li key={p.id ?? `${p.name}-${i}`} className="bar-row group relative">
           <div tabIndex={0} className="flex items-center gap-3 rounded-xl p-2 outline-none transition-colors hover:bg-gray-50 focus-visible:bg-gray-50 focus-visible:ring-2 focus-visible:ring-brand-500">
             <span
               aria-label={`رتبه ${fa(i + 1)}`}
@@ -37,7 +37,7 @@ export default function TopProducts({ items }) {
                 <p className="min-w-0 truncate text-sm font-medium text-gray-800">{p.name}</p>
                 <p className="shrink-0 text-xs text-gray-500">{fa(Math.round(p.revenue))} تومان</p>
               </div>
-              <ValueBar className="mt-1.5" value={Math.max(4, (p.quantity / max) * 100)} number={p.quantity} suffix=" عدد" delay={i * 90} label={`تعداد فروش ${p.name}`} />
+              <ValueBar className="mt-1.5" value={Math.max(4, (p.quantity / max) * 100)} number={p.quantity} suffix=" عدد" delay={i * 90} shine label={`تعداد فروش ${p.name}`} />
             </div>
           </div>
           <div

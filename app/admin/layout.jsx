@@ -7,7 +7,7 @@ import { useAuth } from "@/lib/context";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { DesktopSidebar, MobileDrawer } from "./_shell/AdminSidebar";
 import AdminTopBar from "./_shell/AdminTopBar";
-import BrandMark from "./_shell/BrandMark";
+import PageLoader from "@/app/components/PageLoader";
 import ConfirmDialog from "./_shell/ConfirmDialog";
 import { findNavItem } from "./_shell/nav";
 
@@ -85,14 +85,8 @@ export default function AdminLayout({ children }) {
   // تا مشخص نشدن دسترسی، پنل نمایش داده نمی‌شود (غیرادمین پنل را حتی لحظه‌ای نمی‌بیند)
   if (!isLoggingOut && (authLoading || !isAdminUser)) {
     return (
-      <div className="admin-canvas relative grid min-h-dvh place-items-center" dir="rtl" role="status">
-        <div className="relative z-10 flex flex-col items-center gap-5">
-          <span className="relative grid h-20 w-20 place-items-center">
-            <span aria-hidden="true" className="absolute inset-0 animate-spin rounded-full border-[3px] border-brand-100 border-t-brand-600 motion-reduce:animate-none" />
-            <BrandMark className="h-12 w-12" px={48} />
-          </span>
-          <p className="animate-pulse text-sm font-medium text-gray-500 motion-reduce:animate-none">در حال بررسی دسترسی...</p>
-        </div>
+      <div className="admin-canvas relative grid min-h-dvh place-items-center" dir="rtl">
+        <PageLoader className="relative z-10" label="در حال بررسی دسترسی..." />
       </div>
     );
   }

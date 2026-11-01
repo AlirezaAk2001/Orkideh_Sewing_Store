@@ -110,8 +110,9 @@ main {
 /* چیپ تخفیف (ProductDetails.jsx و ProductCard.jsx): سکه‌ای برجسته با حلقهٔ سفید، انعکاس نور بالا و لبهٔ ضخامت زیرش. اندازه فقط با --chip عوض می‌شود
    (صفحهٔ محصول ۳٫۵rem، کارت ۳rem) و متن، حلقه و سایه‌ها با همان متناسب می‌مانند. روی عکس می‌نشیند، پس z-index دارد (دکمهٔ زوم موقعیت‌دار است و
    بدون آن چیپ را می‌پوشاند) و کلیک را به لایهٔ زیرش (دکمهٔ زوم، لینک کارت) رد می‌کند.
-   برق (::after) مثل بازتاب نور روی سطح براق از رویش می‌گذرد: نوار پهن و نرم با هستهٔ روشن و یک خط نازک پشت سرش. حالت ترکیب screen نور را به رنگ
-   سطح اضافه می‌کند (نه اینکه یک نوار سفید مات رویش بیفتد) و حدود نیمی از هر چرخه حرکت و نیم دیگر مکث است. با «کاهش حرکت» برق نمی‌زند. */
+   برق (::after) دقیقاً همان استایل برق نوارهای نمودار داشبورد (.vbar-fill::after در بخش «نوار مقدار») است: یک نوار مورب نرم سفید نیمه‌شفاف که از بیرون لبهٔ
+   چپ تا بیرون لبهٔ راست می‌گذرد. زمان‌بندی چیپ مرجع سرعت برق نوارهاست (چرخهٔ ۴٫۴ ثانیه، ۶۰٪ آن حرکت با منحنی سینوسی و بقیه مکث): اگر اینجا عوض شد، همان
+   مقدار را در .vbar (globals.css) هم عوض کنید. با «کاهش حرکت» برق نمی‌زند. */
 .discount-chip {
   --chip: 3.5rem;
   position: absolute;
@@ -149,34 +150,19 @@ main {
 .discount-chip::after {
   content: "";
   position: absolute;
-  top: -25%;
-  bottom: -25%;
-  left: 0;
-  width: 56%;
+  inset: 0;
   opacity: 0;
-  mix-blend-mode: screen;
-  background: linear-gradient(
-    100deg,
-    transparent 0%,
-    rgb(255 255 255 / 0.4) 6%,
-    transparent 13%,
-    rgb(255 255 255 / 0.1) 25%,
-    rgb(255 255 255 / 0.5) 42%,
-    rgb(255 255 255 / 0.95) 50%,
-    rgb(255 255 255 / 0.5) 58%,
-    rgb(255 255 255 / 0.1) 75%,
-    transparent 100%
-  );
-  transform: translateX(-140%) skewX(-20deg);
+  background: linear-gradient(100deg, transparent 25%, rgb(255 255 255 / 0.5) 50%, transparent 75%);
+  transform: translateX(-110%);
 }
-/* مسیر برق از بیرون لبهٔ چپ تا بیرون لبهٔ راست چیپ است (درصدها نسبت به عرض خود نوارند، پس با هر اندازهٔ چیپ درست می‌ماند) و منحنی سینوسی دارد */
+/* مسیر برق از بیرون لبهٔ چپ تا بیرون لبهٔ راست چیپ است (درصدها نسبت به عرض خود چیپ‌اند، پس با هر اندازه‌ای درست می‌ماند)؛ همان مسیر برق نوارها (vbar-shine) */
 @keyframes discount-shine {
   0% {
-    transform: translateX(-140%) skewX(-20deg);
+    transform: translateX(-110%);
   }
   60%,
   100% {
-    transform: translateX(240%) skewX(-20deg);
+    transform: translateX(110%);
   }
 }
 @media (prefers-reduced-motion: no-preference) {
@@ -837,12 +823,14 @@ main {
   clip-path: inset(0 calc(100% - var(--p, 0) * 1%) 0 0);
 }
 
-/* برق هاور: یک نوار مورب روشن و نرم که فقط درون بخش پر (overflow پنهان همان fill) می‌چرخد؛ بیرون از هاور هیچ حرکتی ندارد */
+/* برق: یک نوار مورب روشن و نرم که فقط درون بخش پر (overflow پنهان همان fill) می‌گذرد؛ بیرون از اجرای برق هیچ حرکتی ندارد. استایل و زمان‌بندی‌اش همان برق
+   چیپ تخفیف فروشگاه است (.discount-chip::after: همین گرادیان، چرخهٔ ۴٫۴ ثانیه، ۶۰٪ آن حرکت با منحنی سینوسی). شدت برق با --pb-sa تنظیم می‌شود
+   (پیش‌فرض ۰٫۵ سفید؛ روی زرد و نارنجی روشن پررنگ‌تر است تا همان‌قدر دیده شود) */
 .vbar-fill::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(100deg, transparent 25%, rgb(255 255 255 / 0.5) 50%, transparent 75%);
+  background: linear-gradient(100deg, transparent 25%, rgb(255 255 255 / var(--pb-sa, 0.5)) 50%, transparent 75%);
   transform: translateX(-110%);
 }
 
@@ -856,8 +844,8 @@ main {
 }
 
 @keyframes vbar-shine {
-  from { transform: translateX(-110%); }
-  to { transform: translateX(110%); }
+  0% { transform: translateX(-110%); }
+  60%, 100% { transform: translateX(110%); }
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -872,7 +860,51 @@ main {
     animation: vbar-march 0.8s linear infinite;
   }
   .vbar:hover .vbar-fill::after {
-    animation: vbar-shine 0.95s ease-in-out;
+    animation: vbar-shine 4.4s cubic-bezier(0.37, 0, 0.63, 1);
+  }
+}
+
+/* ───── فهرست نوارها: کارت‌های وضعیت سفارش‌ها، پرفروش‌ترین‌ها و رو به اتمام (bar-list روی فهرست، bar-row روی هر ردیف) ─────
+   در حالت عادی، هر ۶ ثانیه یک برق نرم از چپ به راست روی بخش پر هر نوار می‌گذرد (همان ::after نوار که درون fill بریده می‌شود). برق روی همهٔ نوارها
+   هم‌زمان است: useShineClock صفت data-bar-shine را روی <html> می‌گذارد و همهٔ نوارهای دارای data-shine در همان پنجره برق می‌زنند؛ بین دو برق هیچ انیمیشنی
+   اجرا نمی‌شود. برق دوره‌ای و برق هاور یک انیمیشن‌اند (vbar-shine، همان سرعت و منحنی چیپ تخفیف: ۲٫۶۴ ثانیه حرکت در چرخهٔ ۴٫۴ ثانیه)؛ هاور فقط تکرارش می‌کند.
+   با هاور (یا فوکوس صفحه‌کلید) روی یک ردیف یا نوارش، ردیف‌های دیگر کم‌رنگ می‌شوند و برقشان خاموش می‌شود؛ فقط نوارِ همان ردیف برق می‌زند و تا وقتی
+   موس آنجاست هر ۴٫۴ ثانیه تکرار می‌شود. هاور فقط برای ابزار ورودی دارای هاور (در لمسی :hover می‌چسبد و ردیف‌ها کم‌رنگ می‌ماندند)؛ با «کاهش حرکت»
+   برق و انتقال نیست و فقط کم‌رنگ‌شدن ردیف‌های دیگر می‌ماند. */
+.bar-list:has(.bar-row:focus-visible, .bar-row :focus-visible) .bar-row:not(:focus-visible, :has(:focus-visible)) {
+  opacity: 0.38;
+}
+
+@media (hover: hover) {
+  .bar-list:has(.bar-row:hover) .bar-row:not(:hover) {
+    opacity: 0.38;
+  }
+  .bar-row:hover .vbar-fill {
+    filter: brightness(1.07);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .bar-row {
+    transition: opacity 0.3s ease, background-color 0.15s ease;
+  }
+  :where([data-bar-shine]) .vbar[data-shine][data-in] .vbar-fill::after {
+    animation: vbar-shine 4.4s cubic-bezier(0.37, 0, 0.63, 1) both;
+  }
+  .bar-list:has(.bar-row:focus-visible, .bar-row :focus-visible) .bar-row:not(:focus-visible, :has(:focus-visible)) .vbar-fill::after {
+    animation: none;
+  }
+  .bar-row:focus-visible .vbar[data-in] .vbar-fill::after,
+  .bar-row:has(:focus-visible) .vbar[data-in] .vbar-fill::after {
+    animation: vbar-shine 4.4s cubic-bezier(0.37, 0, 0.63, 1) infinite;
+  }
+  @media (hover: hover) {
+    .bar-list:has(.bar-row:hover) .bar-row:not(:hover) .vbar-fill::after {
+      animation: none;
+    }
+    .bar-list .bar-row:hover .vbar[data-in] .vbar-fill::after {
+      animation: vbar-shine 4.4s cubic-bezier(0.37, 0, 0.63, 1) infinite;
+    }
   }
 }
 
@@ -982,6 +1014,70 @@ main {
   .icon-action:hover .icon-trash {
     animation: icon-shake 0.5s ease-in-out;
     transform-origin: 50% 80%;
+  }
+}
+
+/* ───── زنگولهٔ «نیازمند توجه» (admin/_dashboard/AttentionBell.jsx) ─────
+   هر ۵ ثانیه data-ringing را ۱٫۳ ثانیه روی آیکون می‌گذارد. زنگوله از نقطهٔ آویز (بالای گنبد) با دامنهٔ کاهنده تاب می‌خورد (۱۳° تا ۴°)،
+   زبانهٔ پایینش کمی خلاف جهت و دیرتر جابه‌جا می‌شود و دو موج چپ و راست با هر تاب به بیرون می‌روند و کم‌رنگ می‌شوند. هر سه حرکت
+   در یک مدت می‌ایستند و به حالت اول برمی‌گردند، پس پرشی در پایان دیده نمی‌شود */
+@keyframes bell-swing {
+  0% { transform: rotate(0deg); }
+  14% { transform: rotate(13deg); }
+  32% { transform: rotate(-11deg); }
+  50% { transform: rotate(8deg); }
+  68% { transform: rotate(-5deg); }
+  84% { transform: rotate(2deg); }
+  100% { transform: rotate(0deg); }
+}
+
+@keyframes bell-clapper {
+  0% { transform: translateX(0); }
+  18% { transform: translateX(-1.1px); }
+  36% { transform: translateX(0.9px); }
+  54% { transform: translateX(-0.7px); }
+  72% { transform: translateX(0.4px); }
+  100% { transform: translateX(0); }
+}
+
+@keyframes bell-wave-l {
+  0%, 100% { transform: translateX(0); opacity: 1; }
+  16%, 50%, 84% { transform: translateX(-1.4px); opacity: 0.3; }
+  33%, 67% { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes bell-wave-r {
+  0%, 100% { transform: translateX(0); opacity: 1; }
+  16%, 50%, 84% { transform: translateX(1.4px); opacity: 0.3; }
+  33%, 67% { transform: translateX(0); opacity: 1; }
+}
+
+.attn-bell {
+  overflow: visible;
+}
+
+.attn-bell .attn-swing,
+.attn-bell .attn-clapper,
+.attn-bell .attn-wave {
+  transform-box: view-box;
+}
+
+.attn-bell .attn-swing {
+  transform-origin: 12px 2px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .attn-bell[data-ringing] .attn-swing {
+    animation: bell-swing 1.3s ease-in-out both;
+  }
+  .attn-bell[data-ringing] .attn-clapper {
+    animation: bell-clapper 1.3s ease-in-out both;
+  }
+  .attn-bell[data-ringing] .attn-wave-l {
+    animation: bell-wave-l 1.3s ease-in-out both;
+  }
+  .attn-bell[data-ringing] .attn-wave-r {
+    animation: bell-wave-r 1.3s ease-in-out both;
   }
 }
 

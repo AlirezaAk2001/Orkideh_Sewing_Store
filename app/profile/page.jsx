@@ -1,11 +1,10 @@
 "use client";
 
-import { LOGO_PNG } from "@/lib/siteLogo";
+import PageLoader from "@/app/components/PageLoader";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/context";
 import toast from "react-hot-toast";
-import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Dialog,
@@ -86,19 +85,7 @@ export default function ProfilePage() {
   // منتظر بارگذاری کامل
   if (loading || !currentUser) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh]">
-        <Image
-          src={LOGO_PNG}
-          alt="در حال بارگذاری اطلاعات کاربر..."
-          width={80}
-          height={80}
-          className="animate-spin object-contain"
-          priority
-        />
-        <p className="mt-4 text-gray-500 text-sm font-medium animate-pulse">
-          در حال بارگذاری اطلاعات کاربر...
-        </p>
-      </div>
+      <PageLoader className="min-h-[60vh]" label="در حال بارگذاری اطلاعات کاربر..." />
     );
   }
 

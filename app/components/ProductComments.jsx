@@ -1,6 +1,6 @@
 "use client";
 
-import { LOGO_PNG } from "@/lib/siteLogo";
+import PageLoader from "./PageLoader";
 import { useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
@@ -10,7 +10,6 @@ import { useAuth } from "@/lib/context";
 import { MessageSquare } from "lucide-react";
 import Icon from "@mdi/react";
 import { mdiCommentAccountOutline, mdiMessageReplyTextOutline } from "@mdi/js";
-import Image from "next/image";
 import moment from 'moment-jalaali';
 
 // نمایش ستاره‌ها
@@ -107,19 +106,7 @@ export default function ProductComments({ productId, initialComments = [] }) {
 
       {/* لیست کامنت‌ها */}
       {loading ? (
-        <div className="flex flex-col items-center justify-center min-h-[20vh]">
-          <Image
-            src={LOGO_PNG}
-            alt="در حال بارگذاری نظرات..."
-            width={80}
-            height={80}
-            className="animate-spin object-contain"
-            priority
-          />
-          <p className="mt-4 text-gray-500 text-sm font-medium animate-pulse">
-            در حال بارگذاری نظرات...
-          </p>
-        </div>
+        <PageLoader size="md" className="min-h-[20vh]" label="در حال بارگذاری نظرات..." />
       ) : comments.length === 0 ? (
         <div className="text-center py-4 text-gray-500">
           <MessageSquare className="w-12 h-12 mx-auto mb-2 text-gray-300" />

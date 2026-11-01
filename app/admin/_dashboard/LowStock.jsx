@@ -29,7 +29,7 @@ export default function LowStock({ items, threshold }) {
   }
 
   return (
-    <ul className="divide-y divide-gray-100">
+    <ul className="bar-list divide-y divide-gray-100">
       {items.map((p, i) => {
         const sev = severity(p.stock);
         const Icon = sev.icon;
@@ -53,12 +53,13 @@ export default function LowStock({ items, threshold }) {
               text={p.stock > 0 ? undefined : "ناموجود"}
               tone={sev.tone}
               delay={i * 80}
+              shine
               label={`موجودی ${p.name}`}
             />
           </>
         );
         return (
-          <li key={p.id ?? `${p.name}-${i}`}>
+          <li key={p.id ?? `${p.name}-${i}`} className="bar-row">
             {p.id ? (
               <Link href={`/admin/products/edit/${p.id}`} className={`${ROW} hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-brand-500`}>
                 {content}

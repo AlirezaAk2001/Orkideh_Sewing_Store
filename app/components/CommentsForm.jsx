@@ -1,6 +1,6 @@
 "use client";
 
-import { LOGO_PNG } from "@/lib/siteLogo";
+import PageLoader from "./PageLoader";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
@@ -11,7 +11,6 @@ import { MessageCircle, MessageSquareHeart } from "lucide-react";
 import Icon from '@mdi/react';
 import { mdiCommentEditOutline } from '@mdi/js';
 import { TextField } from "@mui/material";
-import Image from "next/image";
 
 export default function CommentsForm({ productId, onSubmit }) {
   const { currentUser } = useAuth();
@@ -120,19 +119,7 @@ export default function CommentsForm({ productId, onSubmit }) {
 
   if (checkingPermission) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[20vh]">
-        <Image
-          src={LOGO_PNG}
-          alt="در حال بررسی مجوز..."
-          width={80}
-          height={80}
-          className="animate-spin object-contain"
-          priority
-        />
-        <p className="mt-4 text-gray-500 text-sm font-medium animate-pulse">
-          در حال بررسی مجوز...
-        </p>
-      </div>
+      <PageLoader size="md" className="min-h-[20vh]" label="در حال بررسی مجوز..." />
     );
   }
 

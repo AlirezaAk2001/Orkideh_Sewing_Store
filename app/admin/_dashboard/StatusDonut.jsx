@@ -92,7 +92,7 @@ export default function StatusDonut({ statuses }) {
         </div>
       </div>
 
-      <ul className="w-full max-w-xs space-y-1" aria-label="وضعیت سفارش‌ها">
+      <ul className="bar-list w-full max-w-xs space-y-1" aria-label="وضعیت سفارش‌ها">
         {META.map((m, i) => {
           const Icon = m.icon;
           const count = statuses[m.id] || 0;
@@ -100,7 +100,7 @@ export default function StatusDonut({ statuses }) {
             <li
               key={m.id}
               tabIndex={0}
-              className={`rounded-xl px-2.5 py-2 text-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 ${active === m.id ? "bg-gray-100" : "hover:bg-gray-50"}`}
+              className={`bar-row rounded-xl px-2.5 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-brand-500 ${active === m.id ? "bg-gray-100" : "hover:bg-gray-50"}`}
               onPointerEnter={() => setActive(m.id)}
               onPointerLeave={() => setActive(null)}
               onFocus={() => setActive(m.id)}
@@ -112,7 +112,7 @@ export default function StatusDonut({ statuses }) {
                 <span className="flex-1 text-gray-700">{m.label}</span>
                 <span className="font-bold text-gray-900">{fa(count)}</span>
               </div>
-              <ValueBar className="mt-1.5" value={pct(m.id)} color={m.color} plain delay={i * 110} label={`سهم ${m.label} از کل سفارش‌ها`} />
+              <ValueBar className="mt-1.5" value={pct(m.id)} color={m.color} plain shine delay={i * 110} label={`سهم ${m.label} از کل سفارش‌ها`} />
             </li>
           );
         })}
