@@ -142,6 +142,45 @@ main {
   }
 }
 
+/* تب‌های قطعه‌ای ادمین (.seg ظرف، .seg-tab هر تب): قرص سفید تب فعال شبه‌عنصر ::before خود تب است و پشت نوشته‌اش می‌نشیند (z-index منفی در ظرفِ isolation؛
+   نوشتهٔ همهٔ تب‌ها همیشه بالای قرص است). با هاور روی تب فعال، قرص همراه تب بالا می‌آید چون بخشی از همان عنصر است. لغزش قرص بین تب‌ها را useSegmentSlide.js
+   (app/admin/_ui) با Web Animations روی همین شبه‌عنصر می‌دهد. خط رنگی زیر تب فعال (.seg-underline) بعد از رسیدن قرص باز می‌شود. */
+.seg {
+  isolation: isolate;
+}
+.seg-tab {
+  position: relative;
+}
+.seg-tab::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.08), 0 0 0 1px rgb(0 0 0 / 0.05);
+  opacity: 0;
+  pointer-events: none;
+}
+.seg-tab[data-on]::before {
+  opacity: 1;
+}
+@keyframes seg-underline-in {
+  from {
+    opacity: 0;
+    transform: scaleX(0.2);
+  }
+  to {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .seg-underline {
+    animation: seg-underline-in 0.3s cubic-bezier(0.22, 1, 0.36, 1) 0.14s both;
+  }
+}
+
 /* چیپ تخفیف (ProductDetails.jsx و ProductCard.jsx): سکه‌ای برجسته با حلقهٔ سفید، انعکاس نور بالا و لبهٔ ضخامت زیرش. اندازه فقط با --chip عوض می‌شود
    (صفحهٔ محصول ۳٫۵rem، کارت ۳rem) و متن، حلقه و سایه‌ها با همان متناسب می‌مانند. روی عکس می‌نشیند، پس z-index دارد (دکمهٔ زوم موقعیت‌دار است و
    بدون آن چیپ را می‌پوشاند) و کلیک را به لایهٔ زیرش (دکمهٔ زوم، لینک کارت) رد می‌کند.

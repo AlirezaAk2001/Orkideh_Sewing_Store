@@ -5,6 +5,7 @@ import { CalendarDays, FlaskConical, LayoutDashboard } from "lucide-react";
 import Icon from "@mdi/react";
 import { mdiCalendarMonthOutline, mdiCalendarMultiselectOutline, mdiCalendarWeekBeginOutline } from "@mdi/js";
 import { dayFull, fa } from "./format";
+import { useSegmentSlide } from "@/app/admin/_ui/useSegmentSlide";
 
 // هر بازه آیکون تقویم خودش را دارد: هفته، ماه، چند ماه
 const RANGES = [
@@ -16,6 +17,7 @@ const RANGES = [
 // سربرگ داشبورد: همان گرادیان صورتی و بافت نقطه‌ای صفحه‌های ورود (هویت یک‌دست)، تاریخ امروز، خلاصهٔ یک‌جملهٔ دوره و یک ردیف کنترل (بازهٔ گزارش، داده نمونه).
 // کنترل‌ها همهٔ شاخص‌ها و نمودارهای زیرش را محدود می‌کنند
 export default function DashboardHero({ summary, days, setDays, loading, demoAvailable, demo, setDemo }) {
+  const rangeRef = useSegmentSlide(days);
   const [today, setToday] = useState(""); // بعد از mount پر می‌شود تا تاریخ سرور و مرورگر هیدراتیشن را به‌هم نزند
   useEffect(() => setToday(dayFull(new Date())), []);
 
@@ -44,15 +46,16 @@ export default function DashboardHero({ summary, days, setDays, loading, demoAva
         <div className="flex flex-col items-start gap-2.5 sm:items-end">
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-sm text-white/90">بازهٔ گزارش:</span>
-            <div className="inline-flex rounded-xl bg-white/15 p-1 ring-1 ring-white/25 backdrop-blur-sm" role="group" aria-label="بازهٔ گزارش">
+            <div ref={rangeRef} className="seg inline-flex gap-1 rounded-xl bg-white/15 p-1 ring-1 ring-white/25 backdrop-blur-sm" role="group" aria-label="بازهٔ گزارش">
               {RANGES.map(({ days: r, icon }) => (
                 <button
                   key={r}
                   type="button"
                   aria-pressed={days === r}
+                  data-on={days === r ? "" : undefined}
                   disabled={loading}
                   onClick={() => setDays(r)}
-                  className={`inline-flex cursor-pointer flex-col items-center justify-center gap-0.5 whitespace-nowrap rounded-lg px-2 py-1 text-sm font-semibold transition sm:h-8 sm:flex-row sm:gap-1.5 sm:px-3 sm:py-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:cursor-wait ${days === r ? "bg-white text-brand-700 shadow-sm" : "text-white/90 hover:bg-white/15"}`}
+                  className={`seg-tab inline-flex cursor-pointer flex-col items-center justify-center gap-0.5 whitespace-nowrap rounded-lg px-2 py-1 text-sm font-semibold transition sm:h-8 sm:flex-row sm:gap-1.5 sm:px-3 sm:py-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:cursor-wait ${days === r ? "text-brand-700" : "text-white/90 hover:bg-white/15"}`}
                 >
                   <Icon path={icon} size={0.85} className="shrink-0" aria-hidden="true" />
                   {fa(r)} روز

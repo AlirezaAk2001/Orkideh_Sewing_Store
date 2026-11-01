@@ -20,6 +20,7 @@ import EmptyState from "@/app/admin/_list/EmptyState";
 import Thumb from "@/app/admin/_list/Thumb";
 import Chip from "@/app/admin/_list/Chip";
 import ValueBar from "@/app/admin/_ui/ValueBar";
+import { useSegmentSlide } from "@/app/admin/_ui/useSegmentSlide";
 import { RowActions } from "@/app/admin/_list/IconAction";
 
 const PAGE_SIZE_OPTIONS = [5, 10, 20];
@@ -94,6 +95,7 @@ export default function AdminProducts() {
   const [pageSize, setPageSize] = useState(10);
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all"); // فیلتر دسته‌بندی
+  const filterRef = useSegmentSlide(categoryFilter);
   const [deleteDialog, setDeleteDialog] = useState({ open: false, id: null, name: "" });
   const isMounted = useRef(true);
 
@@ -282,7 +284,7 @@ export default function AdminProducts() {
         )}
       </label>
 
-      <div role="group" aria-label="فیلتر دسته‌بندی" className="flex max-w-full gap-1 overflow-x-auto rounded-xl bg-gray-100 p-1 [scrollbar-width:none]">
+      <div ref={filterRef} role="group" aria-label="فیلتر دسته‌بندی" className="seg flex max-w-full gap-1 overflow-x-auto rounded-xl bg-gray-100 p-1 [scrollbar-width:none]">
         {CATEGORY_FILTERS.map((f) => {
           const on = categoryFilter === f.id;
           return (
@@ -290,10 +292,11 @@ export default function AdminProducts() {
               key={f.id}
               type="button"
               aria-pressed={on}
+              data-on={on ? "" : undefined}
               onClick={() => handleFilterSelect(f.id)}
               aria-label={f.name}
-              className={`flex h-8 shrink-0 cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 sm:px-3 ${
-                on ? "bg-white text-brand-700 shadow-sm ring-1 ring-black/5" : "text-gray-600 hover:bg-white/60 hover:text-gray-900"
+              className={`seg-tab flex h-8 shrink-0 cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 sm:px-3 ${
+                on ? "text-brand-700" : "text-gray-600 hover:bg-white/60 hover:text-gray-900"
               }`}
             >
               {f.image ? (

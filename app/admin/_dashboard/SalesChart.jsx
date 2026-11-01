@@ -5,6 +5,7 @@ import { ArrowDownLeft, ArrowUpRight, CalendarCheck, ChartLine, ChartNoAxesColum
 import { Empty } from "./Panel";
 import { compactText, dayLong, dayShort, fa, niceScale, rtl } from "./format";
 import { useReveal } from "@/app/admin/_ui/useReveal";
+import { useSegmentSlide } from "@/app/admin/_ui/useSegmentSlide";
 
 // نمودار فروش روزانه (یک سری → منحنی نرم + ناحیهٔ شیب‌دار به رنگ برند، بدون legend چون عنوان پنل همین را می‌گوید).
 // صفحه راست‌به‌چپ است، پس زمان هم راست‌به‌چپ می‌رود: قدیمی‌ترین روز سمت راست و امروز سمت چپ، و محور عمودی کنار راست.
@@ -71,9 +72,10 @@ function useWidth() {
 }
 
 export function ViewToggle({ view, setView }) {
-  const base = "inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-md px-2.5 text-xs font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500";
+  const ref = useSegmentSlide(view);
+  const base = "seg-tab inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-md px-2.5 text-xs font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500";
   return (
-    <div className="inline-flex rounded-lg bg-gray-100 p-0.5" role="group" aria-label="نوع نمایش">
+    <div ref={ref} className="seg inline-flex gap-1 rounded-lg bg-gray-100 p-0.5" role="group" aria-label="نوع نمایش">
       {[
         { id: "chart", label: "نمودار", icon: ChartLine },
         { id: "table", label: "جدول", icon: Table2 },
@@ -82,9 +84,10 @@ export function ViewToggle({ view, setView }) {
           key={id}
           type="button"
           aria-pressed={view === id}
+          data-on={view === id ? "" : undefined}
           aria-label={label}
           onClick={() => setView(id)}
-          className={`${base} ${view === id ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-800"}`}
+          className={`${base} ${view === id ? "text-gray-900" : "text-gray-500 hover:bg-white/60 hover:text-gray-800"}`}
         >
           <Icon className="h-3.5 w-3.5" aria-hidden="true" />
           <span className="hidden sm:inline">{label}</span>
