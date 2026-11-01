@@ -1,61 +1,80 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { CheckCircle2, Clock, Send, X, Edit3 } from "lucide-react";
 import moment from "moment-jalaali";
+import { Dialog } from "@mui/material";
+import { CheckCheck, CircleCheck, Clock, MessageSquareDashed, MessageSquareText, Package, Pencil, Reply, Send, Star, X } from "lucide-react";
 import Icon from "@mdi/react";
+import { mdiAccountBoxEditOutline } from "@mdi/js";
 import PageHeader from "@/app/admin/_shell/PageHeader";
-import {
-  mdiAccountBoxEditOutline,
-  mdiCommentRemoveOutline,
-  mdiCommentCheckOutline,
-  mdiMessageReplyTextOutline,
-  mdiCommentEditOutline,
-  mdiCommentAccountOutline,
-  mdiCommentCheckOutline as mdiApproved,
-  mdiCommentOffOutline,
-} from "@mdi/js";
+import ListCard from "@/app/admin/_list/ListCard";
+import EmptyState from "@/app/admin/_list/EmptyState";
+import SegmentedTabs from "@/app/admin/_list/SegmentedTabs";
+import Chip from "@/app/admin/_list/Chip";
 
-// ستاره‌های امتیاز
-function StarDisplay({ rating }) {
-  return (
-    <div className="flex gap-0.5">
-      {[1, 2, 3, 4, 5].map((s) => (
-        <span key={s} className={s <= rating ? "text-amber-400" : "text-gray-300"}>
-          ★
-        </span>
-      ))}
-    </div>
-  );
-}
+const fa = (n) => Number(n).toLocaleString("fa-IR");
+
+// رنگ هر تب: «همه» برند، «تأیید شده» سبز و «تأیید نشده» زرد (همان سبز و زرد داشبورد). ink رنگ تیره‌تر برای نوشته روی زمینهٔ روشن
+const AMBER = "#f5b00a";
+const GREEN = "var(--viz-st-delivered)";
+const TAB_DEFS = [
+  { id: "all", label: "تمام نظرات", noun: "نظر", icon: MessageSquareText, color: "var(--color-brand-600)", ink: "var(--color-brand-700)" },
+  { id: "approved", label: "نظرات تأیید شده", noun: "نظر تأیید شده", icon: CircleCheck, color: GREEN, ink: `color-mix(in srgb, ${GREEN} 62%, black)` },
+  { id: "pending", label: "نظرات تأیید نشده", noun: "نظر در انتظار تأیید", icon: Clock, color: AMBER, ink: `color-mix(in srgb, ${AMBER} 55%, black)` },
+];
+
+const EMPTY = {
+  all: { icon: MessageSquareDashed, title: "هنوز نظری ثبت نشده", hint: "وقتی مشتریان برای محصولات نظر بگذارند، اینجا برای تأیید و پاسخ نشان داده می‌شود." },
+  approved: { icon: MessageSquareText, title: "هنوز نظری تأیید نشده", hint: "نظرهایی که تأیید کنید در صفحهٔ همان محصول به همه نشان داده می‌شوند." },
+  pending: { icon: CheckCheck, title: "همهٔ نظرها بررسی شده‌اند", hint: "نظر تازه‌ای در انتظار تأیید نیست." },
+};
 
 // فرمت تاریخ و زمان فارسی
 function formatDateTime(dateStr) {
   if (!dateStr) return "";
-  const date = moment(dateStr);
-  const formatted = date.format('HH:mm:ss - jYYYY/jMM/jDD');
-
-  // تبدیل اعداد انگلیسی به فارسی
-  return formatted.replace(/\d/g, (digit) => {
-    return String.fromCharCode(parseInt(digit) + 1776);
-  });
+  const formatted = moment(dateStr).format("HH:mm:ss - jYYYY/jMM/jDD");
+  return formatted.replace(/\d/g, (digit) => String.fromCharCode(parseInt(digit) + 1776));
 }
 
-// دیالوگ پاسخ ادمین
+const reducedMotion = () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+// ستاره‌های امتیاز: پر و زرد تا امتیاز، بقیه خاکستری؛ برای صفحه‌خوان یک جملهٔ کامل
+function Stars({ rating }) {
+  const n = Math.max(0, Math.min(5, Number(rating) || 0));
+  return (
+    <span role="img" aria-label={`امتیاز ${fa(n)} از ${fa(5)}`} className="inline-flex items-center gap-0.5">
+      {[1, 2, 3, 4, 5].map((s) => (
+        <Star key={s} className={`h-4 w-4 ${s <= n ? "fill-amber-400 text-amber-400" : "text-gray-300"}`} aria-hidden="true" />
+      ))}
+    </span>
+  );
+}
+
+// دایرهٔ حرف اول نام کاربر
+function Avatar({ name, tone = "gray", className = "h-10 w-10" }) {
+  const tones = {
+    green: "bg-emerald-50 text-emerald-700 ring-emerald-200",
+    amber: "bg-amber-50 text-amber-700 ring-amber-200",
+    gray: "bg-gray-100 text-gray-600 ring-gray-200",
+    brand: "bg-brand-50 text-brand-700 ring-brand-200",
+  };
+  return (
+    <span aria-hidden="true" className={`grid shrink-0 place-items-center rounded-full text-sm font-extrabold ring-1 ring-inset ${tones[tone]} ${className}`}>
+      {(name || "؟")[0]}
+    </span>
+  );
+}
+
+// پنجرهٔ پاسخ مدیر (MUI Dialog: تله‌ی فوکوس، Esc و کلیک روی پس‌زمینه). نظر کاربر بالاست؛ بدون پاسخ یا در حالت ویرایش، جعبهٔ نوشتن پایین می‌آید
 function ReplyDialog({ comment, onClose, onSave }) {
   const [replyText, setReplyText] = useState(comment.adminReply || "");
   const [originalReply] = useState(comment.adminReply || "");
   const [editMode, setEditMode] = useState(!comment.adminReply);
   const [saving, setSaving] = useState(false);
-  const textareaRef = useRef(null);
-
-  useEffect(() => {
-    if (editMode && textareaRef.current) {
-      textareaRef.current.focus();
-    }
-  }, [editMode]);
+  const name = comment.User?.username || comment.User?.name || "کاربر ناشناس";
+  const editing = editMode && !!comment.adminReply;
 
   const handleSend = async () => {
     if (!replyText.trim()) {
@@ -78,286 +97,249 @@ function ReplyDialog({ comment, onClose, onSave }) {
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ backgroundColor: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)" }}
+    <Dialog
+      open
+      onClose={onClose}
+      dir="rtl"
+      aria-labelledby="reply-title"
+      PaperProps={{ sx: { borderRadius: "20px", width: "100%", maxWidth: 520, m: 2, maxHeight: "88vh", boxShadow: "0 30px 70px -20px rgb(0 0 0 / 0.35)" } }}
     >
-      <div
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-lg flex flex-col overflow-hidden"
-        dir="rtl"
-        style={{ maxHeight: "85vh" }}
-      >
-        {/* هدر دیالوگ */}
-        <div className="flex items-center justify-between px-5 py-4 border-b" style={{ background: "linear-gradient(to left, #ede7f6, #f3e5f5)" }}>
-          <h3 className="flex items-center gap-2" style={{ fontFamily: "Vazirmatn, sans-serif", fontSize: "1rem", fontWeight: 700, margin: 0, color: "#4a148c" }}>
-            <Icon
-              path={editMode && comment.adminReply ? mdiCommentEditOutline : mdiMessageReplyTextOutline}
-              size={0.9}
-              color="#673ab7"
-            />
-            {editMode && comment.adminReply ? "ویرایش پاسخ به نظر کاربر" : "پاسخ به نظر کاربر"}
-          </h3>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition cursor-pointer rounded-full hover:bg-gray-100 p-1"
-          >
-            <X size={20} />
-          </button>
+      <div className="flex items-center justify-between gap-3 border-b border-gray-100 bg-gradient-to-l from-brand-50 to-white px-5 py-4">
+        <h2 id="reply-title" className="flex items-center gap-2.5 text-base font-extrabold text-gray-900">
+          <span className="grid h-9 w-9 place-items-center rounded-xl bg-white text-brand-600 shadow-sm ring-1 ring-brand-100">
+            {editing ? <Pencil className="h-[18px] w-[18px]" aria-hidden="true" /> : <Reply className="h-[18px] w-[18px]" aria-hidden="true" />}
+          </span>
+          {editing ? "ویرایش پاسخ به نظر کاربر" : "پاسخ به نظر کاربر"}
+        </h2>
+        <button
+          type="button"
+          aria-label="بستن"
+          onClick={onClose}
+          className="grid h-9 w-9 cursor-pointer place-items-center rounded-xl text-gray-400 transition hover:bg-gray-100 hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300"
+        >
+          <X className="h-5 w-5" aria-hidden="true" />
+        </button>
+      </div>
+
+      <div className="flex-1 space-y-3 overflow-y-auto p-5">
+        <div className="rounded-xl bg-gray-50 p-4 ring-1 ring-gray-200/70">
+          <div className="flex items-center gap-2.5">
+            <Avatar name={name} tone="gray" className="h-9 w-9" />
+            <div className="min-w-0">
+              <p className="truncate text-sm font-bold text-gray-900">{name}</p>
+              <p className="text-xs text-gray-400">{formatDateTime(comment.createdAt)}</p>
+            </div>
+          </div>
+          <div className="mt-2.5">
+            <Stars rating={comment.rating} />
+          </div>
+          <p className="mt-2 text-sm leading-7 text-gray-700">{comment.text}</p>
         </div>
 
-        {/* محتوای اسکرول‌شونده */}
-        <div className="flex-1 overflow-y-auto p-5 space-y-4">
-          {/* کارت نظر کاربر */}
-          <div className="rounded-xl p-4 border border-blue-100 bg-blue-50">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 rounded-full bg-blue-200 flex items-center justify-center text-blue-700 font-bold text-sm">
-                {(comment.User?.username || comment.User?.name || "؟")[0]}
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-gray-700">
-                  {comment.User?.username || comment.User?.name || "کاربر ناشناس"}
-                </p>
-                <p className="text-xs text-gray-400">
-                  {formatDateTime(comment.createdAt)}
-                </p>
-              </div>
-            </div>
-            <StarDisplay rating={comment.rating} />
-            <p className="mt-2 text-gray-700 text-sm leading-relaxed">{comment.text}</p>
-          </div>
-
-          {/* پاسخ فعلی ادمین (اگر وجود داشته باشه) */}
-          {comment.adminReply && !editMode && (
-            <div className="rounded-xl p-4 border border-green-100 bg-green-50">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-green-200 flex items-center justify-center text-green-700 font-bold text-sm">
-                    م
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-green-700 mb-1">مدیر</p>
-                    <p className="text-xs text-green-400">{formatDateTime(comment.adminReplyAt)}</p>
-                  </div>
-
+        {comment.adminReply && !editMode && (
+          <div className="rounded-xl bg-brand-50/60 p-4 ring-1 ring-brand-100">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2.5">
+                <Avatar name="م" tone="brand" className="h-9 w-9" />
+                <div>
+                  <p className="text-sm font-bold text-brand-700">مدیر</p>
+                  <p className="text-xs text-gray-400">{formatDateTime(comment.adminReplyAt)}</p>
                 </div>
-                <button
-                  onClick={() => setEditMode(true)}
-                  className="text-xs text-indigo-500 hover:text-indigo-700 flex items-center gap-1 cursor-pointer"
-                >
-                  <Edit3 size={13} />
-                  ویرایش
-                </button>
               </div>
-              <p className="text-gray-700 text-sm leading-relaxed">{comment.adminReply}</p>
+              <button
+                type="button"
+                onClick={() => setEditMode(true)}
+                className="inline-flex h-8 cursor-pointer items-center gap-1 rounded-lg px-2.5 text-xs font-semibold text-brand-700 transition hover:bg-brand-100/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300"
+              >
+                <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
+                ویرایش
+              </button>
             </div>
-          )}
-        </div>
-
-        {/* چت‌باکس ارسال پاسخ */}
-        {(editMode || !comment.adminReply) && (
-          <div className="border-t bg-gray-50 p-4">
-            <div className="flex gap-2 items-end">
-              <textarea
-                ref={textareaRef}
-                value={replyText}
-                onChange={(e) => setReplyText(e.target.value)}
-                placeholder="پاسخ خود را بنویسید..."
-                rows={3}
-                className="flex-1 resize-none rounded-xl border border-gray-200 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-transparent transition bg-white"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && e.ctrlKey) handleSend();
-                }}
-              />
-              <div className="flex flex-col gap-2">
-                <button
-                  onClick={handleSend}
-                  disabled={saving || !replyText.trim() || replyText.trim() === originalReply.trim()}
-                  className="w-10 h-10 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl flex items-center justify-center transition cursor-pointer disabled:opacity-50"
-                  title="ارسال (Ctrl+Enter)"
-                >
-                  <Send size={16} />
-                </button>
-                {comment.adminReply && editMode && (
-                  <button
-                    onClick={() => { setReplyText(comment.adminReply); setEditMode(false); }}
-                    className="w-10 h-10 bg-gray-200 hover:bg-gray-300 text-gray-600 rounded-xl flex items-center justify-center transition cursor-pointer"
-                    title="انصراف"
-                  >
-                    <X size={16} />
-                  </button>
-                )}
-              </div>
-            </div>
-            <p className="text-xs text-gray-400 mt-2">Ctrl+Enter برای ارسال سریع</p>
-          </div>
-        )}
-
-        {/* دکمه بستن */}
-        {!editMode && comment.adminReply && (
-          <div className="border-t px-5 py-3 flex justify-end bg-gray-50">
-            <button
-              onClick={onClose}
-              className="px-5 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl text-sm transition cursor-pointer"
-            >
-              بستن
-            </button>
+            <p className="mt-2.5 text-sm leading-7 text-gray-700">{comment.adminReply}</p>
           </div>
         )}
       </div>
-    </div>
+
+      {(editMode || !comment.adminReply) && (
+        <div className="border-t border-gray-100 bg-gray-50/70 p-4">
+          <div className="flex items-end gap-2">
+            <textarea
+              autoFocus
+              value={replyText}
+              onChange={(e) => setReplyText(e.target.value)}
+              placeholder="پاسخ خود را بنویسید..."
+              aria-label="پاسخ مدیر"
+              rows={3}
+              className="min-h-[5.5rem] flex-1 resize-none rounded-xl border border-gray-200 bg-white p-3 text-sm leading-7 text-gray-800 transition placeholder:text-gray-400 hover:border-gray-300 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-200"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && e.ctrlKey) handleSend();
+              }}
+            />
+            <div className="flex flex-col gap-2">
+              <button
+                type="button"
+                onClick={handleSend}
+                disabled={saving || !replyText.trim() || replyText.trim() === originalReply.trim()}
+                className="grid h-10 w-10 cursor-pointer place-items-center rounded-xl bg-brand-600 text-white shadow-sm transition hover:bg-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                title="ارسال (Ctrl+Enter)"
+                aria-label="ارسال پاسخ"
+              >
+                <Send className="h-4 w-4" aria-hidden="true" />
+              </button>
+              {comment.adminReply && editMode && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setReplyText(comment.adminReply);
+                    setEditMode(false);
+                  }}
+                  className="grid h-10 w-10 cursor-pointer place-items-center rounded-xl bg-gray-200 text-gray-600 transition hover:bg-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400"
+                  title="انصراف"
+                  aria-label="انصراف از ویرایش"
+                >
+                  <X className="h-4 w-4" aria-hidden="true" />
+                </button>
+              )}
+            </div>
+          </div>
+          <p className="mt-2 text-xs text-gray-400">Ctrl+Enter برای ارسال سریع</p>
+        </div>
+      )}
+
+      {!editMode && comment.adminReply && (
+        <div className="flex justify-end border-t border-gray-100 bg-gray-50/70 px-5 py-3">
+          <button
+            type="button"
+            onClick={onClose}
+            className="h-10 cursor-pointer rounded-xl bg-gray-200 px-5 text-sm font-semibold text-gray-700 transition hover:bg-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400"
+          >
+            بستن
+          </button>
+        </div>
+      )}
+    </Dialog>
   );
 }
 
-// کارت یک کامنت
-function CommentCard({ comment, onApprove, onReject, onReply, activeTab }) {
+// کارت یک نظر: نوار رنگی وضعیت (سبز تأیید شده، زرد در انتظار)، کاربر و تاریخ، چیپ وضعیت، محصول و امتیاز، متن نظر، پاسخ مدیر و دکمه‌ها.
+// «رد تأیید» فقط برای نظر تأییدشده معنا دارد. در تب «تأیید شده» کارت با یک محو شدن کوتاه از فهرست می‌رود؛ در تب «همه» می‌ماند و فقط وضعیتش عوض می‌شود
+function CommentCard({ comment, index, activeTab, onApprove, onReject, onReply }) {
   const [dissolving, setDissolving] = useState(false);
-  const [dissolved, setDissolved] = useState(false);
   const [showReplyDialog, setShowReplyDialog] = useState(false);
   const [approving, setApproving] = useState(false);
 
-  const handleReject = () => {
-    setDissolving(true);
-    setTimeout(() => {
-      setDissolved(true);
-      onReject(comment.id);
-    }, 800);
-  };
-
-  if (dissolved) return null;
-
+  const name = comment.User?.username || comment.User?.name || "کاربر ناشناس";
   const hasReply = !!comment.adminReply;
   const isApproved = comment.approved;
 
-  // آیکون سمت چپ برای reply
-  const replyIconPath = hasReply ? mdiCommentEditOutline : mdiMessageReplyTextOutline;
+  const handleReject = () => {
+    if (activeTab !== "approved") {
+      onReject(comment.id);
+      return;
+    }
+    setDissolving(true);
+    setTimeout(() => onReject(comment.id), reducedMotion() ? 0 : 600);
+  };
+
+  const handleApprove = async () => {
+    if (approving) return;
+    setApproving(true);
+    try {
+      await onApprove(comment.id);
+    } finally {
+      setApproving(false);
+    }
+  };
 
   return (
     <>
-      <div
-        className={`relative border rounded-xl p-4 transition-all duration-300 ${activeTab === "pending"
-            ? "border-amber-200 bg-amber-50"
-            : activeTab === "approved"
-              ? "border-green-200 bg-green-50"
-              : isApproved
-                ? "border-green-200 bg-green-50"
-                : "border-yellow-200 bg-yellow-50"
-          } ${dissolving ? "dissolve-animation" : ""}`}
-        style={
-          dissolving
-            ? {
-              animation: "dissolveOut 0.8s ease-out forwards",
-            }
-            : {}
-        }
+      <article
+        className={`admin-row-in relative overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-gray-200/80 transition-shadow hover:shadow-md ${dissolving ? "comment-dissolve" : ""}`}
+        style={{ animationDelay: `${Math.min(index, 10) * 40}ms` }}
       >
-        {/* هدر کارت */}
-        <div className="flex justify-between items-start mb-3">
-          <div className="flex items-center gap-2">
-            <div
-              className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm ${isApproved ? "bg-green-200 text-green-700" : "bg-yellow-200 text-yellow-700"
-                }`}
-            >
-              {(comment.User?.username || comment.User?.name || "؟")[0]}
+        <span aria-hidden="true" className="absolute inset-y-0 start-0 w-1" style={{ background: isApproved ? GREEN : AMBER }} />
+        <div className="p-4 ps-5 sm:p-5 sm:ps-6">
+          <header className="flex flex-wrap items-start justify-between gap-3">
+            <div className="flex min-w-0 items-center gap-3">
+              <Avatar name={name} tone={isApproved ? "green" : "amber"} />
+              <div className="min-w-0">
+                <h2 className="truncate text-sm font-extrabold text-gray-900">{name}</h2>
+                <p className="text-xs text-gray-400">{formatDateTime(comment.createdAt)}</p>
+              </div>
             </div>
-            <div>
-              <p className="font-semibold text-gray-800 text-sm">
-                {comment.User?.username || comment.User?.name || "کاربر ناشناس"}
+            {isApproved ? (
+              <Chip tone="green" icon={CircleCheck}>تأیید شده</Chip>
+            ) : (
+              <Chip tone="amber" icon={Clock}>در انتظار تأیید</Chip>
+            )}
+          </header>
+
+          <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
+            <Chip tone="gray" icon={Package} className="max-w-full">
+              <span className="sr-only">محصول: </span>
+              <span className="truncate">{comment.Product?.name || "—"}</span>
+            </Chip>
+            <Stars rating={comment.rating} />
+          </div>
+
+          <blockquote className="mt-3 break-words rounded-xl border-s-4 border-gray-200 bg-gray-50/80 px-4 py-3 text-sm leading-7 text-gray-700">{comment.text}</blockquote>
+
+          {hasReply && (
+            <div className="mt-3 rounded-xl bg-brand-50/60 p-3 ring-1 ring-brand-100">
+              <p className="flex items-center gap-1.5 text-xs font-bold text-brand-700">
+                <Reply className="h-3.5 w-3.5" aria-hidden="true" />
+                پاسخ مدیر
+                {comment.adminReplyAt && <span className="font-normal text-gray-400">· {formatDateTime(comment.adminReplyAt)}</span>}
               </p>
-              <p className="text-xs text-gray-400">
-                {formatDateTime(comment.createdAt)}
-              </p>
+              <p className="mt-1.5 break-words text-sm leading-7 text-gray-800">{comment.adminReply}</p>
             </div>
-          </div>
-          {/* وضعیت */}
-          {isApproved ? (
-            <span className="text-xs px-2 py-1 rounded-lg bg-green-100 text-green-700 flex items-center gap-1">
-              <CheckCircle2 size={13} />
-              تأیید شده
-            </span>
-          ) : (
-            <span className="text-xs px-2 py-1 rounded-lg bg-yellow-100 text-yellow-700 flex items-center gap-1">
-              <Clock size={13} />
-              در انتظار تأیید
-            </span>
-          )}
-        </div>
-
-        {/* محصول */}
-        <p className="text-xs text-gray-500 mb-1">
-          محصول: <span className="font-medium text-gray-700">{comment.Product?.name || "—"}</span>
-        </p>
-
-        {/* امتیاز */}
-        <div className="mb-2">
-          <StarDisplay rating={comment.rating} />
-        </div>
-
-        {/* متن نظر */}
-        <p className="text-sm text-gray-700 leading-relaxed mb-3 bg-white rounded-lg p-3 border border-gray-100">
-          {comment.text}
-        </p>
-
-        {/* پاسخ ادمین (اگه وجود داشته باشه) */}
-        {hasReply && (
-          <div className="mb-3 rounded-lg p-3 bg-indigo-50 border border-indigo-100">
-            <p className="text-xs font-semibold text-indigo-600 mb-1">پاسخ مدیر:</p>
-            <p className="text-sm text-indigo-800 leading-relaxed">{comment.adminReply}</p>
-          </div>
-        )}
-
-        {/* دکمه‌های اکشن */}
-        <div className="flex gap-2 justify-end mt-2 border-t pt-3">
-          {/* دکمه تأیید / پاسخ / ویرایش */}
-          {!isApproved ? (
-            <button
-              onClick={async () => {
-                if (approving) return;
-                setApproving(true);
-                try {
-                  await onApprove(comment.id);
-                } finally {
-                  setApproving(false);
-                }
-              }}
-              disabled={approving}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs transition cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
-              style={{ background: "linear-gradient(135deg,#16a34a,#15803d)", color: "#fff", boxShadow: "0 2px 8px rgba(22,163,74,.3)" }}
-              title="تأیید نظر"
-            >
-              {approving
-                ? <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin inline-block" />
-                : <Icon path={mdiCommentCheckOutline} size={0.75} />}
-              تأیید
-            </button>
-          ) : (
-            <button
-              onClick={() => setShowReplyDialog(true)}
-              className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs transition cursor-pointer ${hasReply
-                ? "bg-indigo-100 hover:bg-indigo-200 text-indigo-700"
-                : "bg-blue-600 hover:bg-blue-700 text-white"
-                }`}
-              title={hasReply ? "ویرایش پاسخ" : "پاسخ به نظر"}
-            >
-              <Icon path={replyIconPath} size={0.75} />
-              {hasReply ? "ویرایش پاسخ" : "پاسخ"}
-            </button>
           )}
 
-          {/* دکمه رد تأیید */}
-          <button
-            onClick={handleReject}
-            disabled={dissolving}
-            className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs transition cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
-            style={{ background: "linear-gradient(135deg,#dc2626,#b91c1c)", color: "#fff", boxShadow: "0 2px 8px rgba(220,38,38,.2)" }}
-            title="رد تأیید"
-          >
-            <Icon path={mdiCommentRemoveOutline} size={0.75} />
-            رد تأیید
-          </button>
+          <footer className="mt-4 flex flex-wrap items-center justify-end gap-2 border-t border-dashed border-gray-200 pt-4">
+            {!isApproved ? (
+              <button
+                type="button"
+                onClick={handleApprove}
+                disabled={approving}
+                title="تأیید نظر"
+                className="inline-flex h-10 cursor-pointer items-center gap-1.5 rounded-xl bg-emerald-700 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {approving ? (
+                  <span aria-hidden="true" className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent motion-reduce:animate-none" />
+                ) : (
+                  <CheckCheck className="h-[18px] w-[18px]" aria-hidden="true" />
+                )}
+                تأیید
+              </button>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setShowReplyDialog(true)}
+                  title={hasReply ? "ویرایش پاسخ" : "پاسخ به نظر"}
+                  className={`inline-flex h-10 cursor-pointer items-center gap-1.5 rounded-xl px-4 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 focus-visible:ring-offset-2 ${
+                    hasReply ? "bg-brand-50 text-brand-700 ring-1 ring-inset ring-brand-200 hover:bg-brand-100/70" : "bg-brand-600 text-white shadow-sm hover:bg-brand-700"
+                  }`}
+                >
+                  {hasReply ? <Pencil className="h-[18px] w-[18px]" aria-hidden="true" /> : <Reply className="h-[18px] w-[18px]" aria-hidden="true" />}
+                  {hasReply ? "ویرایش پاسخ" : "پاسخ"}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleReject}
+                  disabled={dissolving}
+                  title="رد تأیید"
+                  className="inline-flex h-10 cursor-pointer items-center gap-1.5 rounded-xl bg-white px-4 text-sm font-semibold text-red-600 ring-1 ring-inset ring-red-200 transition hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  <X className="h-[18px] w-[18px]" aria-hidden="true" />
+                  رد تأیید
+                </button>
+              </>
+            )}
+          </footer>
         </div>
-      </div>
+      </article>
 
-      {/* دیالوگ پاسخ */}
       {showReplyDialog && (
         <ReplyDialog
           comment={comment}
@@ -368,53 +350,32 @@ function CommentCard({ comment, onApprove, onReject, onReply, activeTab }) {
           }}
         />
       )}
-
-      <style jsx>{`
-        @keyframes dissolveOut {
-          0% {
-            opacity: 1;
-            transform: scale(1);
-            filter: blur(0px);
-          }
-          30% {
-            opacity: 0.8;
-            transform: scale(1.01);
-            filter: blur(1px);
-          }
-          100% {
-            opacity: 0;
-            transform: scale(0.95) translateY(-8px);
-            filter: blur(8px);
-            max-height: 0;
-            padding: 0;
-            margin: 0;
-          }
-        }
-      `}</style>
     </>
   );
 }
 
 // اسکلتون لودینگ
-function SkeletonCard() {
+function CommentSkeleton() {
   return (
-    <div className="border border-gray-200 rounded-xl p-4 bg-white animate-pulse">
-      <div className="flex items-center gap-2 mb-3">
-        <div className="w-9 h-9 rounded-full bg-gray-200" />
-        <div className="space-y-1 flex-1">
-          <div className="h-4 bg-gray-200 rounded w-1/3" />
-          <div className="h-3 bg-gray-100 rounded w-1/4" />
+    <div className="animate-pulse rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200/80" aria-hidden="true">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 rounded-full bg-gray-200" />
+          <div className="space-y-2">
+            <div className="h-4 w-32 rounded-full bg-gray-200" />
+            <div className="h-3 w-24 rounded-full bg-gray-100" />
+          </div>
         </div>
-        <div className="h-6 w-20 bg-gray-100 rounded-lg" />
+        <div className="h-6 w-24 rounded-full bg-gray-100" />
       </div>
-      <div className="h-3 bg-gray-100 rounded w-1/2 mb-2" />
-      <div className="flex gap-1 mb-2">
-        {[1, 2, 3, 4, 5].map(i => <div key={i} className="w-4 h-4 bg-gray-200 rounded" />)}
+      <div className="mt-4 flex gap-4">
+        <div className="h-6 w-36 rounded-full bg-gray-100" />
+        <div className="h-5 w-24 rounded-full bg-gray-100" />
       </div>
-      <div className="h-16 bg-gray-100 rounded-lg mb-3" />
-      <div className="flex gap-2 justify-end pt-3 border-t">
-        <div className="h-7 w-16 bg-gray-200 rounded-lg" />
-        <div className="h-7 w-16 bg-gray-200 rounded-lg" />
+      <div className="mt-3 h-16 rounded-xl bg-gray-100" />
+      <div className="mt-4 flex justify-end gap-2 border-t border-dashed border-gray-200 pt-4">
+        <div className="h-10 w-24 rounded-xl bg-gray-200" />
+        <div className="h-10 w-24 rounded-xl bg-gray-100" />
       </div>
     </div>
   );
@@ -424,13 +385,6 @@ export default function AdminComments() {
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("all");
-  const [typewriterKey, setTypewriterKey] = useState(0);
-
-  const tabs = [
-    { key: "all", label: "تمام نظرات", icon: mdiCommentAccountOutline, activeColor: "bg-indigo-600" },
-    { key: "approved", label: "نظرات تأیید شده", icon: mdiCommentCheckOutline, activeColor: "bg-green-600" },
-    { key: "pending", label: "نظرات تأیید نشده", icon: mdiCommentOffOutline, activeColor: "bg-amber-500" },
-  ];
 
   const fetchComments = async () => {
     try {
@@ -457,9 +411,7 @@ export default function AdminComments() {
         { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
       );
       toast.success("نظر تأیید شد");
-      setComments((prev) =>
-        prev.map((c) => (c.id === id ? { ...c, approved: true } : c))
-      );
+      setComments((prev) => prev.map((c) => (c.id === id ? { ...c, approved: true } : c)));
     } catch (err) {
       toast.error(err.response?.data?.error || "خطا در تأیید نظر");
     }
@@ -473,9 +425,7 @@ export default function AdminComments() {
         { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
       );
       toast.success("نظر از حالت تأیید خارج شد");
-      setComments((prev) =>
-        prev.map((c) => (c.id === id ? { ...c, approved: false, adminReply: null } : c))
-      );
+      setComments((prev) => prev.map((c) => (c.id === id ? { ...c, approved: false, adminReply: null } : c)));
     } catch (err) {
       toast.error(err.response?.data?.error || "خطا در رد تأیید نظر");
     }
@@ -483,17 +433,13 @@ export default function AdminComments() {
 
   const handleReply = async (id, reply) => {
     try {
-      const { data } = await axios.put(        // ← data رو دریافت کن
+      const { data } = await axios.put(
         "/api/admin/comments",
         { id, adminReply: reply },
         { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
       );
       setComments((prev) =>
-        prev.map((c) =>
-          c.id === id
-            ? { ...c, adminReply: reply, adminReplyAt: data.comment.adminReplyAt }  // ← adminReplyAt از response
-            : c
-        )
+        prev.map((c) => (c.id === id ? { ...c, adminReply: reply, adminReplyAt: data.comment.adminReplyAt } : c))
       );
     } catch (err) {
       toast.error(err.response?.data?.error || "خطا در ثبت پاسخ");
@@ -501,127 +447,76 @@ export default function AdminComments() {
     }
   };
 
+  const counts = useMemo(() => {
+    const approved = comments.filter((c) => c.approved).length;
+    return { all: comments.length, approved, pending: comments.length - approved };
+  }, [comments]);
+
   const filteredComments = comments.filter((c) => {
     if (activeTab === "approved") return c.approved;
     if (activeTab === "pending") return !c.approved;
     return true;
   });
 
-  // هر بار که تب عوض شد یا لود تموم شد، typewriter ری‌استارت بشه
-  useEffect(() => { setTypewriterKey((k) => k + 1); }, [activeTab, loading]);
+  const tabs = TAB_DEFS.map((t) => ({ ...t, count: counts[t.id] }));
+  const current = TAB_DEFS.find((t) => t.id === activeTab);
 
-  // برچسب زیرنویس هدر بر اساس تب فعال
-  const filterLabel = (() => {
-    if (activeTab === "approved") return { text: "نظر تأیید شده", color: "#16a34a" };
-    if (activeTab === "pending") return { text: "نظر در انتظار تأیید", color: "#d97706" };
-    return null;
-  })();
+  // حالت خالی هر تب؛ اگر تب دیگری نظر دارد، دکمهٔ رفتن به آن هم می‌آید (از «تأیید شده» به «تأیید نشده» و برعکس؛ اگر آن هم خالی بود به «همه»)
+  let empty = null;
+  if (!loading && filteredComments.length === 0) {
+    const e = EMPTY[activeTab];
+    const sibling = activeTab === "approved" ? "pending" : activeTab === "pending" ? "approved" : null;
+    const target = sibling && counts[sibling] > 0 ? TAB_DEFS.find((t) => t.id === sibling) : TAB_DEFS[0];
+    empty = (
+      <EmptyState
+        icon={e.icon}
+        title={e.title}
+        hint={e.hint}
+        action={
+          activeTab !== "all" && counts.all > 0 && (
+            <button
+              type="button"
+              onClick={() => setActiveTab(target.id)}
+              className="inline-flex h-10 cursor-pointer items-center gap-1.5 rounded-xl bg-gray-100 px-4 text-sm font-semibold text-gray-700 transition hover:bg-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300"
+            >
+              نمایش {target.id === "all" ? "همهٔ نظرها" : target.label} ({fa(counts[target.id])})
+            </button>
+          )
+        }
+      />
+    );
+  }
 
   return (
-    <div style={{ padding: "16px" }} dir="rtl">
-
-      <style>{`
-
-        /* ── کارت اصلی ── */
-        .comment-card {
-          background: #fff;
-          border-radius: 20px;
-          box-shadow: 0 4px 24px rgba(0,0,0,.08);
-          overflow: hidden;
-        }
-        .comment-card-body {
-          padding: 24px;
-        }
-
-        @keyframes pulse-scale {
-          0%, 100% { transform: scale(0.8); opacity: 0.5; }
-          50%       { transform: scale(1);   opacity: 1;   }
-        }
-      `}</style>
-
-      {/* ── هدر جدا — سبک لایت مشابه manage-users ── */}
+    <>
       <PageHeader
         icon={<Icon path={mdiAccountBoxEditOutline} size="22px" />}
         title="مدیریت نظرات کاربران"
         loading={loading}
-        subtitleKey={typewriterKey}
-        subtitleColor={filterLabel?.color}
-        subtitle={
-          filterLabel ? (
-            <><b>{filteredComments.length.toLocaleString("fa-IR")}</b> {filterLabel.text} یافت شد</>
-          ) : (
-            <><b>{comments.length.toLocaleString("fa-IR")}</b> نظر یافت شد</>
-          )
-        }
+        subtitleKey={activeTab}
+        subtitleColor={activeTab === "all" ? undefined : current.ink}
+        subtitle={<><b>{fa(filteredComments.length)}</b> {current.noun} یافت شد</>}
       />
 
-      {/* ── کارت اصلی ── */}
-      <div className="comment-card">
-        <div className="comment-card-body">
+      <SegmentedTabs label="وضعیت نظر" tabs={tabs} value={activeTab} onChange={setActiveTab} loading={loading} idPrefix="comments" panelId="comments-panel" />
 
-          {/* تب‌ها */}
-          <div className="flex justify-center gap-4 mb-6 flex-wrap">
-            {tabs.map((tab) => (
-              <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition cursor-pointer ${activeTab === tab.key ? tab.activeColor + " text-white shadow-md" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
-              >
-                <Icon path={tab.icon} size={0.85} />
-                {tab.label}
-                <span
-                  className={`text-xs px-1.5 py-0.5 rounded-full ${activeTab === tab.key ? "bg-white/20 text-white" : "bg-gray-200 text-gray-500"}`}
-                >
-                  {loading ? (
-                    <span style={{
-                      display: "inline-block",
-                      width: 10,
-                      height: 10,
-                      borderRadius: "50%",
-                      background: "currentColor",
-                      animation: "pulse-scale 1.2s ease-in-out infinite",
-                    }} />
-                  ) : (
-                    tab.key === "all"
-                      ? comments.length.toLocaleString("fa-IR")
-                      : tab.key === "approved"
-                        ? comments.filter((c) => c.approved).length.toLocaleString("fa-IR")
-                        : comments.filter((c) => !c.approved).length.toLocaleString("fa-IR")
-                  )}
-                </span>
-              </button>
+      <div id="comments-panel" role="tabpanel" aria-labelledby={`comments-tab-${activeTab}`} aria-busy={loading || undefined} className="mt-4">
+        {loading ? (
+          <div className="space-y-3">
+            {[0, 1, 2].map((i) => (
+              <CommentSkeleton key={i} />
             ))}
           </div>
-
-          {/* محتوا */}
-          {loading ? (
-            <div className="space-y-4">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <SkeletonCard key={i} />
-              ))}
-            </div>
-          ) : filteredComments.length === 0 ? (
-            <div className="text-center py-20 text-gray-400">
-              <Icon path={mdiCommentAccountOutline} size={3} className="mx-auto mb-3 opacity-30" />
-              <p>هیچ نظری در این دسته وجود ندارد</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {filteredComments.map((comment) => (
-                <CommentCard
-                  key={comment.id}
-                  comment={comment}
-                  activeTab={activeTab}
-                  onApprove={handleApprove}
-                  onReject={handleReject}
-                  onReply={handleReply}
-                />
-              ))}
-            </div>
-          )}
-
-        </div>
+        ) : empty ? (
+          <ListCard>{empty}</ListCard>
+        ) : (
+          <div key={activeTab} className="space-y-3">
+            {filteredComments.map((comment, i) => (
+              <CommentCard key={comment.id} comment={comment} index={i} activeTab={activeTab} onApprove={handleApprove} onReject={handleReject} onReply={handleReply} />
+            ))}
+          </div>
+        )}
       </div>
-    </div>
+    </>
   );
 }

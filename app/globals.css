@@ -654,6 +654,14 @@ main {
    فقط حالت روشن (سایت حالت تیره ندارد). یک سری داده = رنگ برند. وضعیت سفارش از پالت وضعیت می‌آید: تحویل‌شده سبز، مرجوع قرمز، جاری آبی،
    و «منتظر پرداخت» که سفارش ناتمام است و هشدار نیست، خاکستری خنثی (زرد هشدار از باند روشنایی پالت بیرون است). رنگ هیچ‌جا تنها حامل معنی نیست:
    کنار هر رنگ آیکون و برچسب هست. متن‌ها از رنگ‌های متن (ink) هستند، نه رنگ سری. */
+/* رنگ وضعیت سفارش‌ها روی :root است تا هر جای پنل (داشبورد، صفحهٔ سفارش‌ها، چیپ‌ها و تب‌ها) همان رنگ را بدهد، نه فقط زیر .dash-viz */
+:root {
+  --viz-st-delivered: #0ca30c;
+  --viz-st-processing: #2a78d6;
+  --viz-st-returned: #d03b3b;
+  --viz-st-pending: #85847e;
+}
+
 .dash-viz {
   --viz-surface: #ffffff;
   --viz-ink: #1f2937;
@@ -662,10 +670,6 @@ main {
   --viz-grid: #ececea;
   --viz-axis: #d6d5d0;
   --viz-series: var(--color-brand-600);
-  --viz-st-delivered: #0ca30c;
-  --viz-st-processing: #2a78d6;
-  --viz-st-returned: #d03b3b;
-  --viz-st-pending: #85847e;
   --viz-good-text: #006300;
   --viz-bad-text: #d03b3b;
   --viz-sev-critical: #d03b3b;
@@ -970,6 +974,11 @@ main {
   to { opacity: 1; transform: none; }
 }
 
+@keyframes comment-dissolve {
+  0% { opacity: 1; transform: none; filter: blur(0); }
+  100% { opacity: 0; transform: scale(0.96) translateY(-8px); filter: blur(6px); }
+}
+
 @keyframes icon-write {
   0%, 100% { transform: translate(0, 0) rotate(0deg); }
   25% { transform: translate(-2px, -2px) rotate(-10deg); }
@@ -1005,6 +1014,10 @@ main {
   }
   .admin-row-in {
     animation: admin-row-in 0.28s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+  /* کارت نظر وقتی از تب «تأیید شده» بیرون می‌رود (رد تأیید): ۰٫۶ ثانیه کوچک و محو می‌شود؛ باید بعد از .admin-row-in بیاید و با تأخیر رد در comments/page.jsx یکی باشد */
+  .comment-dissolve {
+    animation: comment-dissolve 0.6s ease-out forwards;
   }
 
   .icon-action:hover .icon-write {
