@@ -744,11 +744,20 @@ main {
   --viz-grid: #ececea;
   --viz-axis: #d6d5d0;
   --viz-series: var(--color-brand-600);
+  /* خط میانگین (بنفش) و بهترین روز (کهربایی) روی نمودار فروش؛ همان رنگ کاشی کارت‌های خلاصهٔ بالای نمودار. همان violet-600 و amber-600 تیلویند که تیک و کاشی کارت‌ها هم دارند، پس رنگ کارت و خط دقیقاً یکی است؛ هر سه رنگ (با صورتیِ سری) در validate_palette عبور کرده‌اند */
+  --viz-avg: var(--color-violet-600);
+  --viz-best: var(--color-amber-600);
   --viz-good-text: #006300;
   --viz-bad-text: #d03b3b;
   --viz-sev-critical: #d03b3b;
   --viz-sev-serious: #ec835a;
   --viz-sev-warning: #fab219;
+}
+
+/* لایه‌های نمودار فروش (SalesChart.jsx؛ کارت‌های بالا روشن/خاموششان می‌کنند): خاموش یعنی کاملاً شفاف و بی‌پاسخ به موس. محو شدن فقط بدون «کاهش حرکت» نرم است */
+.chart-layer[data-off] {
+  opacity: 0;
+  pointer-events: none;
 }
 
 @keyframes dash-draw {
@@ -769,7 +778,7 @@ main {
 /* حرکت نمودارها شروع نمی‌شود مگر آنکه خود نمودار به صفحه برسد (useReveal صفت data-in را روی ریشهٔ نمودار می‌گذارد): آنچه پایین صفحه است هنگام اسکرول جلوی
    چشم کشیده می‌شود. پیش از آن، حالت اولیهٔ «ناپیدا» در همین بلوک است؛ پس با «کاهش حرکت» همه‌چیز از اول کامل و ثابت دیده می‌شود */
 @keyframes dash-wipe {
-  from { clip-path: inset(0 0 0 100%); }
+  from { clip-path: inset(0 100% 0 0); }
   to { clip-path: inset(0 0 0 0); }
 }
 
@@ -835,7 +844,7 @@ main {
     animation: dash-draw 1.1s cubic-bezier(0.4, 0, 0.2, 1) both;
   }
   .dash-area {
-    clip-path: inset(0 0 0 100%);
+    clip-path: inset(0 100% 0 0);
   }
   [data-in] .dash-area {
     animation: dash-wipe 1.1s cubic-bezier(0.4, 0, 0.2, 1) both;
@@ -844,9 +853,20 @@ main {
     opacity: 0;
   }
   [data-in] .dash-peak {
-    animation: dash-fade 0.4s ease-out 1s both;
+    animation: dash-fade 0.4s ease-out var(--peak-delay, 1s) both;
   }
-  /* ضربان دوره‌ای: ساعت مشترک usePulseClock هر ۳٫۶ ثانیه data-pulse را برای یک ضربان روی <html> می‌گذارد؛ حلقهٔ اوج و حلقهٔ چیپ «ناموجود» همان‌جا یک‌بار می‌زنند.
+  /* لایه‌ها نرم محو می‌شوند و خط‌های میانگین و بهترین روز هنگام ورود، مثل ناحیهٔ نمودار، از راست پاک‌شده‌وار باز می‌شوند (تأخیر از --wipe-delay: بار اول بعد از منحنی،
+     روشن‌شدن دوباره فوری) */
+  .chart-layer {
+    transition: opacity 0.35s ease;
+  }
+  .chart-wipe {
+    clip-path: inset(0 100% 0 0);
+  }
+  [data-in] .chart-wipe {
+    animation: dash-wipe 0.9s cubic-bezier(0.4, 0, 0.2, 1) var(--wipe-delay, 0s) both;
+  }
+  /* ضربان دوره‌ای: ساعت مشترک usePulseClock هر ۲٫۴ ثانیه data-pulse را برای یک ضربان روی <html> می‌گذارد؛ حلقهٔ اوج و حلقهٔ چیپ «ناموجود» همان‌جا یک‌بار می‌زنند.
      مدت ۱٫۶ ثانیه باید با PULSE_MS در usePulseClock.js یکی باشد. بیرون از این پنجره هیچ انیمیشنی اجرا نمی‌شود */
   :where([data-pulse]) .dash-ping {
     transform-box: fill-box;

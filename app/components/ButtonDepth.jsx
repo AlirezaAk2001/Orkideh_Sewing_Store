@@ -55,17 +55,32 @@ function setFace(el) {
   el.style.setProperty("--face", composite(layersOf(el)));
 }
 
-// کمترین فاصلهٔ افقی تا همسایهٔ هم‌ردیف (قبلی و بعدی)؛ با offset* چون ترنسفورم هاور همسایه‌ای که تازه موس را از آن برداشته‌ایم اندازه‌گیری را عوض نمی‌کند
+// کمترین فاصلهٔ افقی تا همسایهٔ هم‌ردیف. دکمه‌های هم‌سطح (تب‌ها) با offset* سنجیده می‌شوند چون ترنسفورم هاور همسایه‌ای که تازه موس را از آن برداشته‌ایم اندازه‌گیری را عوض
+// نمی‌کند. دکمه‌ای که تنها فرزند پدرش است (مثل دکمهٔ داخل <li> در کارت‌های خلاصهٔ نمودار) همسایه‌ای ندارد؛ آن‌وقت همسایهٔ پدر و تا سه سطح بالاتر حساب می‌شود (با
+// getBoundingClientRect، چون خود آن‌ها ترنسفورم ندارند)
 function neighbourGap(el) {
-  let gap = Infinity;
-  for (const sb of [el.previousElementSibling, el.nextElementSibling]) {
-    if (!sb || !sb.offsetWidth || !sb.offsetParent || sb.offsetParent !== el.offsetParent) continue;
-    const overlapY = Math.min(el.offsetTop + el.offsetHeight, sb.offsetTop + sb.offsetHeight) - Math.max(el.offsetTop, sb.offsetTop);
-    if (overlapY < 2) continue;
-    const g = sb.offsetLeft >= el.offsetLeft ? sb.offsetLeft - (el.offsetLeft + el.offsetWidth) : el.offsetLeft - (sb.offsetLeft + sb.offsetWidth);
-    if (g >= -0.5) gap = Math.min(gap, Math.max(0, g));
+  const r = el.getBoundingClientRect();
+  let node = el;
+  for (let up = 0; up < 3 && node && node !== document.body; up++, node = node.parentElement) {
+    let gap = Infinity;
+    for (const sb of [node.previousElementSibling, node.nextElementSibling]) {
+      if (!sb || !sb.offsetWidth) continue;
+      let g;
+      if (up === 0) {
+        if (!sb.offsetParent || sb.offsetParent !== el.offsetParent) continue;
+        const overlapY = Math.min(el.offsetTop + el.offsetHeight, sb.offsetTop + sb.offsetHeight) - Math.max(el.offsetTop, sb.offsetTop);
+        if (overlapY < 2) continue;
+        g = sb.offsetLeft >= el.offsetLeft ? sb.offsetLeft - (el.offsetLeft + el.offsetWidth) : el.offsetLeft - (sb.offsetLeft + sb.offsetWidth);
+      } else {
+        const q = sb.getBoundingClientRect();
+        if (Math.min(r.bottom, q.bottom) - Math.max(r.top, q.top) < 2) continue;
+        g = Math.max(q.left - r.right, r.left - q.right);
+      }
+      if (g >= -0.5) gap = Math.min(gap, Math.max(0, g));
+    }
+    if (gap !== Infinity) return gap;
   }
-  return gap;
+  return Infinity;
 }
 
 function setScale(el) {

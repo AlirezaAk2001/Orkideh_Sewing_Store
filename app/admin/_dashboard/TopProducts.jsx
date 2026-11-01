@@ -44,7 +44,7 @@ export default function TopProducts({ items }) {
           </div>
           <div
             role="tooltip"
-            className="pointer-events-none invisible absolute bottom-full start-0 z-10 mb-1 w-56 max-w-full rounded-lg bg-white p-2.5 text-xs opacity-0 shadow-lg ring-1 ring-gray-200 transition-opacity group-focus-within:visible group-focus-within:opacity-100 group-hover:visible group-hover:opacity-100"
+            className="pointer-events-none invisible absolute bottom-full left-1/2 z-10 mb-1 w-56 -translate-x-1/2 max-w-full rounded-lg bg-white p-2.5 text-xs opacity-0 shadow-lg ring-1 ring-gray-200 transition-opacity group-focus-within:visible group-focus-within:opacity-100 group-hover:visible group-hover:opacity-100"
           >
             <p className="font-semibold text-gray-900">{p.name}</p>
             <p className="mt-1 text-gray-500">

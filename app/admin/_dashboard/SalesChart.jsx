@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
-import { CalendarCheck, ChartLine, ChartNoAxesColumn, Crown, Sigma, Table2, TrendingDown, TrendingUp } from "lucide-react";
+import { CalendarCheck, Check, ChartLine, ChartNoAxesColumn, Crown, Sigma, Table2, TrendingDown, TrendingUp } from "lucide-react";
 import { Empty } from "./Panel";
 import { compactText, dayLong, dayShort, fa, niceScale, rtl } from "./format";
 import { useReveal } from "@/app/admin/_ui/useReveal";
@@ -9,13 +9,13 @@ import { useSegmentSlide } from "@/app/admin/_ui/useSegmentSlide";
 import { usePulseClock } from "@/app/admin/_ui/usePulseClock";
 
 // نمودار فروش روزانه (یک سری → منحنی نرم + ناحیهٔ شیب‌دار به رنگ برند، بدون legend چون عنوان پنل همین را می‌گوید).
-// صفحه راست‌به‌چپ است، پس زمان هم راست‌به‌چپ می‌رود: قدیمی‌ترین روز سمت راست و امروز سمت چپ، و محور عمودی کنار راست.
+// جهت نمودار به خواست مالک چپ‌به‌راست است (جهت استاندارد نمودار): قدیمی‌ترین روز سمت چپ و امروز سمت راست، و محور عمودی با مبدأ پایین-چپ کنار چپ. نوشتهٔ برچسب‌ها فارسی و راست‌به‌چپ می‌ماند.
 // بالای نمودار نوار خلاصه (مجموع، میانگین روزانه که خط‌چین آن هم روی نمودار است، و بهترین روز) و روی نمودار نشانگر اوج با حلقهٔ ضربان‌دار است.
 // هر مقدار از سه راه در دسترس است: tooltip با موس/لمس (با تغییر نسبت به روز قبل)، همان tooltip با کلیدهای جهت‌دار، و نمای جدول با نوار داده.
 // حرکت (کشیده‌شدن خط، باز شدن ناحیه) وقتی شروع می‌شود که نمودار به صفحه برسد. ارتفاع: روی صفحهٔ پهن کمی بلندتر (هم‌قد پنل کناری)، روی گوشی کوتاه‌تر
 const H_WIDE = 364;
 const H_NARROW = 240;
-const PAD = { top: 18, right: 54, bottom: 30, left: 10 };
+const PAD = { top: 18, right: 10, bottom: 30, left: 54 };
 const TIP_W = 192;
 const TIP_H = 112;
 
@@ -98,51 +98,87 @@ export function ViewToggle({ view, setView }) {
   );
 }
 
-// سه عدد مهم دوره، بالای نمودار: مجموع، میانگین هر روز (با نمونهٔ خط‌چین همان خط روی نمودار) و بهترین روز
-function SummaryStrip({ stats, daily }) {
+// سه عدد مهم دوره، بالای نمودار: مجموع، میانگین هر روز و بهترین روز. در نمای نمودار هر کارت یک دکمهٔ روشن/خاموش است که لایهٔ خودش را روی نمودار نشان می‌دهد
+// یا پنهان می‌کند (مجموع = منحنی فروش روزانه که جمعش همین عدد است، میانگین = خط‌چین بنفش، بهترین روز = نشانگر و خط نقطه‌چین کهربایی). رنگ و شکل خط هر لایه
+// روی کارتش هم هست (نمونه‌خط کنار عنوان و دایرهٔ تیک)، پس رنگ تنها معنی نمی‌رساند. در نمای جدول کارت‌ها فقط نمایش‌اند (layers خالی)
+const TONES = {
+  total: { tile: "bg-brand-50 text-brand-600 ring-brand-100", on: "ring-2 ring-brand-500/45", check: "bg-brand-600", stroke: "var(--viz-series)" },
+  avg: { tile: "bg-violet-50 text-violet-600 ring-violet-100", on: "ring-2 ring-violet-300", check: "bg-violet-600", stroke: "var(--viz-avg)" },
+  best: { tile: "bg-amber-50 text-amber-600 ring-amber-100", on: "ring-2 ring-amber-300", check: "bg-amber-600", stroke: "var(--viz-best)" },
+};
+
+// نمونهٔ خط هر لایه همان‌طور که روی نمودار کشیده می‌شود: منحنی پیوسته، خط‌چین، نقطه‌چین با نشانگر
+function Swatch({ kind, on }) {
+  const c = on ? TONES[kind].stroke : "var(--color-gray-300)";
+  return (
+    <svg width="26" height="8" viewBox="0 0 26 8" aria-hidden="true" className="shrink-0">
+      {kind === "total" && <path d="M1 6.2 C 6 6.2, 8 2, 13 3.2 S 20 1.8, 25 1.8" fill="none" stroke={c} strokeWidth="2.2" strokeLinecap="round" />}
+      {kind === "avg" && <line x1="1" x2="25" y1="4" y2="4" stroke={c} strokeWidth="1.8" strokeDasharray="5 3.5" strokeLinecap="round" />}
+      {kind === "best" && (
+        <>
+          <line x1="1" x2="19" y1="4" y2="4" stroke={c} strokeWidth="1.8" strokeDasharray="0.1 4.2" strokeLinecap="round" />
+          <circle cx="22.5" cy="4" r="2.6" fill={c} />
+        </>
+      )}
+    </svg>
+  );
+}
+
+function SummaryStrip({ stats, daily, layers = null, onToggle }) {
   const best = stats.peak >= 0 ? daily[stats.peak] : null;
-  const item = "flex min-w-0 items-center gap-3 rounded-xl bg-gradient-to-l from-gray-50 to-white px-3 py-2.5 ring-1 ring-gray-100";
-  const badge = "grid h-9 w-9 shrink-0 place-items-center rounded-xl ring-1";
+  const cards = [
+    { id: "total", label: "مجموع فروش", value: stats.total, icon: Sigma },
+    { id: "avg", label: "میانگین هر روز", value: stats.avg, icon: TrendingUp },
+    { id: "best", label: `بهترین روز${best ? `: ${dayShort(best.date)}` : ""}`, value: stats.max, icon: Crown },
+  ];
+  const card = "flex w-full min-w-0 items-center gap-3 rounded-xl bg-gradient-to-l from-gray-50 to-white px-3 py-2.5 text-start";
+  const badge = "grid h-9 w-9 shrink-0 place-items-center rounded-xl ring-1 transition";
   return (
     <ul className="mb-4 grid grid-cols-1 gap-2 sm:grid-cols-3" aria-label="خلاصهٔ فروش دوره">
-      <li className={item}>
-        <span className={`${badge} bg-brand-50 text-brand-600 ring-brand-100`}>
-          <Sigma className="h-[18px] w-[18px]" aria-hidden="true" />
-        </span>
-        <span className="min-w-0">
-          <span className="block text-xs text-gray-500">مجموع فروش</span>
-          <span className="block truncate text-sm font-extrabold text-gray-900">
-            {fa(Math.round(stats.total))} <span className="text-xs font-medium text-gray-500">تومان</span>
-          </span>
-        </span>
-      </li>
-      <li className={item}>
-        <span className={`${badge} bg-violet-50 text-violet-600 ring-violet-100`}>
-          <TrendingUp className="h-[18px] w-[18px]" aria-hidden="true" />
-        </span>
-        <span className="min-w-0">
-          <span className="flex items-center gap-1.5 text-xs text-gray-500">
-            میانگین هر روز
-            <svg width="18" height="4" viewBox="0 0 18 4" aria-hidden="true">
-              <line x1="0" x2="18" y1="2" y2="2" stroke="var(--viz-ink-3)" strokeWidth="1.5" strokeDasharray="4 3" />
-            </svg>
-          </span>
-          <span className="block truncate text-sm font-extrabold text-gray-900">
-            {fa(Math.round(stats.avg))} <span className="text-xs font-medium text-gray-500">تومان</span>
-          </span>
-        </span>
-      </li>
-      <li className={item}>
-        <span className={`${badge} bg-amber-50 text-amber-600 ring-amber-100`}>
-          <Crown className="h-[18px] w-[18px]" aria-hidden="true" />
-        </span>
-        <span className="min-w-0">
-          <span className="block text-xs text-gray-500">بهترین روز{best ? `: ${dayShort(best.date)}` : ""}</span>
-          <span className="block truncate text-sm font-extrabold text-gray-900">
-            {fa(Math.round(stats.max))} <span className="text-xs font-medium text-gray-500">تومان</span>
-          </span>
-        </span>
-      </li>
+      {cards.map(({ id, label, value, icon: Icon }) => {
+        const t = TONES[id];
+        const on = !layers || layers[id];
+        const body = (
+          <>
+            <span className={`${badge} ${t.tile} ${on ? "" : "opacity-50 grayscale"}`}>
+              <Icon className="h-[18px] w-[18px]" aria-hidden="true" />
+            </span>
+            <span className={`min-w-0 flex-1 transition-opacity ${on ? "" : "opacity-55"}`}>
+              <span className="flex items-center gap-1.5 text-xs text-gray-500">
+                {label}
+                {layers && <Swatch kind={id} on={on} />}
+              </span>
+              <span className="block truncate text-sm font-extrabold text-gray-900">
+                {fa(Math.round(value))} <span className="text-xs font-medium text-gray-500">تومان</span>
+              </span>
+            </span>
+            {layers && (
+              <span
+                aria-hidden="true"
+                className={`grid h-[18px] w-[18px] shrink-0 place-items-center rounded-full transition-colors ${on ? `${t.check} text-white` : "bg-white text-transparent ring-1 ring-inset ring-gray-300"}`}
+              >
+                <Check className="h-3 w-3" strokeWidth={3.2} />
+              </span>
+            )}
+          </>
+        );
+        return (
+          <li key={id}>
+            {layers ? (
+              <button
+                type="button"
+                aria-pressed={on}
+                onClick={() => onToggle(id)}
+                className={`${card} cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 ${on ? t.on : "ring-1 ring-gray-200"}`}
+              >
+                {body}
+              </button>
+            ) : (
+              <div className={`${card} ring-1 ring-gray-100`}>{body}</div>
+            )}
+          </li>
+        );
+      })}
     </ul>
   );
 }
@@ -197,6 +233,9 @@ export default function SalesChart({ daily, view }) {
   const [revealRef, shown] = useReveal();
   const H = width < 480 ? H_NARROW : H_WIDE;
   const [active, setActive] = useState(null);
+  // لایه‌های نمودار که کارت‌های بالا روشن/خاموششان می‌کنند؛ plays با هر روشن‌شدنِ دوباره بالا می‌رود تا ورود لایه (کشیده‌شدن) از نو اجرا شود
+  const [layers, setLayers] = useState({ total: true, avg: true, best: true });
+  const [plays, setPlays] = useState({ total: 0, avg: 0, best: 0 });
   const svgRef = useRef(null);
   const descId = useId();
   const gid = `sc${useId().replace(/:/g, "")}`;
@@ -209,7 +248,13 @@ export default function SalesChart({ daily, view }) {
     const orders = daily.reduce((a, d) => a + d.orders, 0);
     return { max, total, orders, avg: n ? total / n : 0, peak: max > 0 ? revenues.indexOf(max) : -1, scale: niceScale(max) };
   }, [daily, n]);
-  usePulseClock(stats.peak >= 0 && view === "chart"); // حلقهٔ نشانگر اوج هر چند ثانیه یک‌بار می‌زند
+  usePulseClock(stats.peak >= 0 && view === "chart" && layers.best); // حلقهٔ نشانگر اوج هر چند ثانیه یک‌بار می‌زند
+  const toggle = (id) => {
+    if (!layers[id]) setPlays((p) => ({ ...p, [id]: p[id] + 1 }));
+    if (id === "total" && layers.total) setActive(null); // بدون منحنی، tooltip روز معنی ندارد
+    setLayers((l) => ({ ...l, [id]: !l[id] }));
+  };
+  const nothing = !layers.total && !layers.avg && !layers.best;
 
   if (stats.total === 0) {
     return (
@@ -233,7 +278,7 @@ export default function SalesChart({ daily, view }) {
   const plotW = Math.max(0, width - PAD.left - PAD.right);
   const plotH = H - PAD.top - PAD.bottom;
   const stepX = n > 1 ? plotW / (n - 1) : 0;
-  const x = (i) => PAD.left + plotW - i * stepX;
+  const x = (i) => PAD.left + i * stepX;
   const y = (v) => PAD.top + plotH - (v / stats.scale.max) * plotH;
   const ticks = Array.from({ length: Math.round(stats.scale.max / stats.scale.step) + 1 }, (_, k) => k * stats.scale.step);
   const line = smoothPath(daily.map((d, i) => [x(i), y(d.revenue)]));
@@ -245,16 +290,16 @@ export default function SalesChart({ daily, view }) {
 
   const at = (clientX) => {
     const rect = svgRef.current.getBoundingClientRect();
-    const i = Math.round((PAD.left + plotW - (clientX - rect.left)) / (stepX || 1));
+    const i = Math.round((clientX - rect.left - PAD.left) / (stepX || 1));
     return Math.min(n - 1, Math.max(0, i));
   };
 
   const onKeyDown = (e) => {
     const cur = active ?? n - 1;
-    // ArrowLeft به سمت امروز (چپ) می‌رود و ArrowRight به سمت روزهای قدیمی (راست)
-    const next = { ArrowLeft: cur + 1, ArrowRight: cur - 1, Home: 0, End: n - 1 }[e.key];
+    // ArrowRight به سمت امروز (راست) می‌رود و ArrowLeft به سمت روزهای قدیمی (چپ)
+    const next = { ArrowRight: cur + 1, ArrowLeft: cur - 1, Home: 0, End: n - 1 }[e.key];
     if (e.key === "Escape") return setActive(null);
-    if (next === undefined) return;
+    if (next === undefined || !layers.total) return;
     e.preventDefault();
     setActive(Math.min(n - 1, Math.max(0, next)));
   };
@@ -276,7 +321,7 @@ export default function SalesChart({ daily, view }) {
 
   return (
     <div ref={wrapRef}>
-      <SummaryStrip stats={stats} daily={daily} />
+      <SummaryStrip stats={stats} daily={daily} layers={layers} onToggle={toggle} />
       <div
         ref={revealRef}
         data-in={shown ? "" : undefined}
@@ -286,7 +331,7 @@ export default function SalesChart({ daily, view }) {
         aria-label={`نمودار فروش روزانه؛ با کلیدهای چپ و راست روی روزها بروید`}
         aria-describedby={descId}
         onKeyDown={onKeyDown}
-        onFocus={() => setActive((v) => v ?? n - 1)}
+        onFocus={() => layers.total && setActive((v) => v ?? n - 1)}
         onBlur={() => setActive(null)}
       >
         <span id={descId} className="sr-only" aria-live="polite">
@@ -300,8 +345,8 @@ export default function SalesChart({ daily, view }) {
             viewBox={`0 0 ${width} ${H}`}
             style={{ direction: "ltr", display: "block", touchAction: "pan-y" }}
             aria-hidden="true"
-            onPointerMove={(e) => setActive(at(e.clientX))}
-            onPointerDown={(e) => setActive(at(e.clientX))}
+            onPointerMove={(e) => layers.total && setActive(at(e.clientX))}
+            onPointerDown={(e) => layers.total && setActive(at(e.clientX))}
             onPointerLeave={(e) => e.pointerType === "mouse" && setActive(null)}
           >
             <defs>
@@ -327,52 +372,84 @@ export default function SalesChart({ daily, view }) {
                   strokeWidth="1"
                   strokeDasharray={t === 0 ? undefined : "3 5"}
                 />
-                <text x={PAD.left + plotW + 8} y={y(t)} dy="0.32em" fontSize="11" fill="var(--viz-ink-3)">{t === 0 ? fa(0) : rtl(compactText(t))}</text>
+                <text x={PAD.left - 8} y={y(t)} dy="0.32em" textAnchor="end" fontSize="11" fill="var(--viz-ink-3)">{t === 0 ? fa(0) : rtl(compactText(t))}</text>
               </g>
             ))}
             {labelIdx.map((i) => {
               const px = x(i);
-              const anchor = px < 34 ? "start" : px > PAD.left + plotW - 34 ? "end" : "middle";
+              const anchor = px < PAD.left + 34 ? "start" : px > PAD.left + plotW - 34 ? "end" : "middle";
               return (
                 <text key={i} x={px} y={H - 8} textAnchor={anchor} fontSize="11" fill="var(--viz-ink-3)">{rtl(dayShort(daily[i].date))}</text>
               );
             })}
 
+            {/* هر لایه در یک <g> با key جداست: خاموش شدن محو می‌شود و روشن‌شدن دوباره آن را از نو (کشیده‌شدن از چپ) می‌سازد. rect بی‌رنگ کادر لایه را
+                به اندازهٔ ناحیهٔ نمودار می‌کند تا افکت پاک‌شده‌وار (clip-path) روی خط‌های بی‌ارتفاع هم درست کار کند */}
             {n > 1 && (
-              <line
-                x1={PAD.left}
-                x2={PAD.left + plotW}
-                y1={y(stats.avg)}
-                y2={y(stats.avg)}
-                stroke="var(--viz-ink-3)"
-                strokeOpacity="0.7"
-                strokeWidth="1.25"
-                strokeDasharray="5 4"
-              />
-            )}
-
-            <path className="dash-area" d={area} fill={`url(#${gid}a)`} />
-            <path
-              className="dash-line"
-              d={line}
-              pathLength="1"
-              fill="none"
-              stroke="var(--viz-series)"
-              strokeWidth="2.5"
-              strokeLinejoin="round"
-              strokeLinecap="round"
-              style={{ filter: "drop-shadow(0 4px 5px color-mix(in srgb, var(--viz-series) 38%, transparent))" }}
-            />
-
-            {stats.peak >= 0 && active !== stats.peak && (
-              <g className="dash-peak" pointerEvents="none">
-                <circle className="dash-ping" cx={peakX} cy={peakY} r="5" fill="var(--viz-series)" fillOpacity="0.45" />
-                <circle cx={peakX} cy={peakY} r="5" fill="var(--viz-series)" stroke="var(--viz-surface)" strokeWidth="2.5" />
-                <rect x={pillX - pillW / 2} y={pillY} width={pillW} height="22" rx="11" fill="var(--viz-ink)" />
-                <text x={pillX} y={pillY + 11} dy="0.35em" textAnchor="middle" fontSize="11" fontWeight="700" fill="#fff">
-                  {rtl(peakText)}
+              <g
+                key={`avg${plays.avg}`}
+                className="chart-layer chart-wipe"
+                data-layer="avg"
+                data-off={layers.avg ? undefined : ""}
+                style={{ "--wipe-delay": plays.avg ? "0s" : "0.9s" }}
+                pointerEvents="none"
+              >
+                <rect x={PAD.left} y={PAD.top} width={plotW} height={plotH} fill="none" />
+                <line x1={PAD.left} x2={PAD.left + plotW} y1={y(stats.avg)} y2={y(stats.avg)} stroke="var(--viz-avg)" strokeOpacity="0.9" strokeWidth="1.5" strokeDasharray="5 4" />
+                <rect x={PAD.left + plotW - 50} y={y(stats.avg) - 8} width="46" height="16" rx="8" fill="var(--viz-avg)" />
+                <text x={PAD.left + plotW - 27} y={y(stats.avg)} dy="0.35em" textAnchor="middle" fontSize="10" fontWeight="700" fill="#fff">
+                  {rtl("میانگین")}
                 </text>
               </g>
+            )}
+
+            {stats.peak >= 0 && (
+              <g
+                key={`bestline${plays.best}`}
+                className="chart-layer chart-wipe"
+                data-layer="best-line"
+                data-off={layers.best ? undefined : ""}
+                style={{ "--wipe-delay": plays.best ? "0s" : "0.9s" }}
+                pointerEvents="none"
+              >
+                <rect x={PAD.left} y={PAD.top} width={plotW} height={plotH} fill="none" />
+                <line x1={PAD.left} x2={PAD.left + plotW} y1={peakY} y2={peakY} stroke="var(--viz-best)" strokeOpacity="0.75" strokeWidth="1.5" strokeDasharray="1.5 5" strokeLinecap="round" />
+                <line x1={peakX} x2={peakX} y1={peakY} y2={y(0)} stroke="var(--viz-best)" strokeOpacity="0.5" strokeWidth="1.5" strokeDasharray="1.5 5" strokeLinecap="round" />
+              </g>
+            )}
+
+            <g key={`total${plays.total}`} className="chart-layer" data-layer="total" data-off={layers.total ? undefined : ""}>
+              <path className="dash-area" d={area} fill={`url(#${gid}a)`} />
+              <path
+                className="dash-line"
+                d={line}
+                pathLength="1"
+                fill="none"
+                stroke="var(--viz-series)"
+                strokeWidth="2.5"
+                strokeLinejoin="round"
+                strokeLinecap="round"
+                style={{ filter: "drop-shadow(0 4px 5px color-mix(in srgb, var(--viz-series) 38%, transparent))" }}
+              />
+            </g>
+
+            {stats.peak >= 0 && active !== stats.peak && (
+              <g key={`best${plays.best}`} className="chart-layer" data-layer="best" data-off={layers.best ? undefined : ""} pointerEvents="none">
+                <g className="dash-peak" style={{ "--peak-delay": plays.best ? "0s" : "1s" }}>
+                  <circle className="dash-ping" cx={peakX} cy={peakY} r="5" fill="var(--viz-best)" fillOpacity="0.45" />
+                  <circle cx={peakX} cy={peakY} r="5" fill="var(--viz-best)" stroke="var(--viz-surface)" strokeWidth="2.5" />
+                  <rect x={pillX - pillW / 2} y={pillY} width={pillW} height="22" rx="11" fill="var(--viz-ink)" />
+                  <text x={pillX} y={pillY + 11} dy="0.35em" textAnchor="middle" fontSize="11" fontWeight="700" fill="#fff">
+                    {rtl(peakText)}
+                  </text>
+                </g>
+              </g>
+            )}
+
+            {nothing && (
+              <text x={PAD.left + plotW / 2} y={PAD.top + plotH / 2} textAnchor="middle" fontSize="12" fill="var(--viz-ink-3)">
+                {rtl("یکی از کارت‌های بالا را روشن کنید تا روی نمودار دیده شود")}
+              </text>
             )}
 
             {a && (
