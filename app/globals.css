@@ -216,6 +216,19 @@ main {
 .discount-chip--card {
   --chip: 3rem;
 }
+/* حالت جدول و کارت ادمین (products/page.jsx DiscountChip): همان سکه و همان برق، ولی در جریان صفحه (نه روی عکس) و بدون z-index بالا. در جدول ۲٫۵rem و فقط با عدد
+   (عنوان ستون «تخفیف» معنی را می‌گوید)؛ در کارت موبایل (--row-word) ۳rem و با برچسب «تخفیف» مثل فروشگاه */
+.discount-chip--row {
+  position: relative;
+  z-index: 0;
+  flex-shrink: 0;
+  --chip: 2.5rem;
+  font-size: calc(var(--chip) * 0.34);
+}
+.discount-chip--row-word {
+  --chip: 3rem;
+  font-size: calc(var(--chip) * 0.3);
+}
 .discount-chip__value {
   font-weight: 800;
 }

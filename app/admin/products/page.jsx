@@ -19,7 +19,6 @@ import AddButton from "@/app/admin/_list/AddButton";
 import EmptyState from "@/app/admin/_list/EmptyState";
 import Thumb from "@/app/admin/_list/Thumb";
 import Chip from "@/app/admin/_list/Chip";
-import ValueBar from "@/app/admin/_ui/ValueBar";
 import { useSegmentSlide } from "@/app/admin/_ui/useSegmentSlide";
 import { RowActions } from "@/app/admin/_list/IconAction";
 
@@ -48,14 +47,21 @@ const getCategoryName = (row) => row.Category?.name || row.categoryName || "بد
 
 const hasDiscount = (row) => row.discount != null && Number(row.discount) > 0 && Number(getFinalPrice(row)) < Number(row.price);
 
-// درصد تخفیف به شکل نوار: عدد وسط نوار و پرشدن به اندازهٔ همان درصد (ValueBar). withWord = «۱۰٪ تخفیف» وقتی ستون «تخفیف» کنارش نیست و خود نوار باید معنی بدهد
-function DiscountBar({ row, withWord = false, className = "" }) {
+// درصد تخفیف به شکل همان سکهٔ براق صورتی که مشتری روی کارت محصول فروشگاه می‌بیند (.discount-chip در globals.css، با برق). در جدول فقط عدد (عنوان ستون «تخفیف» معنی را
+// می‌گوید)؛ withWord (کارت موبایل، که ستون ندارد) برچسب «تخفیف» هم دارد
+function DiscountChip({ row, withWord = false }) {
   if (!hasDiscount(row)) return null;
-  return <ValueBar className={className} value={Number(row.discount)} suffix={withWord ? "٪ تخفیف" : "٪"} label={`تخفیف ${row.name || "محصول"}`} />;
+  const pct = Number(row.discount);
+  return (
+    <span role="img" aria-label={`${fa(pct)} درصد تخفیف ${row.name || "محصول"}`} className={`discount-chip discount-chip--row ${withWord ? "discount-chip--row-word" : ""}`}>
+      <span className="discount-chip__value">{fa(pct)}٪</span>
+      {withWord && <span className="discount-chip__label">تخفیف</span>}
+    </span>
+  );
 }
 
-// قیمت نهایی درشت و اگر تخفیف دارد زیرش قیمت اصلی خط‌خورده. bar = زیر قیمت نوار تخفیف هم بیاید (جدول باریک، که ستون جدای تخفیف را ندارد)
-function Price({ row, bar = false }) {
+// قیمت نهایی درشت و اگر تخفیف دارد زیرش قیمت اصلی خط‌خورده
+function Price({ row }) {
   const final = getFinalPrice(row);
   return (
     <div className="leading-6">
@@ -63,7 +69,6 @@ function Price({ row, bar = false }) {
         {formatPrice(final)} <span className="text-xs font-medium text-gray-500">تومان</span>
       </p>
       {hasDiscount(row) && <p className="whitespace-nowrap text-xs text-gray-400 line-through">{formatPrice(row.price)}</p>}
-      {bar && <DiscountBar row={row} withWord className="mt-1.5 w-28 xl:hidden" />}
     </div>
   );
 }
@@ -223,15 +228,14 @@ export default function AdminProducts() {
         </div>
       ),
     },
-    { id: "price", label: "قیمت", align: "center", sk: "h-8 w-28", cell: (r) => <Price row={r} bar /> },
+    { id: "price", label: "قیمت", align: "center", sk: "h-8 w-28", cell: (r) => <Price row={r} /> },
     {
       id: "discount",
       label: "تخفیف",
       align: "center",
-      th: "hidden w-36 xl:table-cell",
-      td: "hidden xl:table-cell",
-      sk: "h-6 w-28",
-      cell: (r) => (hasDiscount(r) ? <DiscountBar row={r} className="w-28" /> : <span className="text-gray-400">—</span>),
+      th: "w-24",
+      sk: "h-10 w-10",
+      cell: (r) => (hasDiscount(r) ? <DiscountChip row={r} /> : <span className="text-gray-400">—</span>),
     },
     { id: "stock", label: "موجودی", align: "center", sk: "h-6 w-20", cell: (r) => <StockChip row={r} /> },
     { id: "actions", label: "عملیات", align: "center", th: "w-28", sk: "h-9 w-20 rounded-xl", cell: actions },
@@ -250,8 +254,10 @@ export default function AdminProducts() {
       </div>
       <div className="mt-3 flex items-end justify-between gap-3">
         <div className="flex flex-col items-start gap-1.5">
-          <Price row={r} />
-          <DiscountBar row={r} withWord className="w-32" />
+          <div className="flex items-center gap-3">
+            <Price row={r} />
+            <DiscountChip row={r} withWord />
+          </div>
           <StockChip row={r} quiet />
         </div>
         {actions(r)}
