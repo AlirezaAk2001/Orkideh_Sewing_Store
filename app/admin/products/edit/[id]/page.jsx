@@ -5,13 +5,15 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { Box, Button, TextField, MenuItem, CircularProgress } from "@mui/material";
-import { Save } from "lucide-react";
-import Icon from '@mdi/react';
+import { AlignLeft, Banknote, ClipboardList, ImagePlus, PackageCheck, Ruler } from "lucide-react";
 import PageHeader from "@/app/admin/_shell/PageHeader";
-import { mdiStoreEditOutline, mdiStoreOutline } from '@mdi/js';
+import FormSection from "@/app/admin/_form/FormSection";
+import { TextInput, TextArea, SelectInput } from "@/app/admin/_form/Fields";
+import SaveBar from "@/app/admin/_form/SaveBar";
 import ProductImagesField from "@/app/components/ProductImagesField";
 import { productImages } from "@/lib/productImages";
+
+const fa = (n) => Number(n).toLocaleString("fa-IR");
 
 export default function EditProduct() {
   const router = useRouter();
@@ -37,70 +39,6 @@ export default function EditProduct() {
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [initialData, setInitialData] = useState({});
-
-  // rtlStyles کامل مثل بنرها
-  const rtlStyles = {
-    InputLabelProps: {
-      sx: {
-        transformOrigin: "right !important",
-        left: "inherit !important",
-        right: "1.75rem !important",
-      },
-    },
-    sx: {
-      "& legend": { textAlign: "right" },
-      "& .MuiOutlinedInput-root": {
-        fontFamily: "Vazirmatn, sans-serif",
-        borderRadius: "10px",
-        transition: "box-shadow .2s ease",
-        "&:hover fieldset": { borderColor: "#6366f1" },
-        "&.Mui-focused fieldset": {
-          borderColor: "#6366f1",
-          borderWidth: "2px",
-        },
-        "&.Mui-focused": {
-          // boxShadow: "0 0 0 3px rgba(99,102,241,.12)",
-        },
-      },
-      "& .MuiInputLabel-root": { fontFamily: "Vazirmatn, sans-serif" },
-      "& .MuiInputLabel-root.Mui-focused": { color: "#6366f1" },
-      "& input, & textarea": { fontFamily: "Vazirmatn, sans-serif" },
-    },
-  };
-
-  // rtlSelectStyles برای فیلد select (مانند بنرها که select نداشت، اما اینجا نیاز داریم)
-  const rtlSelectStyles = {
-    InputLabelProps: {
-      sx: {
-        transformOrigin: "right !important",
-        left: "inherit !important",
-        right: "2.5rem !important",
-      },
-    },
-    sx: {
-      "& legend": { textAlign: "right" },
-      "& .MuiOutlinedInput-root": {
-        fontFamily: "Vazirmatn, sans-serif",
-        borderRadius: "10px",
-        transition: "box-shadow .2s ease",
-        paddingRight: "14px !important",
-        "&:hover fieldset": { borderColor: "#6366f1" },
-        "&.Mui-focused fieldset": {
-          borderColor: "#6366f1",
-          borderWidth: "2px",
-        },
-        "&.Mui-focused": {
-          boxShadow: "0 0 0 3px rgba(99,102,241,.12)",
-        },
-      },
-      "& .MuiInputLabel-root": { fontFamily: "Vazirmatn, sans-serif" },
-      "& .MuiInputLabel-root.Mui-focused": { color: "#6366f1" },
-      "& input, & textarea": { fontFamily: "Vazirmatn, sans-serif" },
-      "& .MuiSelect-select": {
-        paddingRight: "32px !important",
-      },
-    },
-  };
 
   // محاسبه قیمت نهایی (بدون تغییر)
   useEffect(() => {
@@ -228,285 +166,97 @@ export default function EditProduct() {
     );
   }
 
-  // بخش UI بازطراحی شده مطابق با استایل بنرها
+  // نوار پایین می‌گوید تغییری هست یا نه، و اگر چیزی از موارد الزامی خالی شده، کدام
+  const missing = [!String(name).trim() && "نام", !String(price).trim() && "قیمت", !String(categoryId).trim() && "دسته‌بندی", gallery.length === 0 && "تصویر"].filter(Boolean);
+  const status = uploading
+    ? "در حال آپلود تصویر؛ ذخیره بعد از پایان آپلود فعال می‌شود"
+    : missing.length
+    ? `هنوز لازم است: ${missing.join("، ")}`
+    : hasChanged
+    ? "تغییرات ذخیره‌نشده دارید"
+    : "تغییری اعمال نشده است";
+
   return (
     <>
-      <style>{`
-        /* ── کلیات ── */
-        .product-card {
-          background: #fff;
-          border-radius: 20px;
-          box-shadow: 0 4px 24px rgba(0,0,0,.08);
-          overflow: hidden;
-        }
+      <PageHeader
+        icon={<PackageCheck className="h-[22px] w-[22px]" aria-hidden="true" />}
+        title="ویرایش اطلاعات محصول"
+        subtitle={initialData.name ? <>در حال ویرایش «<b>{initialData.name}</b>»</> : undefined}
+      />
 
-        /* ── هدر کارت ── */
-        .product-card-header {
-          background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-          padding: 20px 24px;
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          color: #f1f5f9;
-        }
-        .product-card-header h2 {
-          font-family: Vazirmatn, sans-serif;
-          font-size: 1rem;
-          font-weight: 700;
-          margin: 0;
-          color: #f1f5f9;
-        }
-
-        /* ── بدنه کارت ── */
-        .product-card-body {
-          padding: 28px 24px 24px;
-          display: flex;
-          flex-direction: column;
-          gap: 4px;
-        }
-
-        /* ── دکمه ذخیره ── */
-        .save-btn {
-          width: 100%;
-          height: 48px !important;
-          border-radius: 12px !important;
-          font-family: Vazirmatn, sans-serif !important;
-          font-size: .95rem !important;
-          font-weight: 700 !important;
-          margin-top: 8px !important;
-          background: linear-gradient(135deg, #16a34a, #15803d) !important;
-          transition: all .25s ease !important;
-          letter-spacing: .01em !important;
-        }
-        button.save-btn:not(:hover) {
-          box-shadow: 0 4px 14px rgba(22,163,74,.3);
-        }
-        .save-btn:disabled {
-          background: linear-gradient(135deg, #94a3b8, #64748b) !important;
-          box-shadow: none !important;
-        }
-
-      `}</style>
-
-      <Box sx={{ p: 0 }} dir="rtl">
-
-        <PageHeader icon={<Icon path={mdiStoreEditOutline} size="22px" />} title="ویرایش اطلاعات محصول" />
-
-        {/* ── کارت اصلی ── */}
-        <div className="product-card">
-          <div className="product-card-header">
-            <Icon path={mdiStoreOutline} size={0.9} />
-            <h2>اطلاعات محصول</h2>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <FormSection index={0} icon={ClipboardList} title="اطلاعات اصلی" hint="نام و دسته‌بندی در فهرست و صفحهٔ محصول دیده می‌شود">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <TextInput label="نام محصول" required placeholder="مثال: چرخ خیاطی برادر" value={name} onChange={(e) => setName(e.target.value)} />
+            <SelectInput label="دسته‌بندی محصول" required placeholder="انتخاب دسته‌بندی" value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.name}
+                </option>
+              ))}
+            </SelectInput>
           </div>
+        </FormSection>
 
-          <div className="product-card-body">
-            {/* فرم (کلیه فیلدها با چیدمان منعطف اما کاملاً مشابه استایل بنرها) */}
-            <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              {/* ردیف ۱: نام محصول | قیمت */}
-              <Box sx={{ display: "flex", gap: 2 }}>
-                <TextField
-                  {...rtlStyles}
-                  label="نام محصول"
-                  placeholder="مثال: چرخ خیاطی برادر"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                  fullWidth
-                  margin="normal"
-                />
-                <TextField
-                  {...rtlStyles}
-                  label="قیمت (تومان)"
-                  placeholder="مثال: ۱۲,۵۰۰,۰۰۰"
-                  value={price}
-                  onChange={(e) => setPrice(e.target.value)}
-                  required
-                  fullWidth
-                  type="number"
-                  margin="normal"
-                />
-              </Box>
-
-              {/* ردیف ۲: موجودی | دسته‌بندی */}
-              <Box sx={{ display: "flex", gap: 2 }}>
-                <TextField
-                  {...rtlStyles}
-                  label="موجودی (عدد)"
-                  placeholder="مثال: ۲"
-                  value={stock}
-                  onChange={(e) => setStock(e.target.value)}
-                  fullWidth
-                  type="number"
-                  margin="normal"
-                />
-                <TextField
-                  {...rtlSelectStyles}
-                  select
-                  label="دسته‌بندی"
-                  value={categoryId}
-                  onChange={(e) => setCategoryId(e.target.value)}
-                  required
-                  fullWidth
-                  margin="normal"
-                  SelectProps={{
-                    MenuProps: {
-                      sx: {
-                        "& .MuiMenuItem-root": {
-                          fontFamily: "Vazirmatn, sans-serif",
-                        },
-                      },
-                    },
-                  }}
-                >
-                  <MenuItem value="" sx={{ fontFamily: "Vazirmatn, sans-serif" }}>
-                    انتخاب دسته‌بندی
-                  </MenuItem>
-                  {categories.map((cat) => (
-                    <MenuItem key={cat.id} value={cat.id} sx={{ fontFamily: "Vazirmatn, sans-serif" }}>
-                      {cat.name}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Box>
-
-              {/* ردیف ۳: تصویرهای محصول (آپلود چند تصویر؛ اولی تصویر اصلی) */}
-              <ProductImagesField value={gallery} onChange={setGallery} onBusyChange={setUploading} disabled={isSaving} />
-
-              {/* ردیف ۴: تخفیف | قیمت نهایی */}
-              <Box sx={{ display: "flex", gap: 2 }}>
-                <TextField
-                  {...rtlStyles}
-                  label="تخفیف (%)"
-                  placeholder="مثال: ۵"
-                  value={discount}
-                  onChange={(e) => setDiscount(e.target.value)}
-                  fullWidth
-                  type="number"
-                  margin="normal"
-                />
-                <TextField
-                  {...rtlStyles}
-                  label="قیمت نهایی (فقط خواندنی)"
-                  value={finalPrice}
-                  placeholder="به صورت خودکار"
-                  fullWidth
-                  margin="normal"
-                  InputProps={{ readOnly: true }}
-                />
-              </Box>
-
-              {/* ردیف ۵: جنس | ابعاد */}
-              <Box sx={{ display: "flex", gap: 2 }}>
-                <TextField
-                  {...rtlStyles}
-                  label="جنس"
-                  value={material}
-                  placeholder="مثال: فولادی"
-                  onChange={(e) => setMaterial(e.target.value)}
-                  fullWidth
-                  margin="normal"
-                />
-                <TextField
-                  {...rtlStyles}
-                  label="ابعاد"
-                  value={size}
-                  placeholder="مثال: ۱۲ × ۱۸ × ۱۶ سانتی متر"
-                  onChange={(e) => setSize(e.target.value)}
-                  fullWidth
-                  margin="normal"
-                />
-              </Box>
-
-              {/* ردیف ۶: رنگ | وزن */}
-              <Box sx={{ display: "flex", gap: 2 }}>
-                <TextField
-                  {...rtlStyles}
-                  label="رنگ"
-                  value={color}
-                  placeholder="مثال: سفید"
-                  onChange={(e) => setColor(e.target.value)}
-                  fullWidth
-                  margin="normal"
-                />
-                <TextField
-                  {...rtlStyles}
-                  label="وزن (گرم)"
-                  value={weight}
-                  placeholder="مثال: ۱۲۰"
-                  onChange={(e) => setWeight(e.target.value)}
-                  fullWidth
-                  margin="normal"
-                />
-              </Box>
-
-              {/* ردیف ۷: ولتاژ | توان مصرفی */}
-              <Box sx={{ display: "flex", gap: 2 }}>
-                <TextField
-                  {...rtlStyles}
-                  label="ولتاژ (ولت)"
-                  value={voltage}
-                  placeholder="مثال: ۲۲۰"
-                  onChange={(e) => setVoltage(e.target.value)}
-                  fullWidth
-                  margin="normal"
-                />
-                <TextField
-                  {...rtlStyles}
-                  label="توان مصرفی (وات)"
-                  value={powerConsumption}
-                  placeholder="مثال: ۵۰۰"
-                  onChange={(e) => setPowerConsumption(e.target.value)}
-                  fullWidth
-                  margin="normal"
-                />
-              </Box>
-
-              {/* ویژگی‌های اضافی */}
-              <TextField
-                {...rtlStyles}
-                label="ویژگی‌های اضافی"
-                value={additionalFeatures}
-                onChange={(e) => setAdditionalFeatures(e.target.value)}
-                placeholder="توضیحات تکمیلی راجب محصول"
-                fullWidth
-                multiline
-                margin="normal"
-              />
-
-              {/* مناسب برای */}
-              <TextField
-                {...rtlStyles}
-                label="مناسب برای"
-                value={suitableFor}
-                placeholder="مثال: مناسب برای دوخت و دوز خانگی"
-                onChange={(e) => setSuitableFor(e.target.value)}
-                fullWidth
-                multiline
-                margin="normal"
-              />
-
-              <Button
-                type="submit"
-                variant="contained"
-                className="save-btn"
-                disabled={isSaving || uploading || !hasChanged}
-              >
-                {isSaving ? (
-                  <>
-                    <CircularProgress size={20} color="inherit" style={{ marginLeft: 8 }} />
-                    در حال ذخیره تغییرات...
-                  </>
-                ) : (
-                  <>
-                    <Save style={{ width: 18, height: 18, marginLeft: 6 }} />
-                    ذخیره تغییرات
-                  </>
-                )}
-              </Button>
-            </form>
+        <FormSection index={1} icon={Banknote} title="قیمت و موجودی" hint="قیمت نهایی از قیمت و تخفیف خودکار حساب می‌شود">
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <TextInput
+              label="قیمت محصول"
+              required
+              ltr
+              suffix="تومان"
+              type="number"
+              inputMode="numeric"
+              placeholder="12500000"
+              hint={price && !isNaN(parseFloat(price)) ? `${fa(price)} تومان` : undefined}
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+            />
+            <TextInput label="تخفیف" ltr suffix="٪" type="number" inputMode="decimal" placeholder="5" value={discount} onChange={(e) => setDiscount(e.target.value)} />
+            <TextInput
+              label="قیمت نهایی"
+              ltr
+              suffix="تومان"
+              readOnly
+              placeholder="به‌صورت خودکار"
+              hint="فقط خواندنی"
+              value={finalPrice && !isNaN(parseFloat(finalPrice)) ? fa(finalPrice) : ""}
+            />
+            <TextInput label="موجودی" ltr suffix="عدد" type="number" inputMode="numeric" placeholder="2" hint="خالی یعنی موجودی پیگیری نمی‌شود" value={stock} onChange={(e) => setStock(e.target.value)} />
           </div>
-        </div>
-      </Box>
+        </FormSection>
+
+        <FormSection index={2} icon={ImagePlus} title="تصاویر محصول" hint="چند تصویر را با هم رها کنید؛ اولین تصویر، تصویر اصلی است">
+          <ProductImagesField value={gallery} onChange={setGallery} onBusyChange={setUploading} disabled={isSaving} />
+        </FormSection>
+
+        <FormSection index={3} icon={Ruler} title="مشخصات" hint="همه اختیاری‌اند و در صفحهٔ محصول نشان داده می‌شوند">
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            <TextInput label="جنس محصول" placeholder="مثال: فولادی" value={material} onChange={(e) => setMaterial(e.target.value)} />
+            <TextInput label="ابعاد محصول" placeholder="مثال: ۱۲ × ۱۸ × ۱۶ سانتی‌متر" value={size} onChange={(e) => setSize(e.target.value)} />
+            <TextInput label="رنگ محصول" placeholder="مثال: سفید" value={color} onChange={(e) => setColor(e.target.value)} />
+            <TextInput label="وزن محصول" suffix="گرم" placeholder="مثال: ۱۲۰" value={weight} onChange={(e) => setWeight(e.target.value)} />
+            <TextInput label="ولتاژ محصول" suffix="ولت" placeholder="مثال: ۱۰" value={voltage} onChange={(e) => setVoltage(e.target.value)} />
+            <TextInput label="توان مصرفی محصول" suffix="وات" placeholder="مثال: ۲۲۰" value={powerConsumption} onChange={(e) => setPowerConsumption(e.target.value)} />
+          </div>
+        </FormSection>
+
+        <FormSection index={4} icon={AlignLeft} title="توضیحات" hint="متن آزاد؛ زیر عکس در صفحهٔ محصول می‌آید">
+          <div className="grid gap-4 lg:grid-cols-2">
+            <TextArea label="ویژگی‌های اضافی محصول" rows={4} placeholder="توضیحات تکمیلی دربارهٔ محصول" value={additionalFeatures} onChange={(e) => setAdditionalFeatures(e.target.value)} />
+            <TextArea label="مناسب برای" rows={4} placeholder="مثال: مناسب برای دوخت‌ودوز خانگی" value={suitableFor} onChange={(e) => setSuitableFor(e.target.value)} />
+          </div>
+        </FormSection>
+
+        <SaveBar
+          label="ذخیرهٔ تغییرات"
+          backHref="/admin/products"
+          saving={isSaving}
+          disabled={uploading || !hasChanged}
+          tone={uploading || missing.length || hasChanged ? "dirty" : "idle"}
+          status={status}
+        />
+      </form>
     </>
   );
 }

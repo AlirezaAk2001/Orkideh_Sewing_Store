@@ -1,17 +1,17 @@
 "use client";
 
 import PageLoader from "@/app/components/PageLoader";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { Box, Button, TextField, CircularProgress } from "@mui/material";
-import { Save } from "lucide-react";
-import Icon from '@mdi/react';
+import { ImageIcon, Shapes, SquarePen } from "lucide-react";
 import PageHeader from "@/app/admin/_shell/PageHeader";
-import { mdiShapeOutline, mdiImageOffOutline, mdiImagePlusOutline } from '@mdi/js';
-import { getImagePath } from "@/app/utils/getImagePath";
-import AppImage from "@/app/components/AppImage";
+import FormSection from "@/app/admin/_form/FormSection";
+import { TextInput } from "@/app/admin/_form/Fields";
+import SaveBar from "@/app/admin/_form/SaveBar";
+import ImagePreviewField from "@/app/admin/_form/ImagePreviewField";
+import { useImagePreview } from "@/app/admin/_form/useImagePreview";
 
 export default function EditCategory() {
   const router = useRouter();
@@ -19,43 +19,13 @@ export default function EditCategory() {
 
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
-  const [image, setImage] = useState("");
-  const [previewImg, setPreviewImg] = useState("");
-  const [imgLoading, setImgLoading] = useState(false);
-  const [imgError, setImgError] = useState(false);
+  const img = useImagePreview();
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [initialData, setInitialData] = useState({ name: "", slug: "", image: "" });
-  const debounceRef = useRef(null);
+  const { init: initImage } = img;
 
-  const rtlStyles = {
-    InputLabelProps: {
-      sx: {
-        transformOrigin: "right !important",
-        left: "inherit !important",
-        right: "1.75rem !important",
-      },
-    },
-    sx: {
-      "& legend": { textAlign: "right" },
-      "& .MuiOutlinedInput-root": {
-        fontFamily: "Vazirmatn, sans-serif",
-        borderRadius: "10px",
-        transition: "box-shadow .2s ease",
-        "&:hover fieldset": { borderColor: "#6366f1" },
-        "&.Mui-focused fieldset": {
-          borderColor: "#6366f1",
-          borderWidth: "2px",
-        },
-        "&.Mui-focused": {
-          // boxShadow: "0 0 0 3px rgba(99,102,241,.12)",
-        },
-      },
-      "& .MuiInputLabel-root": { fontFamily: "Vazirmatn, sans-serif" },
-      "& .MuiInputLabel-root.Mui-focused": { color: "#6366f1" },
-      "& input, & textarea": { fontFamily: "Vazirmatn, sans-serif" },
-    },
-  };
+  const image = img.value;
 
   // 📦 دریافت اطلاعات دسته‌بندی
   useEffect(() => {
@@ -67,8 +37,7 @@ export default function EditCategory() {
         if (isMounted && data) {
           setName(data.name || "");
           setSlug(data.slug || "");
-          setImage(data.image || "");
-          setPreviewImg(data.image || "");
+          initImage(data.image || "");
           setInitialData({
             name: data.name || "",
             slug: data.slug || "",
@@ -88,35 +57,12 @@ export default function EditCategory() {
     return () => {
       isMounted = false;
     };
-  }, [id]);
+  }, [id, initImage]);
 
   const hasChanged =
     name !== initialData.name ||
     slug !== initialData.slug ||
     image !== initialData.image;
-
-  // Debounce برای پیش‌نمایش تصویر
-  const handleImgChange = (val) => {
-    setImage(val);
-    setImgError(false);
-
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-
-    if (!val.trim()) {
-      setPreviewImg("");
-      setImgLoading(false);
-      return;
-    }
-
-    setImgLoading(true);
-    debounceRef.current = setTimeout(() => {
-      setPreviewImg(val.trim());
-    }, 600);
-  };
-
-  useEffect(() => {
-    if (!previewImg) setImgLoading(false);
-  }, [previewImg]);
 
   // 💾 ذخیره تغییرات
   const handleSubmit = async (e) => {
@@ -155,245 +101,50 @@ export default function EditCategory() {
     );
   }
 
+  const missing = [!name.trim() && "نام", !slug.trim() && "اسلاگ"].filter(Boolean);
+  const status = missing.length ? `هنوز لازم است: ${missing.join("، ")}` : hasChanged ? "تغییرات ذخیره‌نشده دارید" : "تغییری اعمال نشده است";
+
   return (
     <>
-      <style>{`
-        .category-card {
-          background: #fff;
-          border-radius: 20px;
-          box-shadow: 0 4px 24px rgba(0,0,0,.08);
-          overflow: hidden;
-        }
+      <PageHeader
+        icon={<SquarePen className="h-[22px] w-[22px]" aria-hidden="true" />}
+        title="ویرایش اطلاعات دسته‌بندی"
+        subtitle={initialData.name ? <>در حال ویرایش «<b>{initialData.name}</b>»</> : undefined}
+      />
 
-        /* ── هدر کارت ── */
-        .category-card-header {
-          background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-          padding: 20px 24px;
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          color: #f1f5f9;
-        }
-        .category-card-header h2 {
-          font-family: Vazirmatn, sans-serif;
-          font-size: 1rem;
-          font-weight: 700;
-          margin: 0;
-          color: #f1f5f9;
-        }
-
-        /* ── بدنه کارت ── */
-        .category-card-body {
-          padding: 28px 24px 24px;
-          display: flex;
-          flex-direction: column;
-          gap: 4px;
-        }
-
-        /* ── پیش‌نمایش تصویر ── */
-        .img-preview-wrapper {
-          width: 100%;
-          aspect-ratio: 16 / 2;
-          border-radius: 12px;
-          overflow: hidden;
-          background: #f1f5f9;
-          border: 2px dashed #cbd5e1;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          margin-bottom: 8px;
-          transition: border-color .25s ease, background .25s ease;
-          position: relative;
-        }
-        .img-preview-wrapper.has-image {
-          border-style: solid;
-          border-color: #6366f1;
-          background: #0f172a;
-        }
-        .img-preview-wrapper img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          display: block;
-        }
-        .img-preview-placeholder {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 8px;
-          color: #94a3b8;
-          font-family: Vazirmatn, sans-serif;
-          font-size: .8rem;
-          user-select: none;
-          pointer-events: none;
-        }
-
-        /* ── اوورلی نام روی تصویر ── */
-        .img-preview-overlay {
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(to top, rgba(0,0,0,.65) 0%, transparent 55%);
-          display: flex;
-          flex-direction: column;
-          justify-content: flex-end;
-          padding: 14px 18px;
-          pointer-events: none;
-        }
-        .img-preview-overlay .overlay-name {
-          font-family: Vazirmatn, sans-serif;
-          font-size: .95rem;
-          font-weight: 700;
-          color: #fff;
-          text-shadow: 0 1px 4px rgba(0,0,0,.4);
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-        .img-preview-overlay .overlay-slug {
-          font-family: Vazirmatn, sans-serif;
-          font-size: .78rem;
-          color: rgba(255,255,255,.8);
-          margin-top: 2px;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-
-        /* ── دکمه ذخیره ── */
-        .save-btn {
-          width: 100%;
-          height: 48px !important;
-          border-radius: 12px !important;
-          font-family: Vazirmatn, sans-serif !important;
-          font-size: .95rem !important;
-          font-weight: 700 !important;
-          margin-top: 8px !important;
-          background: linear-gradient(135deg, #16a34a, #15803d) !important;
-          transition: all .25s ease !important;
-          letter-spacing: .01em !important;
-        }
-        button.save-btn:not(:hover) {
-          box-shadow: 0 4px 14px rgba(22,163,74,.3);
-        }
-        .save-btn:disabled {
-          background: linear-gradient(135deg, #94a3b8, #64748b) !important;
-          box-shadow: none !important;
-        }
-
-      `}</style>
-
-      <Box sx={{ p: 0 }} dir="rtl">
-
-        <PageHeader icon={<Icon path={mdiShapeOutline} size="22px" />} title="ویرایش دسته‌بندی" />
-
-        {/* ── کارت اصلی ── */}
-        <div className="category-card">
-          <div className="category-card-header">
-            <Icon path={mdiShapeOutline} size={0.9} />
-            <h2>اطلاعات دسته‌بندی</h2>
-          </div>
-
-          <div className="category-card-body">
-            {/* پیش‌نمایش تصویر */}
-            <div className={`img-preview-wrapper${previewImg && !imgError ? " has-image" : ""}`}>
-              {/* اسپینر لودینگ */}
-              {imgLoading && (
-                <div className="img-preview-placeholder">
-                  <CircularProgress size={28} sx={{ color: "#6366f1" }} />
-                  <span>در حال بررسی تصویر...</span>
-                </div>
-              )}
-
-              {/* تصویر واقعی — مخفی تا load بشه */}
-              {!imgError && previewImg && (
-                <AppImage
-                  key={previewImg}
-                  src={getImagePath(previewImg)}
-                  alt="پیش‌نمایش دسته‌بندی"
-                  fill
-                  sizes="(max-width: 1000px) 100vw, 1000px"
-                  priority
-                  style={{ display: imgLoading ? "none" : "block" }}
-                  onLoad={() => { setImgLoading(false); setImgError(false); }}
-                  onError={() => { setImgLoading(false); setImgError(true); }}
-                />
-              )}
-
-              {/* اوورلی نام و اسلاگ */}
-              {previewImg && !imgError && !imgLoading && name && (
-                <div className="img-preview-overlay">
-                  <span className="overlay-name">{name}</span>
-                  {slug && <span className="overlay-slug">{slug}</span>}
-                </div>
-              )}
-
-              {/* placeholder — وقتی نه لودینگ، نه تصویر */}
-              {!imgLoading && (!previewImg || imgError) && (
-                <div className="img-preview-placeholder">
-                  <Icon
-                    path={imgError ? mdiImageOffOutline : mdiImagePlusOutline}
-                    size={1.6}
-                    color={imgError ? "#f87171" : "#cbd5e1"}
-                  />
-                  <span>{imgError ? "تصویر یافت نشد" : "پیش‌نمایش تصویر دسته‌بندی"}</span>
-                </div>
-              )}
-            </div>
-
-            {/* فرم */}
-            <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              <TextField
-                {...rtlStyles}
-                label="نام دسته‌بندی"
-                placeholder="مثال: چرخ خیاطی"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-                fullWidth
-                margin="normal"
-              />
-              <TextField
-                {...rtlStyles}
+      <form onSubmit={handleSubmit}>
+        <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,26rem)]">
+          <FormSection index={0} icon={Shapes} title="اطلاعات دسته‌بندی" hint="نام در منوی فروشگاه و آدرس صفحه در لینک‌ها دیده می‌شود">
+            <div className="grid gap-4">
+              <TextInput label="نام دسته‌بندی" required placeholder="مثال: چرخ خیاطی" value={name} onChange={(e) => setName(e.target.value)} />
+              <TextInput
                 label="اسلاگ دسته‌بندی"
-                placeholder="مثال: sewing-machine"
+                required
+                ltr
+                placeholder="sewing-machine"
+                hint={slug.trim() ? <>آدرس صفحه: <bdi dir="ltr">/categories/{slug.trim()}</bdi></> : "بخش انگلیسی آدرس صفحه؛ بدون فاصله"}
                 value={slug}
                 onChange={(e) => setSlug(e.target.value)}
-                required
-                fullWidth
-                margin="normal"
+                autoComplete="off"
+                spellCheck={false}
               />
-              <TextField
-                {...rtlStyles}
-                label="آدرس تصویر (اختیاری)"
-                placeholder="مثال: y.png"
-                value={image}
-                onChange={(e) => handleImgChange(e.target.value)}
-                fullWidth
-                margin="normal"
-              />
+            </div>
+          </FormSection>
 
-              <Button
-                type="submit"
-                variant="contained"
-                className="save-btn"
-                disabled={isSaving || !hasChanged}
-              >
-                {isSaving ? (
-                  <>
-                    <CircularProgress size={20} color="inherit" style={{ marginLeft: 8 }} />
-                    در حال ذخیره تغییرات...
-                  </>
-                ) : (
-                  <>
-                    <Save style={{ width: 18, height: 18, marginLeft: 6 }} />
-                    ذخیره تغییرات
-                  </>
-                )}
-              </Button>
-            </form>
-          </div>
+          <FormSection index={1} icon={ImageIcon} title="تصویر دسته‌بندی" hint="اختیاری؛ پیش‌نمایش با تایپ نام فایل به‌روز می‌شود" className="lg:sticky lg:top-0">
+            <ImagePreviewField
+              kind="category"
+              preview={img}
+              label="آدرس تصویر"
+              placeholder="مثال: y.png"
+              hint="نام فایلی که داخل پوشهٔ public/image گذاشته‌اید، یا آدرس کامل (اختیاری)"
+              emptyText="پیش‌نمایش تصویر دسته‌بندی"
+            />
+          </FormSection>
         </div>
-      </Box>
+
+        <SaveBar label="ذخیرهٔ تغییرات" backHref="/admin/categories" saving={isSaving} disabled={!hasChanged} tone={missing.length || hasChanged ? "dirty" : "idle"} status={status} />
+      </form>
     </>
   );
 }

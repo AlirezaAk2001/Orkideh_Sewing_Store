@@ -836,6 +836,27 @@ main {
   }
 }
 
+/* نوار پیشرفت نامعلوم کاشی در حال آپلود (ProductImagesField): یک تکهٔ برند که روی نوار می‌لغزد؛ فقط transform، و با «کاهش حرکت» تکه ثابت می‌ایستد */
+.upload-bar::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 40%;
+  border-radius: inherit;
+  background: var(--color-brand-600);
+}
+@keyframes upload-slide {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(250%); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .upload-bar::after {
+    animation: upload-slide 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+}
+
 @keyframes dash-pop {
   from { opacity: 0; transform: translateY(5px) scale(0.96); }
   to { opacity: 1; transform: none; }
