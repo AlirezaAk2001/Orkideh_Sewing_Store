@@ -1,9 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Pencil } from "lucide-react";
 import Tip from "./Tip";
-import TrashCan from "./TrashCan";
+import { PenIcon, TrashCan } from "@/app/components/ActionIcons";
 
 // دکمهٔ گردِ آیکونی ردیف (ویرایش، حذف): خاکستری، با هاور رنگی و راهنما. href بدهید لینک می‌شود، وگرنه دکمه. برچسب هم راهنماست هم aria-label.
 // دکمه btn-flat است: مثل لینک ویرایش از جایش بلند نمی‌شود (حرکت سه‌بعدی سراسری دکمه‌ها اینجا نمی‌خواهد؛ فقط آیکون داخلش حرکت می‌کند)
@@ -34,7 +33,7 @@ export function RowActions({ editHref, editLabel, onDelete, deleteLabel }) {
   return (
     <div className="flex items-center gap-1">
       <IconAction label={editLabel} href={editHref}>
-        <Pencil className="icon-write h-[18px] w-[18px]" aria-hidden="true" />
+        <PenIcon />
       </IconAction>
       <IconAction label={deleteLabel} onClick={onDelete} tone="danger">
         <TrashCan />

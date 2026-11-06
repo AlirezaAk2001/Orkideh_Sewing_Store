@@ -13,7 +13,7 @@ import Icon from '@mdi/react';
 import { mdiHeartOutline, mdiCloseCircleOutline, mdiDeleteCircleOutline, mdiDeleteSweepOutline } from '@mdi/js';
 import DialogActions from "@mui/material/DialogActions";
 import Button from "@mui/material/Button";
-import { Trash2 } from "lucide-react";
+import { TrashCan } from "@/app/components/ActionIcons";
 
 export default function FavoritesPage() {
   const { favorites, removeFromFavorites, clearFavorites } = useFavorites();
@@ -206,12 +206,7 @@ export default function FavoritesPage() {
             className="delete-btn flex items-center gap-1 text-red-500 hover:text-red-700 transition cursor-pointer"
             onClick={() => setClearDialog(true)}
           >
-            <div className="trash-container">
-              <Trash2 className="trash-body w-5 h-5" />
-              <div className="trash-lid-wrapper">
-                <Trash2 className="w-5 h-5" />
-              </div>
-            </div>
+            <TrashCan className="h-5 w-5" />
             <span className="text-sm font-medium">حذف همه</span>
           </button>
         )}
@@ -262,12 +257,7 @@ export default function FavoritesPage() {
                 className="delete-btn flex items-center gap-1 text-red-500 hover:text-red-700 transition cursor-pointer"
                 onClick={() => handleRemove(item.id, item.name)}
               >
-                <div className="trash-container">
-                  <Trash2 className="trash-body w-5 h-5" />
-                  <div className="trash-lid-wrapper">
-                    <Trash2 className="w-5 h-5" />
-                  </div>
-                </div>
+                <TrashCan className="h-5 w-5" />
                 <span>حذف</span>
               </button>
             </li>

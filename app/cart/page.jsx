@@ -13,7 +13,8 @@ import DialogActions from "@mui/material/DialogActions";
 import Button from "@mui/material/Button";
 import AppImage from "@/app/components/AppImage";
 import { useRouter } from "next/navigation";
-import { Trash2, ClipboardList, CreditCard, Plus, Minus } from "lucide-react";
+import { ClipboardList, CreditCard, Plus, Minus } from "lucide-react";
+import { TrashCan } from "@/app/components/ActionIcons";
 import Icon from '@mdi/react';
 import { mdiCartOutline, mdiCartMinus, mdiCloseCircleOutline, mdiDeleteCircleOutline, mdiDeleteSweepOutline } from '@mdi/js';
 import { TextField } from "@mui/material";
@@ -459,12 +460,7 @@ export default function CartPage() {
             onClick={() => setClearDialog(true)}
             disabled={clearLoading}
           >
-            <div className="trash-container">
-              <Trash2 className="trash-body w-5 h-5" />
-              <div className="trash-lid-wrapper">
-                <Trash2 className="w-5 h-5" />
-              </div>
-            </div>
+            <TrashCan className="h-5 w-5" />
             <span className="text-sm font-medium">
               {clearLoading ? "در حال حذف همه..." : "حذف همه"}
             </span>
@@ -512,12 +508,7 @@ export default function CartPage() {
                     onClick={() => handleRemove(item.id, item.name)}
                     disabled={deleteLoading === item.id}
                   >
-                    <div className="trash-container">
-                      <Trash2 className="trash-body w-5 h-5" />
-                      <div className="trash-lid-wrapper">
-                        <Trash2 className="w-5 h-5" />
-                      </div>
-                    </div>
+                    <TrashCan className="h-5 w-5" />
                     <span>{deleteLoading === item.id ? "در حال حذف..." : "حذف"}</span>
                   </button>
                 </div>

@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import moment from "moment-jalaali";
 import { Dialog } from "@mui/material";
 import { CheckCheck, CircleCheck, Clock, MessageSquareDashed, MessageSquareText, Package, Pencil, Reply, Send, Star, X } from "lucide-react";
+import { PenIcon } from "@/app/components/ActionIcons";
 import Icon from "@mdi/react";
 import { mdiAccountBoxEditOutline } from "@mdi/js";
 import PageHeader from "@/app/admin/_shell/PageHeader";
@@ -151,7 +152,7 @@ function ReplyDialog({ comment, onClose, onSave }) {
                 onClick={() => setEditMode(true)}
                 className="inline-flex h-8 cursor-pointer items-center gap-1 rounded-lg px-2.5 text-xs font-semibold text-brand-700 transition hover:bg-brand-100/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300"
               >
-                <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
+                <PenIcon className="h-3.5 w-3.5" />
                 ویرایش
               </button>
             </div>
@@ -321,7 +322,7 @@ function CommentCard({ comment, index, activeTab, onApprove, onReject, onReply }
                     hasReply ? "bg-brand-50 text-brand-700 ring-1 ring-inset ring-brand-200 hover:bg-brand-100/70" : "bg-brand-600 text-white shadow-sm hover:bg-brand-700"
                   }`}
                 >
-                  {hasReply ? <Pencil className="h-[18px] w-[18px]" aria-hidden="true" /> : <Reply className="h-[18px] w-[18px]" aria-hidden="true" />}
+                  {hasReply ? <PenIcon /> : <Reply className="h-[18px] w-[18px]" aria-hidden="true" />}
                   {hasReply ? "ویرایش پاسخ" : "پاسخ"}
                 </button>
                 <button

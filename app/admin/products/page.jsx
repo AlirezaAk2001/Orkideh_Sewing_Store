@@ -207,7 +207,7 @@ export default function AdminProducts() {
 
   const columns = [
     // ستون شناسه زیر xl پنهان است تا جدول در ۷۳۶ پیکسل (تبلت، یا لپ‌تاپ با منوی باز) بدون اسکرول افقی جا شود؛ دسته‌بندی زیر نام می‌آید
-    { id: "id", label: "شناسه", th: "hidden w-16 xl:table-cell", td: "hidden tabular-nums text-gray-400 xl:table-cell", sk: "h-4 w-8", cell: (r) => fa(r.id) },
+    { id: "id", label: "شناسه", align: "center", th: "hidden w-16 xl:table-cell", td: "hidden tabular-nums text-gray-400 xl:table-cell", sk: "h-4 w-8", cell: (r) => fa(r.id) },
     {
       id: "name",
       label: "محصول",
@@ -223,17 +223,18 @@ export default function AdminProducts() {
         </div>
       ),
     },
-    { id: "price", label: "قیمت", sk: "h-8 w-28", cell: (r) => <Price row={r} bar /> },
+    { id: "price", label: "قیمت", align: "center", sk: "h-8 w-28", cell: (r) => <Price row={r} bar /> },
     {
       id: "discount",
       label: "تخفیف",
+      align: "center",
       th: "hidden w-36 xl:table-cell",
       td: "hidden xl:table-cell",
       sk: "h-6 w-28",
       cell: (r) => (hasDiscount(r) ? <DiscountBar row={r} className="w-28" /> : <span className="text-gray-400">—</span>),
     },
-    { id: "stock", label: "موجودی", sk: "h-6 w-20", cell: (r) => <StockChip row={r} /> },
-    { id: "actions", label: "عملیات", th: "w-28", sk: "h-9 w-20 rounded-xl", cell: actions },
+    { id: "stock", label: "موجودی", align: "center", sk: "h-6 w-20", cell: (r) => <StockChip row={r} /> },
+    { id: "actions", label: "عملیات", align: "center", th: "w-28", sk: "h-9 w-20 rounded-xl", cell: actions },
   ];
 
   const card = (r) => (

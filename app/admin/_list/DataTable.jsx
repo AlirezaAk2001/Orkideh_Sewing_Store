@@ -1,6 +1,7 @@
 // جدول مشترک لیست‌ها. از md به بالا جدول روشن (سرستون کم‌رنگ، ردیف‌ها با خط نازک و هاور صورتی)، زیر md هر ردیف یک کارت که صفحه‌ها با renderCard
 // می‌سازند (جدول با ۷ ستون روی موبایل جا نمی‌شود). هر دو از یک rows ساخته می‌شوند و CSS یکی را پنهان می‌کند، پس دادهٔ تکراری دریافت نمی‌شود.
-// ستون‌ها: { id, label, cell(row), th (کلاس سرستون)، td (کلاس خانه)، sk (کلاس نوار اسکلتون) }. loading = اولین بارگذاری (ردیف‌های اسکلتون)،
+// ستون‌ها: { id, label, cell(row), align ("start" پیش‌فرض یا "center")، th (کلاس سرستون)، td (کلاس خانه)، sk (کلاس نوار اسکلتون) }.
+// align برای سرستون، خانه‌ها و اسکلتون یکی است: ستون «center» هم متن سرستون و هم محتوای هر ردیف را دقیقاً روی یک محور عمودی (مرکز ستون) می‌گذارد، هر عرضی که محتوا داشته باشد. loading = اولین بارگذاری (ردیف‌های اسکلتون)،
 // busy = بارگذاری دوباره روی دادهٔ موجود (ردیف‌ها کمی کم‌رنگ می‌شوند). ورود نرم ردیف‌ها با کلاس admin-row-in (با «کاهش حرکت» خاموش) است
 export default function DataTable({ label, columns, rows, rowKey, renderCard, loading = false, busy = false, skeletonRows = 3 }) {
   const stagger = (i) => ({ animationDelay: `${Math.min(i, 12) * 30}ms` });
@@ -13,7 +14,7 @@ export default function DataTable({ label, columns, rows, rowKey, renderCard, lo
             <thead className="bg-gradient-to-b from-gray-50 to-gray-100/70 shadow-[inset_0_-1px_0_var(--color-gray-200)]">
               <tr>
                 {columns.map((c) => (
-                  <th key={c.id} scope="col" className={`px-4 py-3 text-start text-xs font-semibold text-gray-500 ${c.th || ""}`}>
+                  <th key={c.id} scope="col" className={`px-4 py-3 ${c.align === "center" ? "text-center" : "text-start"} text-xs font-semibold text-gray-500 ${c.th || ""}`}>
                     {c.label}
                   </th>
                 ))}
@@ -24,7 +25,7 @@ export default function DataTable({ label, columns, rows, rowKey, renderCard, lo
                 <tr key={i} className="border-t border-gray-100">
                   {columns.map((c) => (
                     <td key={c.id} className={`px-4 py-3.5 align-middle ${c.td || ""}`}>
-                      <span className={`block animate-pulse rounded-full bg-gray-200 ${c.sk || "h-4 w-20"}`} />
+                      <span className={`block animate-pulse rounded-full bg-gray-200 ${c.align === "center" ? "mx-auto" : ""} ${c.sk || "h-4 w-20"}`} />
                     </td>
                   ))}
                 </tr>
@@ -55,7 +56,7 @@ export default function DataTable({ label, columns, rows, rowKey, renderCard, lo
           <thead className="bg-gradient-to-b from-gray-50 to-gray-100/70 shadow-[inset_0_-1px_0_var(--color-gray-200)]">
             <tr>
               {columns.map((c) => (
-                <th key={c.id} scope="col" className={`whitespace-nowrap px-4 py-3 text-start text-xs font-semibold text-gray-500 ${c.th || ""}`}>
+                <th key={c.id} scope="col" className={`whitespace-nowrap px-4 py-3 ${c.align === "center" ? "text-center" : "text-start"} text-xs font-semibold text-gray-500 ${c.th || ""}`}>
                   {c.label}
                 </th>
               ))}
@@ -65,8 +66,8 @@ export default function DataTable({ label, columns, rows, rowKey, renderCard, lo
             {rows.map((row, i) => (
               <tr key={rowKey(row)} style={stagger(i)} className="admin-row-in row-accent group border-t border-gray-100 hover:bg-brand-50/40">
                 {columns.map((c) => (
-                  <td key={c.id} className={`px-4 py-3 align-middle text-gray-700 ${c.td || ""}`}>
-                    {c.cell(row)}
+                  <td key={c.id} className={`px-4 py-3 align-middle text-gray-700 ${c.align === "center" ? "text-center" : ""} ${c.td || ""}`}>
+                    {c.align === "center" ? <div className="flex justify-center">{c.cell(row)}</div> : c.cell(row)}
                   </td>
                 ))}
               </tr>

@@ -93,10 +93,11 @@ export default function AdminBannersPage() {
   );
 
   const columns = [
-    { id: "id", label: "شناسه", th: "w-20", td: "tabular-nums text-gray-400", sk: "h-4 w-8", cell: (r) => fa(r.id) },
+    { id: "id", label: "شناسه", align: "center", th: "w-20", td: "tabular-nums text-gray-400", sk: "h-4 w-8", cell: (r) => fa(r.id) },
     {
       id: "img",
       label: "تصویر",
+      align: "center",
       th: "w-36",
       sk: "h-14 w-24 rounded-xl",
       cell: (r) => <Thumb src={r.img ? getImagePath(r.img) : null} alt={r.title || "بنر"} className="h-14 w-24" sizes="96px" />,
@@ -109,7 +110,7 @@ export default function AdminBannersPage() {
       sk: "h-4 w-56",
       cell: (r) => <p className="line-clamp-2 leading-6 text-gray-500">{r.desc || "—"}</p>,
     },
-    { id: "actions", label: "عملیات", th: "w-28", sk: "h-9 w-20 rounded-xl", cell: actions },
+    { id: "actions", label: "عملیات", align: "center", th: "w-28", sk: "h-9 w-20 rounded-xl", cell: actions },
   ];
 
   const card = (r) => (

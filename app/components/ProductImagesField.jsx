@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { ArrowLeft, ArrowRight, ImagePlus, Plus, Star, Trash2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, ImagePlus, Plus, Star } from "lucide-react";
+import { TrashCan } from "./ActionIcons";
 import AppImage from "./AppImage";
 import { MAX_PRODUCT_IMAGES, isAcceptableImageRef } from "@/lib/productImages";
 
@@ -199,7 +200,7 @@ export default function ProductImagesField({ value, onChange, onBusyChange, disa
                   </button>
                 </div>
                 <button type="button" onClick={() => remove(index)} disabled={disabled} aria-label={`حذف تصویر ${fa(index + 1)}`} className={`${tileButton} hover:!bg-red-50 hover:!text-red-600`}>
-                  <Trash2 className="h-4 w-4" aria-hidden="true" />
+                  <TrashCan className="h-4 w-4" />
                 </button>
               </div>
             </li>

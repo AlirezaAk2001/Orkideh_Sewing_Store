@@ -105,7 +105,7 @@ export default function AdminCategories() {
   const slug = (r) => (r.slug ? <Chip tone="gray"><span dir="ltr">{r.slug}</span></Chip> : "—");
 
   const columns = [
-    { id: "id", label: "شناسه", th: "w-20", td: "tabular-nums text-gray-400", sk: "h-4 w-8", cell: (r) => fa(r.id) },
+    { id: "id", label: "شناسه", align: "center", th: "w-20", td: "tabular-nums text-gray-400", sk: "h-4 w-8", cell: (r) => fa(r.id) },
     {
       id: "name",
       label: "دسته‌بندی",
@@ -117,8 +117,8 @@ export default function AdminCategories() {
         </div>
       ),
     },
-    { id: "slug", label: "نشانی (slug)", sk: "h-6 w-28", cell: slug },
-    { id: "actions", label: "عملیات", th: "w-28", sk: "h-9 w-20 rounded-xl", cell: actions },
+    { id: "slug", label: "نشانی (slug)", align: "center", sk: "h-6 w-28", cell: slug },
+    { id: "actions", label: "عملیات", align: "center", th: "w-28", sk: "h-9 w-20 rounded-xl", cell: actions },
   ];
 
   const card = (r) => (

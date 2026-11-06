@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { CircleCheck, ImageOff, Loader2, Trash2, Upload } from "lucide-react";
+import { CircleCheck, ImageOff, Loader2, Upload } from "lucide-react";
+import { TrashCan } from "@/app/components/ActionIcons";
 import AppImage from "@/app/components/AppImage";
 import { getImagePath } from "@/app/utils/getImagePath";
 import { TextInput } from "./Fields";
@@ -171,7 +172,7 @@ export default function ImagePreviewField({ kind = "banner", preview: p, label, 
         </button>
         {removable && hasImage && (
           <button type="button" onClick={() => change("")} disabled={locked} className={`${ACTION} text-red-600 hover:bg-red-50`}>
-            <Trash2 className="h-4 w-4" aria-hidden="true" />
+            <TrashCan className="h-4 w-4" />
             حذف تصویر
           </button>
         )}

@@ -193,7 +193,7 @@ function SalesTable({ daily, stats }) {
           <tr>
             <th scope="col" className="w-[34%] px-3 py-2.5 text-start font-semibold">تاریخ</th>
             <th scope="col" className="w-[46%] px-3 py-2.5 text-start font-semibold">فروش (تومان)</th>
-            <th scope="col" className="px-3 py-2.5 text-start font-semibold">سفارش</th>
+            <th scope="col" className="px-3 py-2.5 text-center font-semibold">سفارش</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-100 text-gray-800">
@@ -216,7 +216,7 @@ function SalesTable({ daily, stats }) {
                   />
                   <span className="relative font-semibold">{fa(d.revenue)}</span>
                 </td>
-                <td className="px-3 py-2 tabular-nums">
+                <td className="px-3 py-2 text-center tabular-nums">
                   <span className="inline-flex min-w-7 justify-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-bold text-gray-700">{fa(d.orders)}</span>
                 </td>
               </tr>
