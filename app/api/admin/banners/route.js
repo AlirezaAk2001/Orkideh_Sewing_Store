@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth";
+import { removeUnusedUploads } from "@/lib/uploads";
 
 // GET → لیست بنرها
 export async function GET() {
@@ -54,6 +55,7 @@ export async function PUT(req) {
       return NextResponse.json({ error: "اطلاعات ناقص است" }, { status: 400 });
     }
 
+    const before = await prisma.banner.findUnique({ where: { id: parseInt(id) }, select: { img: true } });
     const banner = await prisma.banner.update({
       where: { id: parseInt(id) },
       data: {
@@ -63,6 +65,8 @@ export async function PUT(req) {
         link: link || "/products",
       },
     });
+    // فایل آپلودشدهٔ قبلی بنر اگر دیگر جایی استفاده نمی‌شود پاک می‌شود
+    if (before?.img && before.img !== banner.img) await removeUnusedUploads([before.img]);
 
     return NextResponse.json(banner, { status: 200 });
   } catch (error) {
@@ -80,7 +84,9 @@ export async function DELETE(req) {
     const { id } = await req.json();
     if (!id) return NextResponse.json({ error: "id الزامی است" }, { status: 400 });
 
+    const before = await prisma.banner.findUnique({ where: { id: parseInt(id) }, select: { img: true } });
     await prisma.banner.delete({ where: { id: parseInt(id) } });
+    if (before?.img) await removeUnusedUploads([before.img]);
 
     return NextResponse.json({ message: "بنر حذف شد" }, { status: 200 });
   } catch (error) {

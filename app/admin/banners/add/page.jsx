@@ -17,6 +17,7 @@ export default function AddBannerPage() {
   const [desc, setDesc] = useState("");
   const preview = useImagePreview(); // مقدار فیلد بلادرنگ، آدرس پیش‌نمایش نیم ثانیه بعد از آخرین تایپ
   const [isSaving, setIsSaving] = useState(false);
+  const [uploading, setUploading] = useState(false); // آپلود تصویر در جریان است: ذخیره قفل می‌ماند
 
   const img = preview.value;
   const isFormFilled = title.trim() || desc.trim() || img.trim();
@@ -47,7 +48,7 @@ export default function AddBannerPage() {
   };
 
   const missing = [!title.trim() && "عنوان", !desc.trim() && "توضیحات", !img.trim() && "تصویر"].filter(Boolean);
-  const status = !isFormFilled ? "برای ذخیره، اطلاعات بنر را وارد کنید" : missing.length ? `هنوز لازم است: ${missing.join("، ")}` : "همه‌چیز آمادهٔ ذخیره است";
+  const status = uploading ? "در حال آپلود تصویر؛ ذخیره بعد از پایان آپلود فعال می‌شود" : !isFormFilled ? "برای ذخیره، اطلاعات بنر را وارد کنید" : missing.length ? `هنوز لازم است: ${missing.join("، ")}` : "همه‌چیز آمادهٔ ذخیره است";
 
   return (
     <>
@@ -69,13 +70,14 @@ export default function AddBannerPage() {
               overlay={{ title, desc }}
               label="آدرس تصویر"
               placeholder="مثال: x.png"
-              hint="نام فایلی که داخل پوشهٔ public/image گذاشته‌اید، یا آدرس کامل"
-              emptyText="پیش‌نمایش تصویر بنر"
+              hint="با آپلود خودکار پر می‌شود؛ یا نام فایلی از پوشهٔ public/image را بنویسید، یا آدرس کامل"
+              onBusyChange={setUploading}
+              disabled={isSaving}
             />
           </FormSection>
         </div>
 
-        <SaveBar label="ذخیرهٔ بنر" backHref="/admin/banners" saving={isSaving} disabled={!isFormFilled} tone={!isFormFilled ? "idle" : missing.length ? "dirty" : "ready"} status={status} />
+        <SaveBar label="ذخیرهٔ بنر" backHref="/admin/banners" saving={isSaving} disabled={uploading || !isFormFilled} tone={uploading ? "dirty" : !isFormFilled ? "idle" : missing.length ? "dirty" : "ready"} status={status} />
       </form>
     </>
   );

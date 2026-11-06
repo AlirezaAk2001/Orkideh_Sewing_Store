@@ -10,6 +10,7 @@ import "swiper/css/pagination";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import AppImage from "./AppImage";
+import { getImagePath } from "@/app/utils/getImagePath";
 
 // بنرها را صفحهٔ سروری (app/page.js) می‌دهد تا در همان HTML اولیه باشند؛ error همان پیام نگرفتن بنرهاست
 export default function BannerSlider({ banners, error }) {
@@ -69,11 +70,7 @@ export default function BannerSlider({ banners, error }) {
           <SwiperSlide key={banner.id}>
             <div className="relative w-full aspect-[16/10] sm:aspect-[2/1] lg:aspect-[5/2] min-h-[220px] overflow-hidden">
               <AppImage
-                src={
-                  banner.img?.startsWith("/image/")
-                  ? banner.img
-                  : `/image/${banner.img}`
-                }
+                src={getImagePath(banner.img)}
                 alt={banner.title}
                 fill
                 sizes="(min-width: 1200px) 1200px, 100vw"

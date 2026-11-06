@@ -22,6 +22,7 @@ export default function EditCategory() {
   const img = useImagePreview();
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [uploading, setUploading] = useState(false); // آپلود تصویر در جریان است: ذخیره قفل می‌ماند
   const [initialData, setInitialData] = useState({ name: "", slug: "", image: "" });
   const { init: initImage } = img;
 
@@ -102,7 +103,7 @@ export default function EditCategory() {
   }
 
   const missing = [!name.trim() && "نام", !slug.trim() && "اسلاگ"].filter(Boolean);
-  const status = missing.length ? `هنوز لازم است: ${missing.join("، ")}` : hasChanged ? "تغییرات ذخیره‌نشده دارید" : "تغییری اعمال نشده است";
+  const status = uploading ? "در حال آپلود تصویر؛ ذخیره بعد از پایان آپلود فعال می‌شود" : missing.length ? `هنوز لازم است: ${missing.join("، ")}` : hasChanged ? "تغییرات ذخیره‌نشده دارید" : "تغییری اعمال نشده است";
 
   return (
     <>
@@ -131,19 +132,21 @@ export default function EditCategory() {
             </div>
           </FormSection>
 
-          <FormSection index={1} icon={ImageIcon} title="تصویر دسته‌بندی" hint="اختیاری؛ پیش‌نمایش با تایپ نام فایل به‌روز می‌شود" className="lg:sticky lg:top-0">
+          <FormSection index={1} icon={ImageIcon} title="تصویر دسته‌بندی" hint="اختیاری؛ فایل را آپلود کنید یا نام آن را بنویسید" className="lg:sticky lg:top-0">
             <ImagePreviewField
               kind="category"
               preview={img}
               label="آدرس تصویر"
               placeholder="مثال: y.png"
-              hint="نام فایلی که داخل پوشهٔ public/image گذاشته‌اید، یا آدرس کامل (اختیاری)"
-              emptyText="پیش‌نمایش تصویر دسته‌بندی"
+              hint="اختیاری. با آپلود خودکار پر می‌شود؛ یا نام فایلی از پوشهٔ public/image را بنویسید، یا آدرس کامل"
+              removable
+              onBusyChange={setUploading}
+              disabled={isSaving}
             />
           </FormSection>
         </div>
 
-        <SaveBar label="ذخیرهٔ تغییرات" backHref="/admin/categories" saving={isSaving} disabled={!hasChanged} tone={missing.length || hasChanged ? "dirty" : "idle"} status={status} />
+        <SaveBar label="ذخیرهٔ تغییرات" backHref="/admin/categories" saving={isSaving} disabled={uploading || !hasChanged} tone={uploading || missing.length || hasChanged ? "dirty" : "idle"} status={status} />
       </form>
     </>
   );

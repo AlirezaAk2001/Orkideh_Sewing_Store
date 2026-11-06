@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth";
+import { imageSrc } from "@/lib/productImages";
+import { removeUnusedUploads } from "@/lib/uploads";
 
 /**
  * 📘 GET /api/admin/categories
@@ -11,10 +13,10 @@ export async function GET() {
   try {
     const categories = await prisma.category.findMany();
 
-    // مسیر تصویر را اصلاح کن
+    // مسیر تصویر را اصلاح کن (نام فایل → /image/…؛ فایل آپلودشده و آدرس بیرونی دست‌نخورده)
     const updated = categories.map((cat) => ({
       ...cat,
-      image: cat.image ? `/image/${cat.image}` : null,
+      image: imageSrc(cat.image),
     }));
 
     return NextResponse.json(updated);
@@ -97,14 +99,18 @@ export async function PUT(req) {
       );
     }
 
+    // image: فرستاده نشده (undefined) = دست‌نخورده؛ رشتهٔ خالی یا null = تصویر برداشته شود (تصویر دسته‌بندی اختیاری است)
     const updatedCategory = await prisma.category.update({
       where: { id },
       data: {
         name: name ?? existing.name,
         slug: slug ?? existing.slug,
-        image: image ?? existing.image,
+        image: image === undefined ? existing.image : image || null,
       },
     });
+
+    // فایل آپلودشدهٔ قبلی که دیگر جایی استفاده نمی‌شود از دیسک پاک می‌شود
+    if (existing.image && existing.image !== updatedCategory.image) await removeUnusedUploads([existing.image]);
 
     return NextResponse.json(updatedCategory, { status: 200 });
   } catch (error) {
@@ -154,6 +160,7 @@ export async function DELETE(req) {
     }
 
     await prisma.category.delete({ where: { id } });
+    await removeUnusedUploads([existing.image]);
 
     return NextResponse.json(
       { message: "دسته‌بندی با موفقیت حذف شد." },

@@ -36,6 +36,16 @@ export function useImagePreview() {
     }, 600);
   }, []);
 
+  // apply(val): مقدار تازه بی‌تأخیر (بدون نیم‌ثانیه صبر) پیش‌نمایش داده می‌شود؛ برای تصویری که همین الان آپلود شده و وجودش قطعی است. «در حال بررسی» تا رسیدن onLoad می‌ماند
+  const apply = useCallback((next) => {
+    clearTimeout(timer.current);
+    const trimmed = next.trim();
+    setValue(next);
+    setPreview(trimmed);
+    setLoading(Boolean(trimmed) && previewRef.current !== trimmed);
+    previewRef.current = trimmed;
+  }, []);
+
   const init = useCallback((next) => {
     clearTimeout(timer.current);
     previewRef.current = next.trim();
@@ -54,5 +64,5 @@ export function useImagePreview() {
     setFailed(previewRef.current);
   }, []);
 
-  return { value, change, init, preview, loading, error: Boolean(preview) && failed === preview, onLoad, onError };
+  return { value, change, apply, init, preview, loading, error: Boolean(preview) && failed === preview, onLoad, onError };
 }

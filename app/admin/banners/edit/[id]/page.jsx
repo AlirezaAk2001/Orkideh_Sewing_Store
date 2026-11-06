@@ -21,6 +21,7 @@ export default function EditBannerPage() {
   const preview = useImagePreview();
   const [loading,  setLoading]  = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [uploading, setUploading] = useState(false); // آپلود تصویر در جریان است: ذخیره قفل می‌ماند
   const [initialData, setInitialData] = useState({ title: "", desc: "", img: "" });
   const { init: initImage } = preview;
 
@@ -84,7 +85,7 @@ export default function EditBannerPage() {
     );
   }
 
-  const status = hasChanged ? "تغییرات ذخیره‌نشده دارید" : "تغییری اعمال نشده است";
+  const status = uploading ? "در حال آپلود تصویر؛ ذخیره بعد از پایان آپلود فعال می‌شود" : hasChanged ? "تغییرات ذخیره‌نشده دارید" : "تغییری اعمال نشده است";
 
   return (
     <>
@@ -110,13 +111,14 @@ export default function EditBannerPage() {
               overlay={{ title, desc }}
               label="آدرس تصویر"
               placeholder="مثال: x.png"
-              hint="نام فایلی که داخل پوشهٔ public/image گذاشته‌اید، یا آدرس کامل"
-              emptyText="پیش‌نمایش تصویر بنر"
+              hint="با آپلود خودکار پر می‌شود؛ یا نام فایلی از پوشهٔ public/image را بنویسید، یا آدرس کامل"
+              onBusyChange={setUploading}
+              disabled={isSaving}
             />
           </FormSection>
         </div>
 
-        <SaveBar label="ذخیرهٔ تغییرات" backHref="/admin/banners" saving={isSaving} disabled={!hasChanged} tone={hasChanged ? "dirty" : "idle"} status={status} />
+        <SaveBar label="ذخیرهٔ تغییرات" backHref="/admin/banners" saving={isSaving} disabled={uploading || !hasChanged} tone={uploading || hasChanged ? "dirty" : "idle"} status={status} />
       </form>
     </>
   );

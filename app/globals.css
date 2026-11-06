@@ -1137,7 +1137,7 @@ main {
 }
 
 /* لیست‌های پنل (app/admin/_list): ردیف‌ها یکی‌یکی با ۳۰ میلی‌ثانیه فاصله بالا می‌آیند (تأخیر از style هر ردیف) و دکمه‌های آیکونی هنگام هاور
-   یک حرکت کوتاه دارند: قلم می‌نویسد، سطل زباله تکان می‌خورد. همه فقط بدون «کاهش حرکت» */
+   یک حرکت کوتاه دارند: قلم می‌نویسد، درِ سطل زباله از بدنه جدا می‌شود و مثل زنگوله می‌جنبد (دکمهٔ حذف خودش از جایش بلند نمی‌شود). همه فقط بدون «کاهش حرکت» */
 @keyframes admin-row-in {
   from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: none; }
@@ -1155,10 +1155,23 @@ main {
   75% { transform: translate(2px, -1px) rotate(6deg); }
 }
 
-@keyframes icon-shake {
-  0%, 100% { transform: rotate(0deg); }
-  25% { transform: rotate(-9deg); }
-  60% { transform: rotate(8deg); }
+/* درب سطل دکمهٔ حذف (TrashCan.jsx): با فاصله بالا می‌رود (۵ واحد از ۲۴)، مثل زنگوله با دامنهٔ کاهنده تاب می‌خورد (۱۴° تا ۱٫۵°) و برمی‌گردد سر جایش.
+   مبدأ چرخش وسط لبهٔ پایینی درب است (خط درب)، پس درب حول خودش می‌جنبد و به بدنه نمی‌خورد. حرکت با data-play روشن می‌شود و تا آخر پخش می‌شود */
+@keyframes trash-lid {
+  0% { transform: translateY(0) rotate(0deg); }
+  10% { transform: translateY(-5px) rotate(0deg); }
+  22% { transform: translateY(-5px) rotate(-14deg); }
+  36% { transform: translateY(-5px) rotate(11deg); }
+  50% { transform: translateY(-5px) rotate(-7deg); }
+  62% { transform: translateY(-5px) rotate(4deg); }
+  72% { transform: translateY(-5px) rotate(-1.5deg); }
+  80% { transform: translateY(-5px) rotate(0deg); }
+  100% { transform: translateY(0) rotate(0deg); }
+}
+
+.trash-lid {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
 }
 
 /* ردیف جدول: با هاور یک خط باریک برند از میانهٔ لبهٔ راست (ابتدای ردیف در راست‌به‌چپ) باز می‌شود؛ تصویر کوچک ردیف هم کمی بزرگ می‌شود (در Thumb). */
@@ -1193,9 +1206,8 @@ main {
     animation: icon-write 0.6s ease-in-out;
   }
 
-  .icon-action:hover .icon-trash {
-    animation: icon-shake 0.5s ease-in-out;
-    transform-origin: 50% 80%;
+  .trash-lid[data-play] {
+    animation: trash-lid 1.3s ease-in-out;
   }
 }
 

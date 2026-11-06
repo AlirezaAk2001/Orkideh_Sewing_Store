@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil } from "lucide-react";
 import Tip from "./Tip";
+import TrashCan from "./TrashCan";
 
-// دکمهٔ گردِ آیکونی ردیف (ویرایش، حذف): خاکستری، با هاور رنگی و راهنما. href بدهید لینک می‌شود، وگرنه دکمه. برچسب هم راهنماست هم aria-label
+// دکمهٔ گردِ آیکونی ردیف (ویرایش، حذف): خاکستری، با هاور رنگی و راهنما. href بدهید لینک می‌شود، وگرنه دکمه. برچسب هم راهنماست هم aria-label.
+// دکمه btn-flat است: مثل لینک ویرایش از جایش بلند نمی‌شود (حرکت سه‌بعدی سراسری دکمه‌ها اینجا نمی‌خواهد؛ فقط آیکون داخلش حرکت می‌کند)
 const TONES = {
   edit: "hover:bg-brand-50 hover:text-brand-700 focus-visible:ring-brand-300",
   danger: "hover:bg-red-50 hover:text-red-600 focus-visible:ring-red-300",
@@ -19,7 +21,7 @@ export function IconAction({ label, href, onClick, tone = "edit", children }) {
           {children}
         </Link>
       ) : (
-        <button type="button" aria-label={label} onClick={onClick} className={cls}>
+        <button type="button" aria-label={label} onClick={onClick} className={`btn-flat ${cls}`}>
           {children}
         </button>
       )}
@@ -35,7 +37,7 @@ export function RowActions({ editHref, editLabel, onDelete, deleteLabel }) {
         <Pencil className="icon-write h-[18px] w-[18px]" aria-hidden="true" />
       </IconAction>
       <IconAction label={deleteLabel} onClick={onDelete} tone="danger">
-        <Trash2 className="icon-trash h-[18px] w-[18px]" aria-hidden="true" />
+        <TrashCan />
       </IconAction>
     </div>
   );

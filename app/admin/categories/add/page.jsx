@@ -17,6 +17,7 @@ export default function AddCategory() {
   const [slug, setSlug] = useState("");
   const img = useImagePreview();
   const [isSaving, setIsSaving] = useState(false);
+  const [uploading, setUploading] = useState(false); // آپلود تصویر در جریان است: ذخیره قفل می‌ماند
 
   const image = img.value;
   const isFormFilled = name.trim() || slug.trim() || image.trim();
@@ -50,7 +51,7 @@ export default function AddCategory() {
   };
 
   const missing = [!name.trim() && "نام", !slug.trim() && "اسلاگ"].filter(Boolean);
-  const status = !isFormFilled ? "برای ذخیره، اطلاعات دسته‌بندی را وارد کنید" : missing.length ? `هنوز لازم است: ${missing.join("، ")}` : "همه‌چیز آمادهٔ ذخیره است";
+  const status = uploading ? "در حال آپلود تصویر؛ ذخیره بعد از پایان آپلود فعال می‌شود" : !isFormFilled ? "برای ذخیره، اطلاعات دسته‌بندی را وارد کنید" : missing.length ? `هنوز لازم است: ${missing.join("، ")}` : "همه‌چیز آمادهٔ ذخیره است";
 
   return (
     <>
@@ -74,19 +75,21 @@ export default function AddCategory() {
             </div>
           </FormSection>
 
-          <FormSection index={1} icon={ImageIcon} title="تصویر دسته‌بندی" hint="اختیاری؛ پیش‌نمایش با تایپ نام فایل به‌روز می‌شود" className="lg:sticky lg:top-0">
+          <FormSection index={1} icon={ImageIcon} title="تصویر دسته‌بندی" hint="اختیاری؛ فایل را آپلود کنید یا نام آن را بنویسید" className="lg:sticky lg:top-0">
             <ImagePreviewField
               kind="category"
               preview={img}
               label="آدرس تصویر"
               placeholder="مثال: y.png"
-              hint="نام فایلی که داخل پوشهٔ public/image گذاشته‌اید، یا آدرس کامل (اختیاری)"
-              emptyText="پیش‌نمایش تصویر دسته‌بندی"
+              hint="اختیاری. با آپلود خودکار پر می‌شود؛ یا نام فایلی از پوشهٔ public/image را بنویسید، یا آدرس کامل"
+              removable
+              onBusyChange={setUploading}
+              disabled={isSaving}
             />
           </FormSection>
         </div>
 
-        <SaveBar label="ذخیرهٔ دسته‌بندی" backHref="/admin/categories" saving={isSaving} disabled={!isFormFilled} tone={!isFormFilled ? "idle" : missing.length ? "dirty" : "ready"} status={status} />
+        <SaveBar label="ذخیرهٔ دسته‌بندی" backHref="/admin/categories" saving={isSaving} disabled={uploading || !isFormFilled} tone={uploading ? "dirty" : !isFormFilled ? "idle" : missing.length ? "dirty" : "ready"} status={status} />
       </form>
     </>
   );

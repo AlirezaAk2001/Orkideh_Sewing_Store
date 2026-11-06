@@ -16,6 +16,7 @@ import EmptyState from "@/app/admin/_list/EmptyState";
 import Thumb from "@/app/admin/_list/Thumb";
 import Chip from "@/app/admin/_list/Chip";
 import { RowActions } from "@/app/admin/_list/IconAction";
+import { imageSrc } from "@/lib/productImages";
 
 const PAGE_SIZE_OPTIONS = [3, 5, 10];
 const fa = (n) => Number(n).toLocaleString("fa-IR");
@@ -35,14 +36,10 @@ export default function AdminCategories() {
     try {
       const { data } = await axios.get("/api/admin/categories");
 
-      // اصلاح مسیر تصویر (منطق اصلی دست نخورده)
+      // اصلاح مسیر تصویر: نام فایل → /image/…؛ فایل آپلودشده (/uploads/…) و آدرس بیرونی همان‌طور که هستند
       const categoriesWithFixedImages = data.map((cat) => ({
         ...cat,
-        image: cat.image
-          ? cat.image.startsWith("/image/")
-            ? cat.image
-            : `/image/${cat.image}`
-          : null,
+        image: imageSrc(cat.image),
       }));
 
       // pagination سمت کلاینت (چون API categories pagination ندارد)
