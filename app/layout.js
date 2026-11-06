@@ -4,6 +4,7 @@ import { AuthProvider, FavoritesProvider, CartProvider } from "../lib/context";
 import { Toaster } from "react-hot-toast";
 import ConditionalLayout from "./components/ConditionalLayout";
 import ButtonDepth from "./components/ButtonDepth";
+import PageScrollbar from "./components/PageScrollbar";
 import { SITE_NAME, SITE_DESCRIPTION, getSiteUrl, previewImage } from "../lib/seo";
 
 export const metadata = {
@@ -43,6 +44,7 @@ export default function RootLayout({ children }) {
     <html lang="fa" dir="rtl">
       <body className="bg-gray-100 text-gray-900 antialiased flex flex-col min-h-screen">
         <ButtonDepth />
+        <PageScrollbar />
         <AuthProvider>
           <FavoritesProvider>
             <CartProvider>

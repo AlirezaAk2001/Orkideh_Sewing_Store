@@ -46,6 +46,160 @@ main {
   display: none;
 }
 
+/* اسکرول‌بار بومیِ نازک و صورتی برای اسکرولرهایی که شست سفارشی ندارند (textarea، محتوای دیالوگ‌ها، لایت‌باکس) و برای صفحه‌های لمسی؛ زیر ماوس، صفحه و اسکرولرهای اصلی از ScrollThumb (پایین‌تر) استفاده می‌کنند. ۱۰ پیکسل جا (خودِ جا همیشه ۱۰ پیکسل است تا چیدمان با هاور نپرد) که قرصِ گوشه‌گرد
+   داخلش با border شفاف «نحیف» می‌شود: در حالت عادی ۴ پیکسل و صورتی کم‌رنگ (brand-300)، با هاور ۶ پیکسل و صورتی پررنگ (brand-500) و هنگام کشیدن
+   صورتی پررنگ‌تر (brand-600). کروم و سافاری از ::-webkit-scrollbar، فایرفاکس از scrollbar-width می‌خوانند (اگر scrollbar-width در کروم هم می‌آمد،
+   ::-webkit-scrollbar را نادیده می‌گرفت، برای همین جدا و با @supports؛ فایرفاکس ضخامت را با هاور عوض نمی‌کند). .no-scrollbar جدا و بالاتر است */
+@supports selector(::-webkit-scrollbar) {
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    min-width: 2.5rem;
+    min-height: 2.5rem;
+    border: 3px solid transparent;
+    border-radius: 9999px;
+    background-clip: content-box;
+    background-color: var(--color-brand-300);
+  }
+  ::-webkit-scrollbar-thumb:hover,
+  ::-webkit-scrollbar-thumb:active {
+    border-width: 2px;
+    background-color: var(--color-brand-500);
+  }
+  ::-webkit-scrollbar-thumb:active {
+    background-color: var(--color-brand-600);
+  }
+  ::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+}
+@supports not selector(::-webkit-scrollbar) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-brand-300) transparent;
+  }
+}
+
+/* شست اسکرول سفارشی (ScrollThumb.jsx، ScrollArea.jsx، PageScrollbar.jsx): مرورگر نه اجازهٔ تغییر نشانگر روی اسکرول‌بار بومی را می‌دهد و نه تغییر نرم رنگ و ضخامتش را، پس زیر ماوس
+   (hover:hover و pointer:fine) اسکرول‌بار بومیِ صفحه و اسکرولرهای کلاس .sb-hide پنهان است و ریل .sb-track با شست .sb-thumb جایش را می‌گیرد (سمت راست، نه وابسته به جهت صفحه).
+   ریل ۱۰ پیکسل جای گرفتن/کشیدن است و خودِ شست (::before) در حالت عادی ۳ پیکسل، صورتی کم‌رنگ (brand-300)؛ با هاور نرم (۰٫۱۸ تا ۰٫۲۲ ثانیه) ۵ پیکسل و صورتی پررنگ (brand-500)؛
+   هنگام کشیدن brand-600. نشانگر: دست باز (grab) روی شست، با کلیک مشت (grabbing) تا رها کردن (html.sb-dragging مشت را حتی وقتی نشانگر از شست بیرون رفته نگه می‌دارد) */
+@media (hover: hover) and (pointer: fine) {
+  html,
+  .sb-hide {
+    scrollbar-width: none;
+  }
+  html::-webkit-scrollbar,
+  .sb-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
+.sb-track {
+  display: none;
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  bottom: 2px;
+  z-index: 5;
+  width: 10px;
+  cursor: default;
+}
+@media (hover: hover) and (pointer: fine) {
+  .sb-track {
+    display: block;
+  }
+}
+.sb-track[data-off] {
+  display: none;
+}
+.sb-track--page {
+  position: fixed;
+  z-index: 60;
+}
+/* مسیر شست کنار جدول (ScrollArea با lane): تا شست دیده می‌شود اسکرولر ۱۲ پیکسل باریک‌تر است و این ۱۲ پیکسل مال شست است، پس ردیف، هاور و خط لبهٔ ردیف زیرش نمی‌روند؛
+   .sb-cap همان ظاهر سرستون را کنار سرستون می‌گذارد (ریل از زیر سرستون شروع می‌شود) تا نوار سرستون تا لبهٔ کارت برود. ارتفاع cap را ScrollThumb در --sb-top می‌گذارد */
+.sb-cap {
+  display: none;
+}
+@media (hover: hover) and (pointer: fine) {
+  .sb-area[data-lane][data-sb-on] > .sb-hide {
+    margin-right: 12px;
+  }
+  .sb-area[data-lane][data-sb-on] > .sb-cap {
+    display: block;
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 12px;
+    height: var(--sb-top, 0px);
+    pointer-events: none;
+  }
+}
+/* ریل وقتی لازم می‌شود نرم ظاهر می‌شود (نه یک‌دفعه) */
+@media (prefers-reduced-motion: no-preference) {
+  .sb-track {
+    animation: sb-fade-in 0.25s ease both;
+  }
+}
+@keyframes sb-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+.sb-thumb {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100%;
+  cursor: grab;
+  touch-action: none;
+  will-change: transform;
+}
+.sb-thumb::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 3px;
+  margin-left: -1.5px;
+  border-radius: 9999px;
+  background-color: var(--color-brand-300);
+  transition: width 0.18s ease, margin-left 0.18s ease, background-color 0.22s ease;
+}
+.sb-thumb:hover::before,
+.sb-thumb[data-dragging]::before {
+  width: 5px;
+  margin-left: -2.5px;
+  background-color: var(--color-brand-500);
+}
+.sb-thumb[data-dragging] {
+  cursor: grabbing;
+}
+.sb-thumb[data-dragging]::before {
+  background-color: var(--color-brand-600);
+}
+html.sb-dragging,
+html.sb-dragging * {
+  cursor: grabbing !important;
+  user-select: none !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .sb-thumb::before {
+    transition: none;
+  }
+}
+@media print {
+  .sb-track {
+    display: none !important;
+  }
+}
+
 /* ظاهر شدن بخش‌ها هنگام اسکرول (Reveal.jsx)؛ فقط وقتی جاوااسکریپت فعال است و کاربر «کاهش حرکت» نخواسته، وگرنه همه‌چیز از اول دیده می‌شود */
 @media (scripting: enabled) and (prefers-reduced-motion: no-preference) {
   [data-reveal] {

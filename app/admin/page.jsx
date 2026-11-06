@@ -14,6 +14,7 @@ import AttentionBell from "./_dashboard/AttentionBell";
 import AttentionItem from "./_dashboard/AttentionItem";
 import DashboardHero from "./_dashboard/DashboardHero";
 import Panel from "./_dashboard/Panel";
+import ScrollArea from "@/app/components/ScrollArea";
 import ShortcutCard from "./_dashboard/ShortcutCard";
 import StatTile from "./_dashboard/StatTile";
 import { fa } from "./_dashboard/format";
@@ -157,17 +158,23 @@ export default function AdminHome() {
   ];
 
   return (
-    <div className="dash-viz relative space-y-4" dir="rtl">
-      <DashboardHero
-        summary={summary}
-        days={days}
-        setDays={setDays}
-        loading={loading}
-        demoAvailable={DEMO_OK}
-        demo={demo}
-        setDemo={toggleDemo}
-      />
+    // از md به بالا کارت صورتی بالا (DashboardHero) ثابت می‌ماند و بقیهٔ داشبورد زیر آن اسکرول می‌خورد (ریل شست از زیر کارت شروع می‌شود)؛ ارتفاع قاب را 100cqh می‌دهد،
+    // یعنی ارتفاع ناحیهٔ محتوای <main> (container-type:size در layout.jsx، مثل TablePage). زیر md یا پنجرهٔ خیلی کوتاه، قاب ارتفاع آزاد دارد و خود main اسکرول می‌خورد.
+    // md:-ml-2 / md:-mr-4 با md:pl-2 / md:pr-4 / md:py-1: سایه و حلقهٔ کارت‌های کنار لبه بریده نشوند و شست در حاشیهٔ راست main (نه روی کارت‌ها) بنشیند
+    <div className="dash-viz relative flex flex-col gap-4 md:h-[100cqh] md:min-h-[34rem]" dir="rtl">
+      <div className="shrink-0">
+        <DashboardHero
+          summary={summary}
+          days={days}
+          setDays={setDays}
+          loading={loading}
+          demoAvailable={DEMO_OK}
+          demo={demo}
+          setDemo={toggleDemo}
+        />
+      </div>
 
+      <ScrollArea className="min-h-0 flex-1 md:-ml-2 md:-mr-4" innerClassName="space-y-4 md:py-1 md:pl-2 md:pr-4">
       {data?.demo && (
         <div role="status" className="dash-rise grid grid-cols-[auto_1fr] items-center gap-x-3 gap-y-2.5 rounded-2xl bg-amber-50 px-4 py-3 text-sm text-amber-900 ring-1 ring-amber-200 sm:grid-cols-[auto_1fr_auto]">
           <FlaskConical className="h-5 w-5 shrink-0 text-amber-600" aria-hidden="true" />
@@ -229,6 +236,7 @@ export default function AdminHome() {
           <DashboardCharts data={data} busy={refreshing} />
         </>
       )}
+      </ScrollArea>
     </div>
   );
 }

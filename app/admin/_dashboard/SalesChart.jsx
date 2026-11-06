@@ -3,6 +3,7 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { Banknote, CalendarCheck, Check, ChartLine, ChartNoAxesColumn, Crown, Sigma, Table2, TrendingDown, TrendingUp } from "lucide-react";
 import { Empty } from "./Panel";
+import ScrollArea from "@/app/components/ScrollArea";
 import { compactText, dayLong, dayShort, fa, niceScale, rtl } from "./format";
 import { useReveal } from "@/app/admin/_ui/useReveal";
 import { useSegmentSlide } from "@/app/admin/_ui/useSegmentSlide";
@@ -186,7 +187,7 @@ function SummaryStrip({ stats, daily, layers = null, onToggle }) {
 // نمای جدول: هر روز یک ردیف؛ زیر عدد فروش یک نوار داده (به نسبت بهترین روز) که با دیده‌شدن جدول از راست باز می‌شود، و بهترین روز تاج دارد
 function SalesTable({ daily, stats }) {
   return (
-    <div className="max-h-[19rem] overflow-auto rounded-xl ring-1 ring-gray-200">
+    <ScrollArea className="max-h-[19rem] overflow-hidden rounded-xl ring-1 ring-gray-200" innerClassName="overflow-x-auto" topSelector="thead" lane capClassName="bg-gradient-to-b from-gray-50 to-gray-100/80">
       <table className="w-full text-sm">
         <caption className="sr-only">فروش و تعداد سفارش پرداخت‌شدهٔ هر روز</caption>
         <thead className="sticky top-0 z-10 bg-gradient-to-b from-gray-50 to-gray-100/80 text-xs text-gray-500 backdrop-blur">
@@ -224,7 +225,7 @@ function SalesTable({ daily, stats }) {
           })}
         </tbody>
       </table>
-    </div>
+    </ScrollArea>
   );
 }
 

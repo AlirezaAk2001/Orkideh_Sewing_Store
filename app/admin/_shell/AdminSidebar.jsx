@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import ScrollArea from "@/app/components/ScrollArea";
 import { useEffect, useRef } from "react";
 import Icon from "@mdi/react";
 import { mdiAccountTieOutline } from "@mdi/js";
@@ -49,7 +50,7 @@ function SidebarBody({ collapsed, busy, pathname, onLogout, onNavigate, onToggle
         )}
       </div>
 
-      <nav aria-label="منوی پنل مدیریت" className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-3 pb-2">
+      <ScrollArea as="nav" aria-label="منوی پنل مدیریت" className="min-h-0 flex-1" innerClassName="overflow-x-hidden px-3 pb-2">
         {NAV_GROUPS.map((group, gi) => (
           <div key={gi}>
             {group.label &&
@@ -85,7 +86,7 @@ function SidebarBody({ collapsed, busy, pathname, onLogout, onNavigate, onToggle
             </ul>
           </div>
         ))}
-      </nav>
+      </ScrollArea>
 
       <div className="shrink-0 space-y-1 border-t border-gray-200 p-3">
         <Link

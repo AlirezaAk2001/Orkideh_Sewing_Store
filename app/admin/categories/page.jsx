@@ -9,6 +9,7 @@ import { mdiShapeOutline } from "@mdi/js";
 import PageHeader from "@/app/admin/_shell/PageHeader";
 import ConfirmDialog from "@/app/admin/_shell/ConfirmDialog";
 import ListCard from "@/app/admin/_list/ListCard";
+import TablePage from "@/app/admin/_list/TablePage";
 import DataTable from "@/app/admin/_list/DataTable";
 import Pagination from "@/app/admin/_list/Pagination";
 import AddButton from "@/app/admin/_list/AddButton";
@@ -138,7 +139,7 @@ export default function AdminCategories() {
   );
 
   return (
-    <>
+    <TablePage>
       <ConfirmDialog
         open={deleteDialog.open}
         onClose={closeDialog}
@@ -161,7 +162,7 @@ export default function AdminCategories() {
         actions={<AddButton href="/admin/categories/add" label="افزودن دسته‌بندی" loading={isFirstLoad} />}
       />
 
-      <ListCard>
+      <ListCard fill>
         {!loading && total === 0 ? (
           <EmptyState
             icon={Shapes}
@@ -193,6 +194,6 @@ export default function AdminCategories() {
           </>
         )}
       </ListCard>
-    </>
+    </TablePage>
   );
 }

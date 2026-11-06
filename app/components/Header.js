@@ -11,6 +11,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Tooltip } from 'react-tooltip';
 import AppImage from "./AppImage";
 import SiteLogo from "./SiteLogo";
+import ScrollArea from "./ScrollArea";
 import { useSiteLogo } from "./useSiteLogo";
 
 // لوگوی هدر در همهٔ صفحه‌ها هست: لوگوی پیش‌فرض SVG انیمیشن‌دار است و لوگوی دیگر از optimizer می‌گذرد تا PNG سنگین برای یک دایرهٔ کوچک دانلود نشود
@@ -149,7 +150,7 @@ export default function Header() {
 
   return (
     <>
-      <header className="bg-white shadow-md py-2 sm:py-3 px-2 sm:px-4 sticky top-0 z-50">
+      <header data-sb-top="page" className="bg-white shadow-md py-2 sm:py-3 px-2 sm:px-4 sticky top-0 z-50">
         <div className="container mx-auto flex flex-wrap sm:flex-nowrap items-center justify-between gap-y-2 sm:gap-4">
           {/* لوگو */}
           <Link href="/" className={`flex-shrink-0 ${isMaintenance ? 'pointer-events-none' : ''}`}>
@@ -223,8 +224,9 @@ export default function Header() {
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  className="absolute w-full bg-white border border-gray-300 rounded-lg shadow-lg mt-1 max-h-60 overflow-y-auto z-10"
+                  className="absolute w-full bg-white border border-gray-300 rounded-lg shadow-lg mt-1 z-10 overflow-hidden"
                 >
+                  <ScrollArea className="max-h-60">
                   {/* نمایش اسکلتون در حین جستجو */}
                   {showSkeleton ? (
                     <SkeletonLoader />
@@ -281,6 +283,7 @@ export default function Header() {
                       </div>
                     ))
                   )}
+                  </ScrollArea>
                 </motion.div>
               )}
             </AnimatePresence>

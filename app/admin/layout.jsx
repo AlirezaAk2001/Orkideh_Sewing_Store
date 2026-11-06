@@ -8,6 +8,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { DesktopSidebar, MobileDrawer } from "./_shell/AdminSidebar";
 import AdminTopBar from "./_shell/AdminTopBar";
 import PageLoader from "@/app/components/PageLoader";
+import ScrollArea from "@/app/components/ScrollArea";
 import ConfirmDialog from "./_shell/ConfirmDialog";
 import { findNavItem } from "./_shell/nav";
 
@@ -115,12 +116,13 @@ export default function AdminLayout({ children }) {
             menuRef={menuButton}
             drawerOpen={drawerOpen}
           />
-          <main className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden p-4 [scrollbar-color:var(--color-gray-300)_transparent] [scrollbar-width:thin]">
+          {/* container-type:size = واحد cqh (ارتفاع محتوای خود main) برای صفحه‌های جدول‌دار: TablePage با h-[100cqh] دقیقاً به اندازهٔ main می‌شود و فقط ردیف‌های جدول اسکرول می‌خورند. ScrollArea: اسکرولر main با شست سفارشی سمت راست */}
+          <ScrollArea as="main" className="min-h-0 flex-1" innerClassName="overflow-x-hidden p-4 [container-type:size]">
             {/* min-h-full و نه h-full: با h-full لفاف همیشه هم‌قد پنجره می‌ماند و محتوای بلندتر از آن بیرون می‌زند، پس فاصلهٔ پایینِ p-4 در اسکرول حساب نمی‌شد و کارت‌های آخر هر صفحه (مثل دو کارت آخر داشبورد) به لبهٔ پنجره می‌چسبیدند و پایینشان بریده دیده می‌شد */}
             <div key={pathname} className="admin-page-in min-h-full">
               {children}
             </div>
-          </main>
+          </ScrollArea>
         </div>
       </div>
 

@@ -11,6 +11,8 @@ import Icon from "@mdi/react";
 import { mdiAccountBoxEditOutline } from "@mdi/js";
 import PageHeader from "@/app/admin/_shell/PageHeader";
 import ListCard from "@/app/admin/_list/ListCard";
+import TablePage from "@/app/admin/_list/TablePage";
+import ScrollArea from "@/app/components/ScrollArea";
 import EmptyState from "@/app/admin/_list/EmptyState";
 import SegmentedTabs from "@/app/admin/_list/SegmentedTabs";
 import Chip from "@/app/admin/_list/Chip";
@@ -122,7 +124,7 @@ function ReplyDialog({ comment, onClose, onSave }) {
         </button>
       </div>
 
-      <div className="flex-1 space-y-3 overflow-y-auto p-5">
+      <ScrollArea className="min-h-0 flex-1" innerClassName="space-y-3 p-5">
         <div className="rounded-xl bg-gray-50 p-4 ring-1 ring-gray-200/70">
           <div className="flex items-center gap-2.5">
             <Avatar name={name} tone="gray" className="h-9 w-9" />
@@ -159,7 +161,7 @@ function ReplyDialog({ comment, onClose, onSave }) {
             <p className="mt-2.5 text-sm leading-7 text-gray-700">{comment.adminReply}</p>
           </div>
         )}
-      </div>
+      </ScrollArea>
 
       {(editMode || !comment.adminReply) && (
         <div className="border-t border-gray-100 bg-gray-50/70 p-4">
@@ -488,8 +490,10 @@ export default function AdminComments() {
     );
   }
 
+    // از md به بالا سربرگ صفحه و تب‌ها ثابت می‌مانند و فقط فهرست کارت‌ها اسکرول می‌خورد؛ شست از زیر تب‌ها شروع می‌شود (قاب و ارتفاعش مثل صفحه‌های جدول‌دار: TablePage).
+    // md:-ml-2 / md:-mr-4 با md:pl-2 / md:pr-4: سایهٔ کارت‌ها بریده نشود و شست در حاشیهٔ راست main بنشیند، نه روی کارت‌ها. زیر md صفحه مثل قبل اسکرول می‌خورد
   return (
-    <>
+    <TablePage>
       <PageHeader
         icon={<Icon path={mdiAccountBoxEditOutline} size="22px" />}
         title="مدیریت نظرات کاربران"
@@ -499,9 +503,18 @@ export default function AdminComments() {
         subtitle={<><b>{fa(filteredComments.length)}</b> {current.noun} یافت شد</>}
       />
 
-      <SegmentedTabs label="وضعیت نظر" tabs={tabs} value={activeTab} onChange={setActiveTab} loading={loading} idPrefix="comments" panelId="comments-panel" />
+      <div className="shrink-0">
+        <SegmentedTabs label="وضعیت نظر" tabs={tabs} value={activeTab} onChange={setActiveTab} loading={loading} idPrefix="comments" panelId="comments-panel" />
+      </div>
 
-      <div id="comments-panel" role="tabpanel" aria-labelledby={`comments-tab-${activeTab}`} aria-busy={loading || undefined} className="mt-4">
+      <ScrollArea
+        id="comments-panel"
+        role="tabpanel"
+        aria-labelledby={`comments-tab-${activeTab}`}
+        aria-busy={loading || undefined}
+        className="mt-4 min-h-0 flex-1 md:-ml-2 md:-mr-4"
+        innerClassName="md:py-1 md:pl-2 md:pr-4"
+      >
         {loading ? (
           <div className="space-y-3">
             {[0, 1, 2].map((i) => (
@@ -517,7 +530,7 @@ export default function AdminComments() {
             ))}
           </div>
         )}
-      </div>
-    </>
+      </ScrollArea>
+    </TablePage>
   );
 }

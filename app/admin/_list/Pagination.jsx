@@ -19,7 +19,7 @@ export default function Pagination({ page, totalPages, pageSize, pageSizes, onPa
     }, []);
 
   return (
-    <div dir="rtl" className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3 border-t border-gray-100 px-4 py-3 text-sm text-gray-500">
+    <div dir="rtl" className="flex shrink-0 flex-wrap items-center justify-between gap-x-4 gap-y-3 border-t border-gray-100 px-4 py-3 text-sm text-gray-500">
       <label className="flex items-center gap-2">
         <span>تعداد در صفحه</span>
         <select

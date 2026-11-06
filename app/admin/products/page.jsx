@@ -13,6 +13,7 @@ import { LOW_STOCK_THRESHOLD } from "@/lib/statsMath";
 import PageHeader from "@/app/admin/_shell/PageHeader";
 import ConfirmDialog from "@/app/admin/_shell/ConfirmDialog";
 import ListCard from "@/app/admin/_list/ListCard";
+import TablePage from "@/app/admin/_list/TablePage";
 import DataTable from "@/app/admin/_list/DataTable";
 import Pagination from "@/app/admin/_list/Pagination";
 import AddButton from "@/app/admin/_list/AddButton";
@@ -378,7 +379,7 @@ export default function AdminProducts() {
   }
 
   return (
-    <>
+    <TablePage>
       <ConfirmDialog
         open={deleteDialog.open}
         onClose={closeDialog}
@@ -401,7 +402,7 @@ export default function AdminProducts() {
         actions={<AddButton href="/admin/products/add" label="افزودن محصول" loading={isFirstLoad} />}
       />
 
-      <ListCard toolbar={toolbar}>
+      <ListCard toolbar={toolbar} fill>
         {empty ?? (
           <>
             <DataTable
@@ -427,6 +428,6 @@ export default function AdminProducts() {
           </>
         )}
       </ListCard>
-    </>
+    </TablePage>
   );
 }

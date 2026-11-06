@@ -1,15 +1,21 @@
+import ScrollArea from "@/app/components/ScrollArea";
+
 // جدول مشترک لیست‌ها. از md به بالا جدول روشن (سرستون کم‌رنگ، ردیف‌ها با خط نازک و هاور صورتی)، زیر md هر ردیف یک کارت که صفحه‌ها با renderCard
 // می‌سازند (جدول با ۷ ستون روی موبایل جا نمی‌شود). هر دو از یک rows ساخته می‌شوند و CSS یکی را پنهان می‌کند، پس دادهٔ تکراری دریافت نمی‌شود.
 // ستون‌ها: { id, label, cell(row), align ("start" پیش‌فرض یا "center")، th (کلاس سرستون)، td (کلاس خانه)، sk (کلاس نوار اسکلتون) }.
 // align برای سرستون، خانه‌ها و اسکلتون یکی است: ستون «center» هم متن سرستون و هم محتوای هر ردیف را دقیقاً روی یک محور عمودی (مرکز ستون) می‌گذارد، هر عرضی که محتوا داشته باشد. loading = اولین بارگذاری (ردیف‌های اسکلتون)،
+// از md به بالا بدنهٔ جدول خودش اسکرول‌پذیر است (ScrollArea با شست سفارشی سمت راست، ریلش از زیر سرستون شروع می‌شود) و سرستون‌ها چسبان‌اند؛ ارتفاع را TablePage و ListCard fill می‌دهند، پس سرستون و صفحه‌بندی ثابت می‌مانند و فقط ردیف‌ها اسکرول می‌خورند.
 // busy = بارگذاری دوباره روی دادهٔ موجود (ردیف‌ها کمی کم‌رنگ می‌شوند). ورود نرم ردیف‌ها با کلاس admin-row-in (با «کاهش حرکت» خاموش) است
+// ظاهر سرستون برای پوششی که کنار سرستون، روی مسیر شست می‌نشیند (ScrollArea lane + capClassName)؛ همان رنگ‌های th
+const CAP = "bg-white bg-gradient-to-b from-gray-50 to-gray-100/70 shadow-[inset_0_-1px_0_var(--color-gray-200)]";
+
 export default function DataTable({ label, columns, rows, rowKey, renderCard, loading = false, busy = false, skeletonRows = 3 }) {
   const stagger = (i) => ({ animationDelay: `${Math.min(i, 12) * 30}ms` });
 
   if (loading) {
     return (
-      <div aria-busy="true" aria-label={label}>
-        <div className="hidden md:block">
+      <div aria-busy="true" aria-label={label} className="md:flex md:min-h-0 md:flex-col">
+        <ScrollArea className="max-md:hidden md:min-h-0" innerClassName="overflow-x-auto" topSelector="thead" lane capClassName={CAP}>
           <table className="w-full table-fixed text-sm">
             <thead className="bg-gradient-to-b from-gray-50 to-gray-100/70 shadow-[inset_0_-1px_0_var(--color-gray-200)]">
               <tr>
@@ -32,7 +38,7 @@ export default function DataTable({ label, columns, rows, rowKey, renderCard, lo
               ))}
             </tbody>
           </table>
-        </div>
+        </ScrollArea>
         <ul className="divide-y divide-gray-100 md:hidden">
           {Array.from({ length: skeletonRows }).map((_, i) => (
             <li key={i} className="flex items-center gap-3 p-4">
@@ -49,14 +55,15 @@ export default function DataTable({ label, columns, rows, rowKey, renderCard, lo
   }
 
   return (
-    <div aria-busy={busy} className={`transition-opacity duration-200 ${busy ? "opacity-60" : ""}`}>
-      <div className="hidden overflow-x-auto md:block">
+    <div aria-busy={busy} className={`transition-opacity duration-200 md:flex md:min-h-0 md:flex-col ${busy ? "opacity-60" : ""}`}>
+      <ScrollArea className="max-md:hidden md:min-h-0" innerClassName="overflow-x-auto" topSelector="thead" lane capClassName={CAP}>
         <table className="w-full text-sm">
           <caption className="sr-only">{label}</caption>
-          <thead className="bg-gradient-to-b from-gray-50 to-gray-100/70 shadow-[inset_0_-1px_0_var(--color-gray-200)]">
+          <thead>
             <tr>
+              {/* پس‌زمینه روی خود th است و زیرش سفید: th چسبان است و ردیف‌هایی که زیرش اسکرول می‌شوند نباید از گرادیان نیمه‌شفاف دیده شوند */}
               {columns.map((c) => (
-                <th key={c.id} scope="col" className={`whitespace-nowrap px-4 py-3 ${c.align === "center" ? "text-center" : "text-start"} text-xs font-semibold text-gray-500 ${c.th || ""}`}>
+                <th key={c.id} scope="col" className={`sticky top-0 z-10 whitespace-nowrap bg-white bg-gradient-to-b from-gray-50 to-gray-100/70 px-4 py-3 shadow-[inset_0_-1px_0_var(--color-gray-200)] ${c.align === "center" ? "text-center" : "text-start"} text-xs font-semibold text-gray-500 ${c.th || ""}`}>
                   {c.label}
                 </th>
               ))}
@@ -74,7 +81,7 @@ export default function DataTable({ label, columns, rows, rowKey, renderCard, lo
             ))}
           </tbody>
         </table>
-      </div>
+      </ScrollArea>
       <ul className="divide-y divide-gray-100 md:hidden" aria-label={label}>
         {rows.map((row, i) => (
           <li key={rowKey(row)} style={stagger(i)} className="admin-row-in group p-4">

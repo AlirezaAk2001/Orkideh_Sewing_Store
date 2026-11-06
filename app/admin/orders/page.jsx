@@ -9,6 +9,8 @@ import Icon from "@mdi/react";
 import { mdiAccountFileText } from "@mdi/js";
 import PageHeader from "@/app/admin/_shell/PageHeader";
 import ListCard from "@/app/admin/_list/ListCard";
+import TablePage from "@/app/admin/_list/TablePage";
+import ScrollArea from "@/app/components/ScrollArea";
 import EmptyState from "@/app/admin/_list/EmptyState";
 import SegmentedTabs from "@/app/admin/_list/SegmentedTabs";
 import StatusChip from "@/app/admin/_list/StatusChip";
@@ -301,8 +303,10 @@ export default function AdminOrders() {
       );
   }
 
+    // از md به بالا سربرگ صفحه و تب‌ها ثابت می‌مانند و فقط فهرست کارت‌ها اسکرول می‌خورد؛ شست از زیر تب‌ها شروع می‌شود (قاب و ارتفاعش مثل صفحه‌های جدول‌دار: TablePage).
+    // md:-ml-2 / md:-mr-4 با md:pl-2 / md:pr-4: سایهٔ کارت‌ها بریده نشود و شست در حاشیهٔ راست main بنشیند، نه روی کارت‌ها. زیر md صفحه مثل قبل اسکرول می‌خورد
   return (
-    <>
+    <TablePage>
       <PageHeader
         icon={<Icon path={mdiAccountFileText} size="22px" />}
         title="مدیریت سفارش‌های کاربران"
@@ -312,9 +316,18 @@ export default function AdminOrders() {
         subtitle={<><b>{fa(visible.length)}</b> {current.noun} یافت شد</>}
       />
 
-      <SegmentedTabs label="وضعیت سفارش" tabs={tabs} value={tab} onChange={setTab} loading={isFirstLoad} idPrefix="orders" panelId="orders-panel" />
+      <div className="shrink-0">
+        <SegmentedTabs label="وضعیت سفارش" tabs={tabs} value={tab} onChange={setTab} loading={isFirstLoad} idPrefix="orders" panelId="orders-panel" />
+      </div>
 
-      <div id="orders-panel" role="tabpanel" aria-labelledby={`orders-tab-${tab}`} aria-busy={loading || undefined} className="mt-4">
+      <ScrollArea
+        id="orders-panel"
+        role="tabpanel"
+        aria-labelledby={`orders-tab-${tab}`}
+        aria-busy={loading || undefined}
+        className="mt-4 min-h-0 flex-1 md:-ml-2 md:-mr-4"
+        innerClassName="md:py-1 md:pl-2 md:pr-4"
+      >
         {loading ? (
           <div className="space-y-3">
             {[0, 1, 2].map((i) => (
@@ -330,7 +343,7 @@ export default function AdminOrders() {
             ))}
           </div>
         )}
-      </div>
-    </>
+      </ScrollArea>
+    </TablePage>
   );
 }

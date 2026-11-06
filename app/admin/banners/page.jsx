@@ -9,6 +9,7 @@ import { getImagePath } from "@/app/utils/getImagePath";
 import PageHeader from "@/app/admin/_shell/PageHeader";
 import ConfirmDialog from "@/app/admin/_shell/ConfirmDialog";
 import ListCard from "@/app/admin/_list/ListCard";
+import TablePage from "@/app/admin/_list/TablePage";
 import DataTable from "@/app/admin/_list/DataTable";
 import Pagination from "@/app/admin/_list/Pagination";
 import AddButton from "@/app/admin/_list/AddButton";
@@ -130,7 +131,7 @@ export default function AdminBannersPage() {
   );
 
   return (
-    <>
+    <TablePage>
       <ConfirmDialog
         open={deleteDialog.open}
         onClose={closeDialog}
@@ -153,7 +154,7 @@ export default function AdminBannersPage() {
         actions={<AddButton href="/admin/banners/add" label="افزودن بنر" loading={isFirstLoad} />}
       />
 
-      <ListCard>
+      <ListCard fill>
         {!loading && total === 0 ? (
           <EmptyState
             icon={ImagePlus}
@@ -185,6 +186,6 @@ export default function AdminBannersPage() {
           </>
         )}
       </ListCard>
-    </>
+    </TablePage>
   );
 }
