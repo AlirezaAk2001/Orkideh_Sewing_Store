@@ -1,9 +1,8 @@
 // app/about/page.jsx
 import { FaInstagram } from "react-icons/fa";
 import Icon from '@mdi/react';
-import { mdiInformationOutline, mdiStoreMarkerOutline, mdiCellphoneBasic, mdiPhoneClassic, mdiEmailOutline } from '@mdi/js';
+import { mdiInformationOutline, mdiStoreMarkerOutline, mdiCardAccountPhoneOutline, mdiCellphoneBasic, mdiPhoneClassic, mdiEmailOutline } from '@mdi/js';
 import { MapPinned, Map, UserRoundPlus } from "lucide-react"
-import ContactPhoneIcon from '@mui/icons-material/ContactPhone';
 
 export const metadata = {
   title: "درباره ما",
@@ -58,7 +57,8 @@ export default function AboutPage() {
             {/* اصلاح شده: استفاده از div به جای p برای محتوای تو در تو */}
             <div className="text-sm sm:text-base text-gray-700 space-y-2">
               <div className="text-sm sm:text-base text-gray-600 flex gap-1">
-                <ContactPhoneIcon className="w-4 h-4" />
+                {/* آیکون MUI داخل این صفحهٔ سروری نباید باشد: emotion در HTML سرور یک <style> جلوی <svg> می‌گذارد که کلاینت آن را رندر نمی‌کند و هیدریشن خطای #418 می‌داد */}
+                <Icon path={mdiCardAccountPhoneOutline} size={0.67} />
                 <span>اطلاعات تماس:</span>
               </div>
 
