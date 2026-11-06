@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
-import { CalendarCheck, Check, ChartLine, ChartNoAxesColumn, Crown, Sigma, Table2, TrendingDown, TrendingUp } from "lucide-react";
+import { Banknote, CalendarCheck, Check, ChartLine, ChartNoAxesColumn, Crown, Sigma, Table2, TrendingDown, TrendingUp } from "lucide-react";
 import { Empty } from "./Panel";
 import { compactText, dayLong, dayShort, fa, niceScale, rtl } from "./format";
 import { useReveal } from "@/app/admin/_ui/useReveal";
@@ -134,7 +134,7 @@ function SummaryStrip({ stats, daily, layers = null, onToggle }) {
   const card = "flex w-full min-w-0 items-center gap-3 rounded-xl bg-gradient-to-l from-gray-50 to-white px-3 py-2.5 text-start";
   const badge = "grid h-9 w-9 shrink-0 place-items-center rounded-xl ring-1 transition";
   return (
-    <ul className="mb-4 grid grid-cols-1 gap-2 sm:grid-cols-3" aria-label="خلاصهٔ فروش دوره">
+    <ul className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-3" aria-label="خلاصهٔ فروش دوره">
       {cards.map(({ id, label, value, icon: Icon }) => {
         const t = TONES[id];
         const on = !layers || layers[id];
@@ -436,7 +436,9 @@ export default function SalesChart({ daily, view }) {
             {stats.peak >= 0 && active !== stats.peak && (
               <g key={`best${plays.best}`} className="chart-layer" data-layer="best" data-off={layers.best ? undefined : ""} pointerEvents="none">
                 <g className="dash-peak" style={{ "--peak-delay": plays.best ? "0s" : "1s" }}>
-                  <circle className="dash-ping" cx={peakX} cy={peakY} r="5" fill="var(--viz-best)" fillOpacity="0.45" />
+                  {/* دو حلقهٔ توخالی با لبهٔ پررنگ که پشت‌سرهم از نشانگر بیرون می‌روند و محو می‌شوند (قبلاً یک دایرهٔ کم‌رنگ بود که دیده نمی‌شد) */}
+                  <circle className="dash-ping" cx={peakX} cy={peakY} r="5" fill="var(--viz-best)" fillOpacity="0.28" stroke="var(--viz-best)" strokeWidth="2" vectorEffect="non-scaling-stroke" />
+                  <circle className="dash-ping dash-ping--late" cx={peakX} cy={peakY} r="5" fill="var(--viz-best)" fillOpacity="0.28" stroke="var(--viz-best)" strokeWidth="2" vectorEffect="non-scaling-stroke" />
                   <circle cx={peakX} cy={peakY} r="5" fill="var(--viz-best)" stroke="var(--viz-surface)" strokeWidth="2.5" />
                   <rect x={pillX - pillW / 2} y={pillY} width={pillW} height="22" rx="11" fill="var(--viz-ink)" />
                   <text x={pillX} y={pillY + 11} dy="0.35em" textAnchor="middle" fontSize="11" fontWeight="700" fill="#fff">
@@ -479,14 +481,17 @@ export default function SalesChart({ daily, view }) {
               <CalendarCheck className="h-3.5 w-3.5" aria-hidden="true" />
               {dayLong(a.date)}
             </p>
-            <p className="mt-2 flex items-baseline gap-1.5">
-              <span aria-hidden="true" className="h-0.5 w-3 self-center rounded-full" style={{ background: "var(--viz-series)" }} />
+            <p className="mt-2 flex items-center gap-1.5">
+              {/* همان آیکون پول و کاشی کارت «فروش N روز اخیر» (StatTile) به‌جای خط رنگی قدیمی */}
+              <span aria-hidden="true" className="grid h-6 w-6 shrink-0 place-items-center rounded-lg bg-brand-50 text-brand-600 ring-1 ring-brand-100">
+                <Banknote className="h-3.5 w-3.5" />
+              </span>
               <span className="text-base font-extrabold tabular-nums text-gray-900">{fa(a.revenue)}</span>
               <span className="text-gray-500">تومان</span>
             </p>
             <div className="mt-2 flex items-center justify-between gap-2 border-t border-gray-100 pt-2 text-gray-500">
               <span>
-                سفارش‌ها: <span className="font-semibold text-gray-800">{fa(a.orders)}</span>
+                سفارش‌ها: <span className="inline-block min-w-6 rounded-full bg-gray-100 px-2 py-0.5 text-center align-middle text-[11px] font-bold tabular-nums text-gray-700 ring-1 ring-inset ring-gray-200">{fa(a.orders)}</span>
               </span>
               {dayChange !== null && dayChange !== 0 && (
                 <span

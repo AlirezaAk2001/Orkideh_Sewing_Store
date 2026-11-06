@@ -787,6 +787,13 @@ main {
   to { stroke-dasharray: var(--len) var(--rest); }
 }
 
+/* حلقهٔ نشانگر اوج نمودار فروش: دو حلقهٔ توخالی (لبهٔ ۲ پیکسلی ثابت با non-scaling-stroke) که تا ۴٫۲ برابر بزرگ می‌شوند و محو می‌شوند؛ دومی ۰٫۳ ثانیه دیرتر. جمع
+   ۱٫۶ ثانیه = PULSE_MS در usePulseClock.js */
+@keyframes peak-ping {
+  0% { transform: scale(1); opacity: 0.95; }
+  100% { transform: scale(4.2); opacity: 0; }
+}
+
 @keyframes dash-ping {
   0% { transform: scale(1); opacity: 0.55; }
   100% { transform: scale(3.2); opacity: 0; }
@@ -871,7 +878,10 @@ main {
   :where([data-pulse]) .dash-ping {
     transform-box: fill-box;
     transform-origin: center;
-    animation: dash-ping 1.6s ease-out both;
+    animation: peak-ping 1.3s ease-out both;
+  }
+  :where([data-pulse]) .dash-ping--late {
+    animation-delay: 0.3s;
   }
   :where([data-pulse]) .chip-ripple {
     animation: chip-ripple 1.6s ease-out both;

@@ -10,7 +10,7 @@ import { useEffect } from "react";
 //  --s     اندازهٔ بالا آمدن، کج‌شدن و لبه از ۱ (کامل) تا ۰٫۳؛ فقط وقتی کم می‌شود که بالای دکمه، داخل کادر بریده‌شونده یا نوار اسکرول (overflow غیر از visible)،
 //          جای کافی نباشد تا لبه‌اش بریده نشود.
 //  --z     اندازهٔ «بیرون‌آمدن» به سمت بیننده از ۱ تا ۰ که دکمه را کمی بزرگ می‌کند. دکمهٔ پهن بیشتر از حدود ۱۱ پیکسل بزرگ نمی‌شود (روی لبهٔ موبایل بیرون نزند)،
-//          دکمه‌ای که کنار دکمهٔ دیگر چسبیده یا با فاصلهٔ کم است (تب‌های قطعه‌ای) فقط تا نصف فاصله‌اش بزرگ می‌شود تا نیمی از فاصله همیشه خالی بماند و به همسایه‌اش نچسبد، و داخل کادر بریده‌شونده از جای
+//          دکمه‌ای که کنار دکمهٔ دیگر چسبیده یا با فاصلهٔ کم است (تب‌های قطعه‌ای) فقط تا یک‌سوم فاصله‌اش بزرگ می‌شود تا دست‌کم دو سوم فاصله همیشه خالی بماند و به همسایه‌اش نچسبد، و داخل کادر بریده‌شونده از جای
 //          خالی کنارش بزرگ‌تر نمی‌شود.
 const SELECTOR = "button:not(.chip-3d, .btn-flat, .delete-btn, .img-slider-dot), .btn-3d";
 const GROWTH = 26 / (420 - 26); // درصد بزرگ‌شدن از translateZ(26px) زیر perspective(420px)
@@ -87,7 +87,7 @@ function setScale(el) {
   const r = el.getBoundingClientRect();
   if (!r.width || !r.height) return;
   const sideGrowth = (r.width * GROWTH) / 2;
-  let z = Math.min(1, 170 / r.width, (neighbourGap(el) / 2) / sideGrowth);
+  let z = Math.min(1, 170 / r.width, (neighbourGap(el) / 3) / sideGrowth);
   let roomTop = Infinity;
   for (let a = el.parentElement; a && a !== document.body; a = a.parentElement) {
     const cs = getComputedStyle(a);

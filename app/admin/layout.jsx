@@ -116,7 +116,8 @@ export default function AdminLayout({ children }) {
             drawerOpen={drawerOpen}
           />
           <main className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden p-4 [scrollbar-color:var(--color-gray-300)_transparent] [scrollbar-width:thin]">
-            <div key={pathname} className="admin-page-in h-full">
+            {/* min-h-full و نه h-full: با h-full لفاف همیشه هم‌قد پنجره می‌ماند و محتوای بلندتر از آن بیرون می‌زند، پس فاصلهٔ پایینِ p-4 در اسکرول حساب نمی‌شد و کارت‌های آخر هر صفحه (مثل دو کارت آخر داشبورد) به لبهٔ پنجره می‌چسبیدند و پایینشان بریده دیده می‌شد */}
+            <div key={pathname} className="admin-page-in min-h-full">
               {children}
             </div>
           </main>
