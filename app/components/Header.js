@@ -11,7 +11,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Tooltip } from 'react-tooltip';
 import AppImage from "./AppImage";
 import SiteLogo from "./SiteLogo";
-import { LOGO } from "../../lib/siteLogo";
+import { useSiteLogo } from "./useSiteLogo";
 
 // لوگوی هدر در همهٔ صفحه‌ها هست: لوگوی پیش‌فرض SVG انیمیشن‌دار است و لوگوی دیگر از optimizer می‌گذرد تا PNG سنگین برای یک دایرهٔ کوچک دانلود نشود
 const MotionSiteLogo = motion.create(SiteLogo);
@@ -26,8 +26,8 @@ export default function Header() {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredProducts, setFilteredProducts] = useState([]);
-  const [logoUrl, setLogoUrl] = useState(null);
-  const [logoLoaded, setLogoLoaded] = useState(false); // ← اضافه کن
+  // لوگو منتظر شبکه نمی‌ماند (هوک مشترک با پنل ادمین): همان لحظهٔ اول لوگوی پیش‌فرض یا لوگوی بازدید قبلی دیده می‌شود
+  const logoUrl = useSiteLogo();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [showSkeleton, setShowSkeleton] = useState(false);
@@ -35,22 +35,8 @@ export default function Header() {
   const [searchFocused, setSearchFocused] = useState(false);
   const searchInputRef = useRef(null);
 
-  const loading = authLoading || !favInit || !cartInit || !logoLoaded;
+  const loading = authLoading || !favInit || !cartInit;
   const searchCollapsed = scrolledDown && !searchFocused && searchQuery.trim() === "";
-
-  // لود لوگو
-  useEffect(() => {
-    fetch("/api/background")
-      .then((resp) => resp.json())
-      .then((data) => {
-        setLogoUrl(data.data || LOGO);
-        setLogoLoaded(true); // ← اضافه کن
-      })
-      .catch((err) => {
-        console.error("خطا در لود لوگو:", err);
-        setLogoLoaded(true); // ← حتی در خطا هم true کن تا گیر نکنه
-      });
-  }, []);
 
   // اسکرول به پایین ردیف جستجوی موبایل را جمع می‌کند، اسکرول به بالا یا نزدیک بالای صفحه دوباره باز می‌کند
   useEffect(() => {
@@ -167,40 +153,18 @@ export default function Header() {
         <div className="container mx-auto flex flex-wrap sm:flex-nowrap items-center justify-between gap-y-2 sm:gap-4">
           {/* لوگو */}
           <Link href="/" className={`flex-shrink-0 ${isMaintenance ? 'pointer-events-none' : ''}`}>
-            <AnimatePresence>
-              {logoUrl ? (
-                <MotionSiteLogo
-                  src={logoUrl}
-                  alt="لوگو"
-                  width={64}
-                  height={64}
-                  className="w-10 sm:w-16 h-10 sm:h-16 rounded-full object-cover border border-gray-900"
-                  initial={{ opacity: 0, scale: 0.5, rotate: -10 }}
-                  animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                  exit={{ opacity: 0, scale: 0.5 }}
-                  transition={{ duration: 0.8, ease: "easeOut" }}
-                  data-tooltip-id="logo-tooltip"
-                  data-tooltip-content="صفحه اصلی"
-                />
-              ) : (
-                <motion.div
-                  className="w-10 sm:w-16 h-10 sm:h-16 bg-gray-300 rounded-full flex items-center justify-center text-xs"
-                  initial={{ opacity: 0, scale: 0.5 }}
-                  animate={{
-                    opacity: 1,
-                    scale: [0.8, 1, 0.8],
-                  }}
-                  transition={{
-                    duration: 1.2,
-                    repeat: Infinity,
-                    repeatType: "loop",
-                    ease: "easeInOut",
-                  }}
-                  data-tooltip-id="logo-tooltip"
-                  data-tooltip-content="صفحه اصلی"
-                ></motion.div>
-              )}
-            </AnimatePresence>
+            <MotionSiteLogo
+              src={logoUrl}
+              alt="لوگو"
+              width={64}
+              height={64}
+              className="w-10 sm:w-16 h-10 sm:h-16 rounded-full object-cover border border-gray-900"
+              initial={{ opacity: 0, scale: 0.5, rotate: -10 }}
+              animate={{ opacity: 1, scale: 1, rotate: 0 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              data-tooltip-id="logo-tooltip"
+              data-tooltip-content="صفحه اصلی"
+            />
           </Link>
 
           {/* جستجو */}

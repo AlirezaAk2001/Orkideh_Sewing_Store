@@ -1,5 +1,5 @@
 // هندسهٔ نمودار کوچک روند (جدا از React تا جداگانه تست شود). values از قدیم به جدید؛ null = روز بی‌داده که خط را قطع می‌کند.
-// قدیمی‌ترین روز سمت راست است (RTL). baseline:
+// زمان چپ‌به‌راست است (قدیمی‌ترین روز سمت چپ، امروز سمت راست و نقطهٔ پایانی)، مثل محور نمودار فروش. baseline:
 //   "zero": صفر ته نمودار است (فروش، تعداد سفارش، مشتری)
 //   "min": از کمترین تا بیشترین مقدار (میانگین هر سفارش که از صفر شروع شدنش خط را صاف می‌کند)، ولی دست‌کم ۲۵٪ بیشترین را می‌پوشاند
 //         تا نوسان کوچک مثل زلزله دیده نشود
@@ -11,7 +11,7 @@ export function sparkGeometry(values, { width = 96, height = 34, pad = 5, baseli
   if (!(max > 0)) return null;
   const lo = baseline === "min" ? Math.min(Math.min(...real), max * 0.75) : 0;
   const step = (width - 2 * pad) / (values.length - 1);
-  const x = (i) => width - pad - i * step;
+  const x = (i) => pad + i * step;
   const y = (v) => height - pad - ((v - lo) / (max - lo)) * (height - 2 * pad);
 
   const segments = [];
