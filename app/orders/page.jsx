@@ -508,14 +508,6 @@ export default function OrdersPage() {
       </div>
 
       <style jsx global>{`
-        @keyframes dialogShake {
-          0%   { transform: translateX(0); }
-          20%  { transform: translateX(-8px); }
-          40%  { transform: translateX(8px); }
-          60%  { transform: translateX(-5px); }
-          80%  { transform: translateX(5px); }
-          100% { transform: translateX(0); }
-        }
         @keyframes pulse-scale {
           0%, 100% { transform: scale(0.8); opacity: 0.5; }
           50%       { transform: scale(1);   opacity: 1;   }

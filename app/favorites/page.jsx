@@ -4,6 +4,7 @@ import { useFavorites } from "@/lib/context";
 import AppImage from "@/app/components/AppImage";
 import toast from "react-hot-toast";
 import { useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
@@ -17,6 +18,8 @@ import { TrashCan } from "@/app/components/ActionIcons";
 
 export default function FavoritesPage() {
   const { favorites, removeFromFavorites, clearFavorites } = useFavorites();
+  // با «کاهش حرکت» ردیف حذف‌شده فقط کم‌رنگ می‌شود (MotionConfig جابه‌جایی را غیرفعال می‌کند ولی مقدار نهایی x را فوری می‌گذارد، پس باید از exit حذفش کنیم)
+  const reduceMotion = useReducedMotion();
 
   const [dialog, setDialog] = useState({ open: false, id: null, name: "" });
   const [clearDialog, setClearDialog] = useState(false);
@@ -217,10 +220,15 @@ export default function FavoritesPage() {
           هیچ محصولی به علاقه‌مندی‌های شما اضافه نشده است.
         </p>
       ) : (
-        <ul className="space-y-2">
+        // حذف یک ردیف: ردیف محو می‌شود و به چپ می‌لغزد و بقیه نرم بالا می‌آیند (popLayout: ردیف رفتنی از جریان صفحه بیرون می‌آید)
+        <ul className="relative flex flex-col gap-2">
+          <AnimatePresence initial={false} mode="popLayout">
           {favorites.map((item) => (
-            <li
+            <motion.li
               key={item.id}
+              layout="position"
+              exit={reduceMotion ? { opacity: 0 } : { opacity: 0, x: -36, scale: 0.97 }}
+              transition={{ duration: 0.25, ease: "easeOut" }}
               className="flex justify-between items-center p-4 border rounded-lg bg-white shadow-sm"
             >
               <div className="flex items-center gap-4">
@@ -260,21 +268,11 @@ export default function FavoritesPage() {
                 <TrashCan className="h-5 w-5" />
                 <span>حذف</span>
               </button>
-            </li>
+            </motion.li>
           ))}
+          </AnimatePresence>
         </ul>
       )}
-      
-      <style jsx global>{`
-        @keyframes dialogShake {
-          0%   { transform: translateX(0); }
-          20%  { transform: translateX(-8px); }
-          40%  { transform: translateX(8px); }
-          60%  { transform: translateX(-5px); }
-          80%  { transform: translateX(5px); }
-          100% { transform: translateX(0); }
-        }
-      `}</style>
     </div>
   );
 }

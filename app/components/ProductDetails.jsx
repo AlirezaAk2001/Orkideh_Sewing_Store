@@ -13,6 +13,7 @@ import { Tooltip } from 'react-tooltip';
 import { useCart, useFavorites, useAuth } from "@/lib/context";
 import { authUrl } from "@/lib/redirect";
 import { isSoldOut, maxPurchasable } from "@/lib/stock";
+import { flyToCart } from "@/lib/flyToCart";
 import SellerBox from "./SellerBox";
 import ProductComments from "./ProductComments";
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
@@ -121,6 +122,10 @@ export default function ProductDetails({ product, initialComments = [], related 
   const [isInCart, setIsInCart] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [zoomOpen, setZoomOpen] = useState(false);
+  // انیمیشن‌های بعد از کنش کاربر: دکمه‌هایی که جای هم را می‌گیرند (pop-in) و قلبی که تازه پر شده (heart-pop)؛ تا کاربر کاری نکرده صفر می‌مانند
+  // تا هنگام نمایش اولیهٔ صفحه چیزی نپرد
+  const [popButtons, setPopButtons] = useState(false);
+  const [heartPop, setHeartPop] = useState(false);
   // گالری: تصویر اصلی + بقیه به ترتیب. active شمارهٔ تصویر جاری است؛ اسلایدر هنگام کشیدن یا فلش خبرش می‌دهد (onIndexChange)
   // و کوچک‌نماها و دیالوگ بزرگ‌نمایی با sliderRef.goTo اسلایدر را می‌برند
   const photos = productImages(product);
@@ -235,7 +240,9 @@ export default function ProductDetails({ product, initialComments = [], related 
     }
   };
 
-  const handleAddToCart = () => {
+  const handleAddToCart = (event) => {
+    // رویداد را همین‌جا می‌خوانیم: currentTarget بعد از پایان کنترل‌کننده دیگر در دسترس نیست
+    const button = event?.currentTarget;
     if (!currentUser) {
       toast("برای افزودن محصول موردنظر به سبد خرید، لطفاً ابتدا وارد حساب کاربری خود شوید.", { icon: "⚠️" });
       setTimeout(() => router.push(authUrl(window.location.pathname)), 2000);
@@ -261,6 +268,9 @@ export default function ProductDetails({ product, initialComments = [], related 
     });
     // پیام موفقیت (یا خطا) را خود addToCart بعد از پاسخ سرور نشان می‌دهد
 
+    // تصویر جاری گالری به آیکون سبد هدر می‌پرد (اگر تصویر از پنجره بیرون است، از خود دکمه، مثلاً دکمهٔ نوار چسبان)
+    flyToCart(stageRef.current?.querySelector('[data-active="true"] img') ?? stageRef.current, button);
+    setPopButtons(true);
     setIsInCart(true);
   };
 
@@ -270,6 +280,7 @@ export default function ProductDetails({ product, initialComments = [], related 
 
   const confirmRemoveFromCart = () => {
     removeFromCart(product.id);
+    setPopButtons(true);
     setIsInCart(false);
     setQuantity(1);
     handleCloseDialog();
@@ -292,6 +303,7 @@ export default function ProductDetails({ product, initialComments = [], related 
         price: product.price,
         image: product.image,
       });
+      setHeartPop(true);
       setIsFavorite(true);
       toast.success("محصول با موفقیت به علاقه‌مندی‌های شما اضافه شد.");
     }
@@ -316,18 +328,20 @@ export default function ProductDetails({ product, initialComments = [], related 
     </button>
   ) : isInCart ? (
     <button
+      key="in-cart"
       type="button"
       onClick={() => router.push("/cart")}
-      className="flex h-11 flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl bg-gray-900 text-sm font-medium text-white transition hover:bg-gray-800 active:scale-[0.98]"
+      className={`flex h-11 flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl bg-gray-900 text-sm font-medium text-white transition hover:bg-gray-800 active:scale-[0.98] ${popButtons ? "pop-in" : ""}`}
     >
       <BaggageClaim className="h-5 w-5" />
       مشاهده سبد خرید
     </button>
   ) : (
     <button
+      key="add"
       type="button"
       onClick={handleAddToCart}
-      className="flex h-11 flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl bg-brand-600 text-sm font-medium text-white transition hover:bg-brand-700 active:scale-[0.98]"
+      className={`flex h-11 flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl bg-brand-600 text-sm font-medium text-white transition hover:bg-brand-700 active:scale-[0.98] ${popButtons ? "pop-in" : ""}`}
     >
       <AddShoppingCartIcon className="h-5 w-5" />
       افزودن به سبد خرید
@@ -447,7 +461,7 @@ export default function ProductDetails({ product, initialComments = [], related 
             {!isOutOfStock && (
               <>
                 {isInCart ? (
-                  <div className="flex gap-2 flex-1">
+                  <div className={`flex gap-2 flex-1 ${popButtons ? "pop-in" : ""}`}>
                     <button
                       onClick={() => router.push("/cart")}
                       className="w-full flex items-center justify-center gap-1 py-3 rounded-lg bg-gray-900 text-white hover:bg-gray-800 transition cursor-pointer"
@@ -468,7 +482,7 @@ export default function ProductDetails({ product, initialComments = [], related 
                 ) : (
                   <button
                     onClick={handleAddToCart}
-                    className="flex items-center justify-center gap-1 flex-1 py-3 rounded-lg bg-brand-600 text-white hover:bg-brand-700 transition cursor-pointer"
+                    className={`flex items-center justify-center gap-1 flex-1 py-3 rounded-lg bg-brand-600 text-white hover:bg-brand-700 transition cursor-pointer ${popButtons ? "pop-in" : ""}`}
                   >
                     <AddShoppingCartIcon className="w-5 h-5" />
                     افزودن به سبد خرید
@@ -488,7 +502,7 @@ export default function ProductDetails({ product, initialComments = [], related 
               data-tooltip-content={isFavorite ? "حذف از علاقه‌مندی‌ها" : "افزودن به علاقه‌مندی‌ها"}
             >
               {isFavorite ? (
-                <Icon path={mdiHeart} className="w-5 h-5 text-red-500" />
+                <Icon path={mdiHeart} className={`w-5 h-5 text-red-500 ${heartPop ? "heart-pop" : ""}`} />
               ) : (
                 <Icon path={mdiHeartPlusOutline} className="w-5 h-5 text-gray-600" />
               )}
@@ -664,15 +678,6 @@ export default function ProductDetails({ product, initialComments = [], related 
         padding: 6px 10px !important;
         border-radius: 6px !important;
         max-width: 250px !important;
-      }
-
-      @keyframes dialogShake {
-        0%   { transform: translateX(0); }
-        20%  { transform: translateX(-8px); }
-        40%  { transform: translateX(8px); }
-        60%  { transform: translateX(-5px); }
-        80%  { transform: translateX(5px); }
-        100% { transform: translateX(0); }
       }
     `}</style>
   </div>

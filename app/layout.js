@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { preload } from "react-dom";
 import "./globals.css";
 import { AuthProvider, FavoritesProvider, CartProvider } from "../lib/context";
@@ -5,6 +6,8 @@ import { Toaster } from "react-hot-toast";
 import ConditionalLayout from "./components/ConditionalLayout";
 import ButtonDepth from "./components/ButtonDepth";
 import PageScrollbar from "./components/PageScrollbar";
+import NavProgress from "./components/NavProgress";
+import MotionProvider from "./components/MotionProvider";
 import { SITE_NAME, SITE_DESCRIPTION, getSiteUrl, previewImage } from "../lib/seo";
 
 export const metadata = {
@@ -45,6 +48,10 @@ export default function RootLayout({ children }) {
       <body className="bg-gray-100 text-gray-900 antialiased flex flex-col min-h-screen">
         <ButtonDepth />
         <PageScrollbar />
+        {/* نوار پیشرفت ناوبری؛ useSearchParams داخلش پشت Suspense است تا صفحه‌های ایستا را کلاینتی نکند */}
+        <Suspense fallback={null}>
+          <NavProgress />
+        </Suspense>
         <AuthProvider>
           <FavoritesProvider>
             <CartProvider>
@@ -62,7 +69,10 @@ export default function RootLayout({ children }) {
                   error: { duration: 4000 },
                 }}
               />
-              <ConditionalLayout>{children}</ConditionalLayout>
+              {/* MotionProvider: «کاهش حرکت» سیستم را به همهٔ انیمیشن‌های framer-motion می‌رساند */}
+              <MotionProvider>
+                <ConditionalLayout>{children}</ConditionalLayout>
+              </MotionProvider>
             </CartProvider>
           </FavoritesProvider>
         </AuthProvider>

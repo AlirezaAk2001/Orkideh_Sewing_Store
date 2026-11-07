@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
 import ProductCard from "../ProductCard";
+import { scrollBehavior } from "@/lib/motion";
 
 const ARROW_CLASS =
   "grid h-10 w-10 cursor-pointer place-items-center rounded-full bg-white text-gray-700 shadow-sm ring-1 ring-gray-200 transition duration-200 enabled:hover:bg-brand-600 enabled:hover:text-white enabled:hover:shadow-md enabled:hover:ring-brand-600 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-300 disabled:shadow-none";
@@ -39,7 +40,7 @@ export default function ProductRail({ id, title, subtitle, href, hint = "همه�
   const scrollByPage = (direction) => {
     const el = scroller.current;
     if (!el) return;
-    el.scrollBy({ left: direction * el.clientWidth * 0.85, behavior: "smooth" });
+    el.scrollBy({ left: direction * el.clientWidth * 0.85, behavior: scrollBehavior() });
   };
 
   const canScroll = edge.prev || edge.next;

@@ -1537,21 +1537,6 @@ html.sb-dragging * {
   }
 }
 
-@keyframes fadeInUp3D {
-  0% {
-    opacity: 0;
-    transform: translateY(20px) rotateX(15deg);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0) rotateX(0deg);
-  }
-}
-
-.animate-fadeInUp3D {
-  animation: fadeInUp3D 0.8s ease-out forwards;
-}
-
 /*
   Vazirmatn (مجوز OFL، نگاه کنید به public/fonts/OFL-Vazirmatn.txt).
   فایل‌ها محلی‌اند و نام فونت همان «Vazirmatn» است که در کل برنامه (MUI و CSSها) استفاده شده؛
@@ -2318,5 +2303,153 @@ html.sb-dragging * {
 
   .logo-art[data-sewing] .logo-stitch {
     animation: logo-feed 1.82s linear both;
+  }
+}
+
+/* ───── مرحلهٔ ۵: پایهٔ انیمیشن‌ها ───── */
+
+/* «کاهش حرکت» سیستم، شبکهٔ ایمنی برای همهٔ سایت. بیشتر انیمیشن‌های سایت از قبل پشت @media (prefers-reduced-motion: no-preference) هستند،
+   ولی چیزهایی هم بیرون از آن‌اند: transitionهای Tailwind و MUI، animate-pulse/spin، پیام‌های react-hot-toast، tooltip و اسکرول نرم.
+   اینجا همه فوری تمام می‌شوند و تکرار نمی‌شوند؛ حالت نهایی هر انیمیشن همان است که بود، فقط بی‌حرکت. چرخان‌های لودینگ هم می‌ایستند
+   (مثل PageLoader که motion-reduce:animate-none دارد) و متن کنارشان وضعیت را می‌گوید.
+   انیمیشن‌ها ۰٫۰۱ میلی‌ثانیه می‌گیرند (نه صفر) تا animationend هنوز برسد؛ ولی transition صفر می‌گیرد: transition ۰٫۰۱ میلی‌ثانیه‌ای یک transition واقعی است و
+   مثلاً visibility را یک فریم در حالت قبلی نگه می‌دارد (فوکوس خودکار کارت جستجو هنگام باز شدن، که visibility 0s دارد، به همین دلیل می‌شکست) */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0s !important;
+    transition-delay: 0s !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* لرزش پنجرهٔ تأیید وقتی بیرون از آن کلیک می‌شود (MUI Dialog در سبد، علاقه‌مندی‌ها، سفارش‌ها و صفحهٔ محصول: PaperProps.sx.animation) */
+@keyframes dialogShake {
+  0% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-8px);
+  }
+  40% {
+    transform: translateX(8px);
+  }
+  60% {
+    transform: translateX(-5px);
+  }
+  80% {
+    transform: translateX(5px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+/* نوار پیشرفت ناوبری (NavProgress.jsx). صفحه راست‌به‌چپ است، پس از لبهٔ راست به چپ پر می‌شود. loading: آرام تا ۸۸٪ می‌رود و منتظر می‌ماند؛
+   done: پر می‌شود و محو می‌شود؛ idle: خالی و فوری (بدون transition) تا شروع بعدی از صفر باشد */
+.nav-progress {
+  position: fixed;
+  inset-inline: 0;
+  top: 0;
+  z-index: 90;
+  height: 3px;
+  pointer-events: none;
+  opacity: 0;
+}
+.nav-progress > span {
+  position: absolute;
+  inset: 0;
+  transform: scaleX(0);
+  transform-origin: right;
+  background: linear-gradient(to left, var(--color-brand-500), var(--color-brand-700));
+  box-shadow: 0 0 10px color-mix(in oklab, var(--color-brand-500) 70%, transparent);
+  border-radius: 0 0 3px 3px;
+}
+.nav-progress[data-state="loading"] {
+  opacity: 1;
+}
+.nav-progress[data-state="loading"] > span {
+  transform: scaleX(0.88);
+  transition: transform 8s cubic-bezier(0.08, 0.6, 0.2, 1);
+}
+.nav-progress[data-state="done"] {
+  opacity: 0;
+  transition: opacity 0.35s ease 0.2s;
+}
+.nav-progress[data-state="done"] > span {
+  transform: scaleX(1);
+  transition: transform 0.2s ease-out;
+}
+
+/* بازخوردهای کوچک. فقط وقتی کاربر «کاهش حرکت» نخواسته؛ هرکدام را با key روی همان عنصر یا کلاسی که فقط بعد از کنش کاربر گذاشته می‌شود راه می‌اندازیم
+   تا هنگام نمایش اولیهٔ صفحه اجرا نشوند (lib/motion.js: useChangeKey/useRiseKey) */
+@keyframes badge-pop {
+  0% {
+    transform: scale(0.3);
+  }
+  55% {
+    transform: scale(1.4);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes heart-pop {
+  0% {
+    transform: scale(0.5);
+  }
+  45% {
+    transform: scale(1.38);
+  }
+  70% {
+    transform: scale(0.92);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes num-tick {
+  from {
+    opacity: 0;
+    transform: translateY(-7px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  /* شمارندهٔ سبد و علاقه‌مندی‌های هدر: هر بار عدد عوض می‌شود جهش می‌کند */
+  .badge-pop {
+    animation: badge-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+  /* قلب (هدر و دکمهٔ علاقه‌مندی صفحهٔ محصول) هنگام افزودن */
+  .heart-pop {
+    animation: heart-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+  /* دکمه‌هایی که بعد از کنش جای هم را می‌گیرند (افزودن به سبد ← مشاهده سبد) */
+  .pop-in {
+    animation: pop-in 0.28s cubic-bezier(0.34, 1.4, 0.64, 1) both;
+  }
+  /* عدد تعداد و جمع ردیف سبد هنگام تغییر */
+  .num-tick {
+    animation: num-tick 0.22s ease-out both;
   }
 }

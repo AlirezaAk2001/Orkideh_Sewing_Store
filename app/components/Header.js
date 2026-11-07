@@ -11,6 +11,7 @@ import { Tooltip } from 'react-tooltip';
 import SiteLogo from "./SiteLogo";
 import HeaderSearch from "./HeaderSearch";
 import { useSiteLogo } from "./useSiteLogo";
+import { useRiseKey } from "@/lib/motion";
 
 // لوگوی هدر در همهٔ صفحه‌ها هست: لوگوی پیش‌فرض SVG انیمیشن‌دار است و لوگوی دیگر از optimizer می‌گذرد تا PNG سنگین برای یک دایرهٔ کوچک دانلود نشود
 const MotionSiteLogo = motion.create(SiteLogo);
@@ -27,6 +28,10 @@ export default function Header() {
   const logoUrl = useSiteLogo();
 
   const loading = authLoading || !favInit || !cartInit;
+
+  // با هر افزودنِ تازه به علاقه‌مندی‌ها قلب هدر یک جهش می‌کند (نه هنگام بارگذاری اولیه یا حذف)؛ جهش شمارنده‌ها با key خودشان است.
+  // سبد خرید: آیکونش را flyToCart (lib/flyToCart.js) هنگام رسیدن تصویر محصول تکان می‌دهد
+  const heartKey = useRiseKey(favoritesCount, !loading);
 
   // مدیریت کلیک کاربر
   const handleUserClick = () => {
@@ -100,18 +105,16 @@ export default function Header() {
               data-tooltip-id="favorites-tooltip"
               data-tooltip-content={loading ? "در حال بارگذاری..." : "مشاهده علاقه‌مندی‌ها"}
             >
-              <Heart className={`w-7 sm:w-6 h-7 sm:h-6 ${loading ? "text-gray-400" : ""
-                }`} />
+              <Heart key={heartKey} className={`w-7 sm:w-6 h-7 sm:h-6 ${loading ? "text-gray-400" : ""} ${heartKey ? "heart-pop" : ""}`} />
               {!loading && favoritesCount > 0 && (
-                <motion.span
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  className="absolute -top-1 sm:-top-2 -right-1 sm:-right-2 text-white text-xs rounded-full w-4 sm:w-3 h-4 sm:h-3 flex items-center justify-center bg-red-500"
+                <span
+                  key={favoritesCount}
+                  className="badge-pop absolute -top-1 sm:-top-2 -right-1 sm:-right-2 text-white text-xs rounded-full w-4 sm:w-3 h-4 sm:h-3 flex items-center justify-center bg-red-500"
                   data-tooltip-id="favorites-count-tooltip"
                   data-tooltip-content={`${favoritesCount.toLocaleString("fa-IR")} محصول در علاقه‌مندی‌ها`}
                 >
                   {favoritesCount.toLocaleString("fa-IR")}
-                </motion.span>
+                </span>
               )}
             </Link>
 
@@ -193,15 +196,14 @@ export default function Header() {
                 }`} />
               {/* جایگزین کد قبلی سبد خرید */}
               {!loading && cartCount > 0 && (
-                <motion.span
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  className="absolute -top-1 sm:-top-2 -right-1 sm:-right-2 text-white text-xs rounded-full w-4 sm:w-3 h-4 sm:h-3 flex items-center justify-center bg-red-500"
+                <span
+                  key={cartCount}
+                  className="badge-pop absolute -top-1 sm:-top-2 -right-1 sm:-right-2 text-white text-xs rounded-full w-4 sm:w-3 h-4 sm:h-3 flex items-center justify-center bg-red-500"
                   data-tooltip-id="cart-count-tooltip"
                   data-tooltip-content={`${cartCount.toLocaleString("fa-IR")} محصول در سبد خرید`}
                 >
                   {cartCount.toLocaleString("fa-IR")}
-                </motion.span>
+                </span>
               )}
             </Link>
 

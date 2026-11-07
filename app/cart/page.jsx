@@ -13,6 +13,8 @@ import DialogActions from "@mui/material/DialogActions";
 import Button from "@mui/material/Button";
 import AppImage from "@/app/components/AppImage";
 import { useRouter } from "next/navigation";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { useChangeKey } from "@/lib/motion";
 import { ClipboardList, CreditCard, Plus, Minus } from "lucide-react";
 import { TrashCan } from "@/app/components/ActionIcons";
 import Icon from '@mdi/react';
@@ -44,15 +46,17 @@ const animationStyles = `
   .bubble-out {
     animation: bubbleOut 0.35s ease-in forwards;
   }
-  @keyframes dialogShake {
-    0%   { transform: translateX(0); }
-    20%  { transform: translateX(-8px); }
-    40%  { transform: translateX(8px); }
-    60%  { transform: translateX(-5px); }
-    80%  { transform: translateX(5px); }
-    100% { transform: translateX(0); }
-  }
 `;
+
+// عددی که هنگام تغییر مقدار یک «تیک» کوچک می‌زند (از بالا می‌نشیند)، نه هنگام نمایش اولیه (useChangeKey، کلاس num-tick در globals.css)
+function Tick({ value, className = "", children }) {
+  const changed = useChangeKey(value);
+  return (
+    <span key={changed} className={`inline-block ${changed ? "num-tick" : ""} ${className}`}>
+      {children}
+    </span>
+  );
+}
 
 // گام‌شمار تعداد: «+» سمت راست، «−» سمت چپ (صفحه راست‌به‌چپ است)
 function QuantityStepper({ value, max, disabled, onChange }) {
@@ -71,7 +75,7 @@ function QuantityStepper({ value, max, disabled, onChange }) {
         <Plus className="h-4 w-4" aria-hidden="true" />
       </button>
       <span className="min-w-10 px-1 text-center font-semibold" aria-live="polite">
-        {value.toLocaleString("fa-IR")}
+        <Tick value={value}>{value.toLocaleString("fa-IR")}</Tick>
       </span>
       <button
         type="button"
@@ -90,6 +94,8 @@ export default function CartPage() {
   const { cartItems, removeFromCart, clearCart, updateQuantity, cartCount } = useCart();
   const { currentUser } = useAuth();
   const router = useRouter();
+  // با «کاهش حرکت» ردیف حذف‌شده فقط کم‌رنگ می‌شود (MotionConfig جابه‌جایی را غیرفعال می‌کند ولی مقدار نهایی x را فوری می‌گذارد، پس باید از exit حذفش کنیم)
+  const reduceMotion = useReducedMotion();
   const [phoneNumber, setPhoneNumber] = useState("");
   const [loading, setLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
@@ -472,10 +478,15 @@ export default function CartPage() {
         <p className="text-gray-600">هیچ محصولی به سبد خرید شما اضافه نشده است.</p>
       ) : (
         <>
-          <ul className="space-y-2">
+          {/* حذف یک ردیف: ردیف محو می‌شود و به چپ می‌لغزد، بقیه و خلاصهٔ پایین نرم بالا می‌آیند (popLayout: ردیف رفتنی از جریان صفحه بیرون می‌آید) */}
+          <ul className="relative flex flex-col gap-2">
+            <AnimatePresence initial={false} mode="popLayout">
             {cartItems.map((item) => (
-              <li
+              <motion.li
                 key={item.id}
+                layout="position"
+                exit={reduceMotion ? { opacity: 0 } : { opacity: 0, x: -36, scale: 0.97 }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
                 className="p-3 sm:p-4 border rounded-lg bg-white shadow-sm"
               >
                 <div className="flex items-start gap-3 sm:gap-4">
@@ -520,22 +531,24 @@ export default function CartPage() {
                     onChange={(quantity) => handleQuantity(item, quantity)}
                   />
                   <span className="font-bold text-gray-800">
-                    {(item.price * item.quantity).toLocaleString("fa-IR")} تومان
+                    <Tick value={item.price * item.quantity}>{(item.price * item.quantity).toLocaleString("fa-IR")} تومان</Tick>
                   </span>
                 </div>
-              </li>
+              </motion.li>
             ))}
+            </AnimatePresence>
           </ul>
 
+          <motion.div layout="position" transition={{ duration: 0.25, ease: "easeOut" }}>
           {/* جمع کل */}
           <div className="mt-4 rounded-xl border bg-gray-50 p-4">
             <div className="flex items-center justify-between text-sm text-gray-600">
               <span>تعداد کالاها</span>
-              <span>{cartCount.toLocaleString("fa-IR")}</span>
+              <Tick value={cartCount}>{cartCount.toLocaleString("fa-IR")}</Tick>
             </div>
             <div className="mt-3 flex items-center justify-between border-t border-gray-200 pt-3">
               <span className="font-semibold text-gray-700">مبلغ قابل پرداخت</span>
-              <span className="text-lg font-bold text-pink-600">{totalPrice.toLocaleString("fa-IR")} تومان</span>
+              <Tick value={totalPrice} className="text-lg font-bold text-pink-600">{totalPrice.toLocaleString("fa-IR")} تومان</Tick>
             </div>
           </div>
 
@@ -595,6 +608,7 @@ export default function CartPage() {
               </div>
             </form>
           )}
+          </motion.div>
         </>
       )}
     </div>

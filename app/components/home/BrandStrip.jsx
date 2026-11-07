@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { buildListUrl, parseListParams } from "@/lib/productQuery";
+import { scrollBehavior } from "@/lib/motion";
 
 const fa = (n) => Number(n).toLocaleString("fa-IR");
 const allParams = parseListParams({});
@@ -43,7 +44,7 @@ export default function BrandStrip({ brands }) {
   // «بعدی» یعنی رفتن به چپ (scrollLeft منفی‌تر می‌شود)
   const scrollByPage = (direction) => {
     const el = scroller.current;
-    if (el) el.scrollBy({ left: direction * el.clientWidth * 0.7, behavior: "smooth" });
+    if (el) el.scrollBy({ left: direction * el.clientWidth * 0.7, behavior: scrollBehavior() });
   };
 
   // راست‌به‌چپ: ابتدای ردیف سمت راست است. سمت راست وقتی کم‌رنگ می‌شود که قبلی‌ها بیرون‌اند، سمت چپ وقتی بعدی‌ها

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { scrollBehavior } from "@/lib/motion";
 
 // شست اسکرول سفارشی (ظاهر در globals.css: .sb-track و .sb-thumb). مرورگر اجازه نمی‌دهد نشانگر ماوس روی اسکرول‌بار بومی عوض شود و رنگ و ضخامتش هم نرم تغییر نمی‌کند،
 // برای همین زیر ماوس (hover:hover و pointer:fine) اسکرول‌بار بومیِ این اسکرولرها پنهان است (کلاس .sb-hide / html) و این شست به‌جایش می‌آید: سمت راست،
@@ -169,7 +170,7 @@ export default function ScrollThumb({ scrollerRef, page = false, topSelector }) 
         window.addEventListener("pointercancel", onUp);
       } else {
         // کلیک روی ریل، مثل اسکرول‌بار بومی: یک صفحه به سمت کلیک
-        g.el.scrollBy({ top: (e.clientY < thumb.getBoundingClientRect().top ? -1 : 1) * g.ch * 0.9, behavior: "smooth" });
+        g.el.scrollBy({ top: (e.clientY < thumb.getBoundingClientRect().top ? -1 : 1) * g.ch * 0.9, behavior: scrollBehavior() });
       }
     };
     // چرخ ماوس روی ریل هم همان اسکرولر را بچرخاند (ریل داخل اسکرولر نیست و وگرنه والد بیرونی اسکرول می‌خورد)

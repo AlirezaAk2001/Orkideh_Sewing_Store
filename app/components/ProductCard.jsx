@@ -9,6 +9,7 @@ import { useCart, useAuth } from "@/lib/context";
 import { authUrl } from "@/lib/redirect";
 import { isSoldOut } from "@/lib/stock";
 import { toLatinSlug } from "@/lib/slug";
+import { flyToCart } from "@/lib/flyToCart";
 import toast from "react-hot-toast";
 import { ImageOff, ShoppingCart, Star } from "lucide-react";
 
@@ -37,7 +38,9 @@ export default function ProductCard({ product, priority = false }) {
   const imageClass = `object-cover transition duration-500 group-hover:scale-105 ${isOutOfStock ? "opacity-50 grayscale" : ""}`;
   const imageSizes = "(min-width: 1024px) 300px, (min-width: 640px) 36vw, 64vw";
 
-  const handleAddToCart = () => {
+  const handleAddToCart = (event) => {
+    // رویداد را همین‌جا می‌خوانیم: currentTarget بعد از پایان کنترل‌کننده دیگر در دسترس نیست
+    const button = event.currentTarget;
     if (!currentUser) {
       toast("برای افزودن به سبد خرید، لطفاً ابتدا وارد حساب کاربری خود شوید.", { icon: "⚠️" });
       setTimeout(() => router.push(authUrl(window.location.pathname)), 2000);
@@ -57,6 +60,8 @@ export default function ProductCard({ product, priority = false }) {
       image: product.image,
     });
     // پیام موفقیت (یا خطا) را خود addToCart بعد از پاسخ سرور نشان می‌دهد
+    // تصویر کارت به آیکون سبد هدر می‌پرد (تزئینی؛ با «کاهش حرکت» هیچ کاری نمی‌کند)
+    flyToCart(button.closest("article"), button);
   };
 
   return (
