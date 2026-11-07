@@ -1,7 +1,8 @@
 "use client";
 
-import { useId } from "react";
+import { useEffect, useId, useRef } from "react";
 import { ChevronDown } from "lucide-react";
+import ScrollThumb from "@/app/components/ScrollThumb";
 
 // فیلدهای فرم‌های پنل (جای TextField مواد): برچسب همیشه بالای فیلد (نه شناور، که در راست‌به‌چپ جابه‌جا می‌شد)، ستارهٔ الزامی، یک خط راهنما یا خطا زیر فیلد
 // و پسوند داخل فیلد (تومان، ٪، گرم). برچسب با htmlFor به فیلد وصل است و راهنما با aria-describedby. فیلد فوکوس‌شده حلقهٔ صورتی برند می‌گیرد.
@@ -56,19 +57,30 @@ export function TextInput({ label, hint, error, required, suffix, ltr = false, c
   );
 }
 
+// اسکرول فیلد چندخطی: زیر ماوس به‌جای اسکرول‌بار بومی (که در صفحهٔ راست‌به‌چپ سمت چپ می‌افتد) همان شست سفارشی سایت می‌آید، سمت راست (ScrollThumb)؛ روی لمس همان بومی می‌ماند.
+// لفاف sb-area هم‌اندازهٔ فیلد است، پس با کشیدن گوشهٔ تغییر اندازه شست هم هم‌قد می‌شود. مقدار تازه از بیرون (value) اندازهٔ شست را عوض می‌کند، بی‌آنکه رویداد input بیاید؛ رویداد sb-measure آن را خبر می‌دهد
 export function TextArea({ label, hint, error, required, rows = 3, className = "", ...props }) {
   const id = useId();
+  const ref = useRef(null);
+  const { value } = props;
+  useEffect(() => {
+    ref.current?.dispatchEvent(new Event("sb-measure"));
+  }, [value]);
   return (
     <Shell id={id} label={label} required={required} hint={hint} error={error} className={className}>
-      <textarea
-        id={id}
-        rows={rows}
-        required={required}
-        aria-invalid={error ? true : undefined}
-        aria-describedby={error || hint ? `${id}-hint` : undefined}
-        className={`${INPUT} resize-y py-2.5 leading-7 ${error ? "border-red-400" : "border-gray-300"}`}
-        {...props}
-      />
+      <div className="sb-area relative">
+        <textarea
+          ref={ref}
+          id={id}
+          rows={rows}
+          required={required}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error || hint ? `${id}-hint` : undefined}
+          className={`sb-hide ${INPUT} resize-y py-2.5 leading-7 ${error ? "border-red-400" : "border-gray-300"}`}
+          {...props}
+        />
+        <ScrollThumb scrollerRef={ref} />
+      </div>
     </Shell>
   );
 }

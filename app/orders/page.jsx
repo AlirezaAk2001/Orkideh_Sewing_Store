@@ -256,7 +256,7 @@ export default function OrdersPage() {
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`w-full justify-center px-2 sm:px-5 py-2 rounded-md text-xs sm:text-sm font-medium transition cursor-pointer flex items-center gap-1 ${activeTab === tab
+            className={`tab-3d w-full justify-center px-2 sm:px-5 py-2 rounded-md text-xs sm:text-sm font-medium transition cursor-pointer flex items-center gap-1 ${activeTab === tab
               ? tab === "جاری"
                 ? "bg-yellow-500 text-white"
                 : tab === "تحویل داده شده"

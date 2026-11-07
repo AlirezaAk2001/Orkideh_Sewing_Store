@@ -96,7 +96,7 @@ export default function BannerSlider({ banners, error }) {
                 </p>
                 <Link
                   href={banner.link || "/products"}
-                  className={`btn-3d mt-4 bg-brand-600 hover:bg-brand-700 text-white px-6 py-2.5 rounded-full flex items-center gap-1 justify-center w-fit mx-auto sm:mx-0 shadow-lg cursor-pointer ${
+                  className={`mt-4 bg-brand-600 hover:bg-brand-700 text-white px-6 py-2.5 rounded-full flex items-center gap-1 justify-center w-fit mx-auto sm:mx-0 shadow-lg cursor-pointer ${
                     index === activeIndex ? "animate-text" : ""
                   }`}
                 >

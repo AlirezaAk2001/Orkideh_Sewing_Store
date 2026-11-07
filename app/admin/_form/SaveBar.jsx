@@ -19,7 +19,7 @@ export default function SaveBar({ saving = false, disabled = false, label, backH
         <div className="flex w-full items-center gap-2 sm:w-auto">
           <Link
             href={backHref}
-            className="btn-3d inline-flex h-11 flex-1 items-center justify-center rounded-xl border border-gray-300 bg-white px-5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-100 sm:flex-none"
+            className="inline-flex h-11 flex-1 items-center justify-center rounded-xl border border-gray-300 bg-white px-5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-100 sm:flex-none"
           >
             انصراف
           </Link>

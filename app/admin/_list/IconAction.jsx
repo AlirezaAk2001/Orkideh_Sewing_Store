@@ -5,7 +5,7 @@ import Tip from "./Tip";
 import { PenIcon, TrashCan } from "@/app/components/ActionIcons";
 
 // دکمهٔ گردِ آیکونی ردیف (ویرایش، حذف): خاکستری، با هاور رنگی و راهنما. href بدهید لینک می‌شود، وگرنه دکمه. برچسب هم راهنماست هم aria-label.
-// دکمه btn-flat است: مثل لینک ویرایش از جایش بلند نمی‌شود (حرکت سه‌بعدی سراسری دکمه‌ها اینجا نمی‌خواهد؛ فقط آیکون داخلش حرکت می‌کند)
+// دکمه هم مثل لینک ویرایش از جایش بلند نمی‌شود؛ فقط آیکون داخلش حرکت می‌کند
 const TONES = {
   edit: "hover:bg-brand-50 hover:text-brand-700 focus-visible:ring-brand-300",
   danger: "hover:bg-red-50 hover:text-red-600 focus-visible:ring-red-300",
@@ -20,7 +20,7 @@ export function IconAction({ label, href, onClick, tone = "edit", children }) {
           {children}
         </Link>
       ) : (
-        <button type="button" aria-label={label} onClick={onClick} className={`btn-flat ${cls}`}>
+        <button type="button" aria-label={label} onClick={onClick} className={cls}>
           {children}
         </button>
       )}

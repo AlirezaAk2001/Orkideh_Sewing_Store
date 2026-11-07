@@ -350,7 +350,7 @@ export default function HeaderSearch({ disabled = false }) {
         <button
           ref={triggerRef}
           type="button"
-          className="hs-trigger btn-flat"
+          className="hs-trigger"
           aria-label="جستجو در فروشگاه"
           aria-haspopup="dialog"
           aria-expanded={open}
@@ -436,7 +436,7 @@ export default function HeaderSearch({ disabled = false }) {
                   <kbd className="sp-esc" aria-hidden="true">
                     Esc
                   </kbd>
-                  <button type="button" className="sp-close btn-flat" aria-label="بستن جستجو" onClick={() => closeSearch()}>
+                  <button type="button" className="sp-close" aria-label="بستن جستجو" onClick={() => closeSearch()}>
                     <X className="h-5 w-5" aria-hidden="true" />
                   </button>
                 </div>
@@ -450,7 +450,7 @@ export default function HeaderSearch({ disabled = false }) {
                         <div id={listId} role="listbox" aria-label="جستجوهای اخیر" className="sp-group">
                           <div className="sp-cap sp-rise" style={{ "--i": 0 }}>
                             <span>جستجوهای اخیر</span>
-                            <button type="button" className="sp-clear btn-flat" onClick={forget}>
+                            <button type="button" className="sp-clear" onClick={forget}>
                               پاک کردن
                             </button>
                           </div>
@@ -462,7 +462,7 @@ export default function HeaderSearch({ disabled = false }) {
                               role="option"
                               aria-selected={active === i}
                               data-active={active === i ? "" : undefined}
-                              className="sp-recent sp-rise btn-flat"
+                              className="sp-recent sp-rise"
                               style={{ "--i": i + 1 }}
                               onMouseEnter={() => setActive(i)}
                               onMouseLeave={() => setActive((a) => (a === i ? -1 : a))}

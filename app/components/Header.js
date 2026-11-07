@@ -129,7 +129,7 @@ export default function Header() {
                 <motion.div key="login" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}>
                   <Link
                     href="/auth"
-                    className={`btn-3d flex items-center gap-1 px-3 sm:px-4 py-1 sm:py-2 rounded-lg text-sm sm:text-sm ${loading
+                    className={`auth-sheen flex items-center gap-1 px-3 sm:px-4 py-1 sm:py-2 rounded-lg text-sm sm:text-sm ${loading
                       ? "bg-gray-400 text-gray-200 cursor-not-allowed pointer-events-none"
                       : "bg-pink-600 text-white hover:bg-pink-700 cursor-pointer"
                       }`}

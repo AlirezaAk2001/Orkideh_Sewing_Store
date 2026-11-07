@@ -98,7 +98,7 @@ export default function ExpandSearch({
       }}
     >
       {rest && (
-        <button type="button" className="xs-rest btn-flat" onClick={openIt} onPointerMove={isOpen ? undefined : onPointerMove} onPointerLeave={onPointerLeave} tabIndex={isOpen ? -1 : 0}>
+        <button type="button" className="xs-rest" onClick={openIt} onPointerMove={isOpen ? undefined : onPointerMove} onPointerLeave={onPointerLeave} tabIndex={isOpen ? -1 : 0}>
           {rest}
         </button>
       )}
@@ -112,7 +112,7 @@ export default function ExpandSearch({
         <span className="xs-fill" aria-hidden="true" />
         <OrbBubbles />
         <OrbHalo />
-        <button ref={btnRef} type="button" className="xs-btn btn-flat" aria-label={label} aria-expanded={isOpen} onClick={openIt} onBlur={(e) => e.currentTarget.removeAttribute("data-restored")} tabIndex={isOpen ? -1 : 0}>
+        <button ref={btnRef} type="button" className="xs-btn" aria-label={label} aria-expanded={isOpen} onClick={openIt} onBlur={(e) => e.currentTarget.removeAttribute("data-restored")} tabIndex={isOpen ? -1 : 0}>
           <SearchGlyph />
         </button>
         <div className="xs-body" inert={!isOpen}>
@@ -130,7 +130,7 @@ export default function ExpandSearch({
             className="xs-input"
             {...inputProps}
           />
-          <button type="button" className="xs-x btn-flat" onClick={onX} aria-label={value !== "" ? "پاک کردن جستجو" : "بستن جستجو"}>
+          <button type="button" className="xs-x" onClick={onX} aria-label={value !== "" ? "پاک کردن جستجو" : "بستن جستجو"}>
             <X className="h-4 w-4" aria-hidden="true" />
           </button>
         </div>

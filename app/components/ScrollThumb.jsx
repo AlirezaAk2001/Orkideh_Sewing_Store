@@ -102,6 +102,12 @@ export default function ScrollThumb({ scrollerRef, page = false, topSelector }) 
     const scrollTarget = page ? window : scroller();
     scrollTarget.addEventListener("scroll", schedule, { passive: true });
     window.addEventListener("resize", schedule);
+    // textarea: با تایپ یا مقدار تازه، محتوا بلند یا کوتاه می‌شود بی‌آنکه اندازهٔ خود فیلد یا اسکرول عوض شود، پس اندازهٔ شست را رویدادها خبر می‌دهند
+    // (input = تایپ؛ sb-measure = رویداد سفارشی برای وقتی مقدار از بیرون عوض می‌شود، مثل پر شدن فرم ویرایش)
+    if (!page) {
+      scrollTarget.addEventListener("input", schedule);
+      scrollTarget.addEventListener("sb-measure", schedule);
+    }
     // انیمیشن ورودِ کارت‌ها و ردیف‌ها (translateY) تا پایانش جای قابل‌اسکرول را چند پیکسل بیشتر نشان می‌دهد و بعد بدون هیچ تغییر اندازه‌ای برمی‌گردد؛
     // با پایان انیمیشن (و گذار، فقط داخل اسکرولر) دوباره می‌سنجیم تا شستِ بی‌مورد روی اسکرولری که اسکرول ندارد نماند
     const settleTarget = page ? document : scroller();
@@ -181,6 +187,10 @@ export default function ScrollThumb({ scrollerRef, page = false, topSelector }) 
       if (raf) cancelAnimationFrame(raf);
       scrollTarget.removeEventListener("scroll", schedule);
       window.removeEventListener("resize", schedule);
+      if (!page) {
+        scrollTarget.removeEventListener("input", schedule);
+        scrollTarget.removeEventListener("sb-measure", schedule);
+      }
       settleTarget.removeEventListener("animationend", schedule, true);
       settleTarget.removeEventListener("animationcancel", schedule, true);
       if (!page) settleTarget.removeEventListener("transitionend", schedule, true);

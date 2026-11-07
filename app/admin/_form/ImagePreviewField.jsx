@@ -118,7 +118,7 @@ export default function ImagePreviewField({ kind = "banner", preview: p, label, 
             onClick={pick}
             disabled={locked}
             aria-label="انتخاب تصویر برای آپلود"
-            className="btn-flat absolute inset-0 grid cursor-pointer place-content-center justify-items-center gap-2 px-4 text-center transition-colors hover:bg-brand-50/60 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-brand-100 disabled:cursor-not-allowed"
+            className="absolute inset-0 grid cursor-pointer place-content-center justify-items-center gap-2 px-4 text-center transition-colors hover:bg-brand-50/60 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-brand-100 disabled:cursor-not-allowed"
           >
             <span className="grid h-12 w-12 place-items-center rounded-2xl bg-white text-brand-600 shadow-sm ring-1 ring-brand-100">
               <Upload className="h-6 w-6" aria-hidden="true" />

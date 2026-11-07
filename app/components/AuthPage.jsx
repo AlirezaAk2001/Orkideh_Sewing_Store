@@ -414,7 +414,7 @@ export default function AuthPage() {
                     type="button"
                     aria-pressed={isLogin === toLogin}
                     onClick={() => switchMode(toLogin)}
-                    className={`relative z-10 h-10 cursor-pointer rounded-lg text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 ${isLogin === toLogin ? "text-brand-700" : "text-gray-500 hover:text-gray-800"}`}
+                    className={`tab-3d relative z-10 h-10 cursor-pointer rounded-lg text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 ${isLogin === toLogin ? "text-brand-700" : "text-gray-500 hover:text-gray-800"}`}
                   >
                     {label}
                   </button>
