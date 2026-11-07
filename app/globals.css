@@ -1618,54 +1618,6 @@ html.sb-dragging * {
   stroke-dasharray: 1;
 }
 
-/* دکمهٔ اصلی فرم‌ها و دکمهٔ «ورود / ثبت‌نام» هدر (کلاس auth-sheen): همان برق چیپ تخفیف (.discount-chip::after بالاتر): نوار نرم با هستهٔ روشن، حالت ترکیب screen و منحنی سینوسی، ولی فقط وقتی موس
-   روی دکمه است. دکمه پهن است، پس نوار ۳۰٪ عرض آن را می‌گیرد (نه ۵۶٪ مثل چیپ گرد) تا مثل یک خط نور بگذرد و مسیرش تا بیرون لبهٔ راست ادامه دارد. */
-.auth-sheen {
-  position: relative;
-  overflow: hidden;
-  isolation: isolate;
-}
-
-.auth-sheen::after {
-  content: "";
-  position: absolute;
-  top: -25%;
-  bottom: -25%;
-  left: 0;
-  width: 30%;
-  opacity: 0;
-  pointer-events: none;
-  mix-blend-mode: screen;
-  background: linear-gradient(
-    100deg,
-    transparent 0%,
-    rgb(255 255 255 / 0.4) 6%,
-    transparent 13%,
-    rgb(255 255 255 / 0.1) 25%,
-    rgb(255 255 255 / 0.5) 42%,
-    rgb(255 255 255 / 0.95) 50%,
-    rgb(255 255 255 / 0.5) 58%,
-    rgb(255 255 255 / 0.1) 75%,
-    transparent 100%
-  );
-  transform: translateX(-140%) skewX(-20deg);
-}
-
-@keyframes auth-shine {
-  0% {
-    transform: translateX(-140%) skewX(-20deg);
-  }
-  60%,
-  100% {
-    transform: translateX(380%) skewX(-20deg);
-  }
-}
-
-/* حالت فعال زبانهٔ ورود/ثبت‌نام: قرص سفید به ستون دوم می‌لغزد (صفحه راست‌به‌چپ است، پس به چپ) */
-.auth-tab-pill[data-mode="register"] {
-  transform: translateX(-100%);
-}
-
 @keyframes auth-rise {
   from { opacity: 0; transform: translateY(14px); }
   to { opacity: 1; transform: none; }
@@ -1721,15 +1673,6 @@ html.sb-dragging * {
 
   .auth-message {
     animation: auth-message 0.25s ease-out both;
-  }
-
-  .auth-tab-pill {
-    transition: transform 0.35s cubic-bezier(0.3, 0.8, 0.3, 1);
-  }
-
-  .auth-sheen:not(:disabled, [aria-disabled="true"]):hover::after {
-    opacity: 1;
-    animation: auth-shine 3.6s cubic-bezier(0.37, 0, 0.63, 1) infinite;
   }
 
   .auth-pop--up {
@@ -2068,6 +2011,29 @@ html.sb-dragging * {
   }
   .vbar:hover .vbar-fill::after {
     animation: vbar-shine 4.4s cubic-bezier(0.37, 0, 0.63, 1);
+  }
+}
+
+/* برق دکمه‌ها (کلاس bar-sheen: دکمهٔ اصلی فرم‌های ورود و ثبت‌نام و بقیهٔ فرم‌های حساب، و دکمهٔ «ورود / ثبت‌نام» هدر): دقیقاً همان برق نوارهای نمودار داشبورد،
+   یعنی همان لایهٔ ::after نوار (.vbar-fill::after بالاتر: همان گرادیان ۱۰۰ درجه با هستهٔ سفید ۰٫۵) و همان انیمیشن vbar-shine با همان زمان و منحنی (چرخهٔ ۴٫۴ ثانیه،
+   ۲٫۶۴ ثانیه حرکت از بیرون لبهٔ چپ تا بیرون لبهٔ راست و بقیه مکث). فقط وقتی موس روی دکمهٔ فعال است اجرا می‌شود و تا ماندن موس تکرار می‌شود؛ دکمهٔ غیرفعال برق نمی‌زند.
+   با «کاهش حرکت» و روی صفحهٔ لمسی برق نیست. */
+.bar-sheen {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.bar-sheen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(100deg, transparent 25%, rgb(255 255 255 / 0.5) 50%, transparent 75%);
+  transform: translateX(-110%);
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .bar-sheen:not(:disabled, [aria-disabled="true"]):hover::after {
+    animation: vbar-shine 4.4s cubic-bezier(0.37, 0, 0.63, 1) infinite;
   }
 }
 

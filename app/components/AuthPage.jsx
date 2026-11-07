@@ -8,6 +8,7 @@ import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../lib/context";
 import { rememberRedirect, takeRedirect } from "../../lib/redirect";
+import { useSegmentSlide } from "@/app/admin/_ui/useSegmentSlide";
 import AuthShell from "./auth/AuthShell";
 import { AuthCard, AuthTitle, Field, PasswordInput, SubmitButton, TextInput } from "./auth/AuthUI";
 
@@ -39,6 +40,8 @@ export default function AuthPage() {
   const [tempAuth, setTempAuth] = useState(null);
   const [shakeFields, setShakeFields] = useState({}); // برای افکت لرزش
   const router = useRouter();
+  // زبانهٔ ورود/ثبت‌نام همان تب‌های قطعه‌ای پنل مدیریت است (قرص سفید خود تب فعال است و بین دو تب می‌لغزد)
+  const switchRef = useSegmentSlide(isLogin ? "login" : "register");
 
   const handleGoogleLogin = () => {
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
@@ -350,6 +353,12 @@ export default function AuthPage() {
     }
   };
 
+  // دکمهٔ ورود / ثبت‌نام تا پر شدن کامل همهٔ فیلدهای همان حالت غیرفعال است؛ درستیِ مقدارها (قالب ایمیل، رمز قوی، ...) هنوز هنگام زدن دکمه و هنگام تایپ سنجیده می‌شود
+  const filled = (v) => v.trim() !== "";
+  const formComplete = isLogin
+    ? filled(formData.email) && filled(formData.password)
+    : filled(formData.firstName) && filled(formData.lastName) && filled(formData.username) && filled(formData.email) && filled(formData.password) && filled(formData.confirmPassword);
+
   const shown = (name) => !!(errors[name] && touched[name]);
   let nameError = shown("firstName") ? errors.firstName : shown("lastName") ? errors.lastName : "";
   if (nameError && !formData.fullName.trim()) nameError = "نام و نام خانوادگی نمی‌تواند خالی باشد";
@@ -398,27 +407,28 @@ export default function AuthPage() {
                 text={isLogin ? "برای ادامه، اطلاعات حساب خود را وارد کنید." : "چند ثانیه وقت بگذارید و عضو ارکیده شوید."}
               />
 
-              {/* زبانهٔ ورود/ثبت‌نام: قرص سفید زیر گزینهٔ فعال می‌لغزد */}
-              <div className="relative mb-5 grid grid-cols-2 rounded-xl bg-gray-100 p-1">
-                <span
-                  aria-hidden="true"
-                  data-mode={isLogin ? "login" : "register"}
-                  className="auth-tab-pill absolute inset-y-1 start-1 w-[calc(50%-0.25rem)] rounded-lg bg-white shadow-sm ring-1 ring-black/5"
-                />
+              {/* زبانهٔ ورود/ثبت‌نام: همان تب‌های قطعه‌ای پنل مدیریت (.seg و .seg-tab در globals.css): قرص سفید خود تب فعال است و هنگام هاور همراه تب بالا می‌آید */}
+              <div ref={switchRef} role="group" aria-label="ورود یا ثبت‌نام" className="seg mb-5 grid grid-cols-2 gap-1 rounded-xl bg-gray-100 p-1">
                 {[
                   { toLogin: true, label: "ورود" },
                   { toLogin: false, label: "ثبت‌نام" },
-                ].map(({ toLogin, label }) => (
-                  <button
-                    key={label}
-                    type="button"
-                    aria-pressed={isLogin === toLogin}
-                    onClick={() => switchMode(toLogin)}
-                    className={`tab-3d relative z-10 h-10 cursor-pointer rounded-lg text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 ${isLogin === toLogin ? "text-brand-700" : "text-gray-500 hover:text-gray-800"}`}
-                  >
-                    {label}
-                  </button>
-                ))}
+                ].map(({ toLogin, label }) => {
+                  const on = isLogin === toLogin;
+                  return (
+                    <button
+                      key={label}
+                      type="button"
+                      aria-pressed={on}
+                      data-on={on ? "" : undefined}
+                      onClick={() => switchMode(toLogin)}
+                      className={`seg-tab h-10 cursor-pointer rounded-lg text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 ${
+                        on ? "text-brand-700" : "text-gray-600 hover:bg-white/60 hover:text-gray-900"
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
               </div>
 
               <form key={isLogin ? "login" : "register"} onSubmit={handleSubmit} noValidate className="space-y-3.5">
@@ -568,6 +578,7 @@ export default function AuthPage() {
 
                 <SubmitButton
                   loading={isSubmitting}
+                  disabled={!formComplete}
                   loadingText={isLogin ? "در حال ورود..." : "در حال ثبت‌نام..."}
                   icon={isLogin ? LogIn : UserPlus}
                 >

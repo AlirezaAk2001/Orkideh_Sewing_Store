@@ -156,13 +156,18 @@ export function Field({ id, label, error, hint, shake = false, index = 0, classN
   );
 }
 
-// دکمهٔ اصلی فرم‌ها؛ در حال ارسال قفل می‌شود و چرخان نشان می‌دهد. برق روی hover همان برق چیپ تخفیف است (.auth-sheen در globals.css)
-export function SubmitButton({ loading = false, loadingText, icon: Icon, children, ...props }) {
+// دکمهٔ اصلی فرم‌ها؛ در حال ارسال قفل می‌شود و چرخان نشان می‌دهد. برق روی hover همان برق نوارهای نمودار داشبورد است (.bar-sheen در globals.css).
+// disabled: دکمه تا کامل شدن فرم خاکستری و غیرفعال است (بدون برق و بدون ارسال با Enter)؛ با رسیدن فرم به حالت کامل نرم به رنگ برند درمی‌آید. loading جدا از آن است: رنگ برند می‌ماند و فقط کم‌رنگ می‌شود
+export function SubmitButton({ loading = false, disabled = false, loadingText, icon: Icon, children, ...props }) {
   return (
     <button
       type="submit"
-      disabled={loading}
-      className="auth-sheen inline-flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-brand-600 text-base font-semibold text-white shadow-lg shadow-brand-600/25 transition enabled:hover:bg-brand-700 enabled:hover:shadow-xl enabled:hover:shadow-brand-600/30 enabled:active:scale-[0.985] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-200 disabled:cursor-wait disabled:opacity-75"
+      disabled={loading || disabled}
+      className={`bar-sheen inline-flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-xl text-base font-semibold transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-200 ${
+        loading
+          ? "bg-brand-600 text-white shadow-lg shadow-brand-600/25 disabled:cursor-wait disabled:opacity-75"
+          : "bg-brand-600 text-white shadow-lg shadow-brand-600/25 enabled:hover:bg-brand-700 enabled:hover:shadow-xl enabled:hover:shadow-brand-600/30 enabled:active:scale-[0.985] disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-400 disabled:shadow-none"
+      }`}
       {...props}
     >
       {loading ? (
