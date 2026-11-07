@@ -1,17 +1,15 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { Heart, User2, Info, LogIn, LogOut, Search } from "lucide-react";
+import { Heart, User2, Info, LogIn, LogOut } from "lucide-react";
 import Icon from '@mdi/react';
 import { mdiCartOutline } from '@mdi/js';
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth, useFavorites, useCart } from "../../lib/context";
 import { AnimatePresence, motion } from "framer-motion";
 import { Tooltip } from 'react-tooltip';
-import AppImage from "./AppImage";
 import SiteLogo from "./SiteLogo";
-import ScrollArea from "./ScrollArea";
+import HeaderSearch from "./HeaderSearch";
 import { useSiteLogo } from "./useSiteLogo";
 
 // لوگوی هدر در همهٔ صفحه‌ها هست: لوگوی پیش‌فرض SVG انیمیشن‌دار است و لوگوی دیگر از optimizer می‌گذرد تا PNG سنگین برای یک دایرهٔ کوچک دانلود نشود
@@ -25,32 +23,10 @@ export default function Header() {
   const { favoritesCount, initialized: favInit } = useFavorites();
   const { cartCount, initialized: cartInit } = useCart();
 
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filteredProducts, setFilteredProducts] = useState([]);
   // لوگو منتظر شبکه نمی‌ماند (هوک مشترک با پنل ادمین): همان لحظهٔ اول لوگوی پیش‌فرض یا لوگوی بازدید قبلی دیده می‌شود
   const logoUrl = useSiteLogo();
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [isSearching, setIsSearching] = useState(false);
-  const [showSkeleton, setShowSkeleton] = useState(false);
-  const [scrolledDown, setScrolledDown] = useState(false);
-  const [searchFocused, setSearchFocused] = useState(false);
-  const searchInputRef = useRef(null);
 
   const loading = authLoading || !favInit || !cartInit;
-  const searchCollapsed = scrolledDown && !searchFocused && searchQuery.trim() === "";
-
-  // اسکرول به پایین ردیف جستجوی موبایل را جمع می‌کند، اسکرول به بالا یا نزدیک بالای صفحه دوباره باز می‌کند
-  useEffect(() => {
-    let lastY = window.scrollY;
-    const onScroll = () => {
-      const y = window.scrollY;
-      if (y > lastY + 8 && y > 140) setScrolledDown(true);
-      else if (y < lastY - 8 || y < 60) setScrolledDown(false);
-      lastY = y;
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
 
   // مدیریت کلیک کاربر
   const handleUserClick = () => {
@@ -88,66 +64,6 @@ export default function Header() {
     }
   };
 
-  // جستجو
-  useEffect(() => {
-    if (searchQuery.trim() === "") {
-      setFilteredProducts([]);
-      setIsSearchOpen(false);
-      setIsSearching(false);
-      setShowSkeleton(false);
-      return;
-    }
-
-    // شروع جستجو
-    setIsSearching(true);
-    setShowSkeleton(true);
-    setIsSearchOpen(true);
-
-    const delayDebounce = setTimeout(async () => {
-      try {
-        const res = await fetch(`/api/search?q=${encodeURIComponent(searchQuery)}`);
-        const data = await res.json();
-        setFilteredProducts(data || []);
-      } catch (error) {
-        console.error("خطا در جستجو:", error);
-        setFilteredProducts([]);
-      } finally {
-        // پایان جستجو
-        setIsSearching(false);
-        setShowSkeleton(false);
-      }
-    }, 1000);
-
-    return () => clearTimeout(delayDebounce);
-  }, [searchQuery]);
-
-  // کامپوننت اسکلتون لودینگ
-  const SkeletonLoader = () => {
-    return Array.from({ length: 3 }).map((_, index) => (
-      <div
-        key={index}
-        className="p-2 flex items-start gap-2 animate-pulse"
-      >
-        {/* اسکلتون عکس محصول */}
-        <div className="w-8 h-8 bg-gray-200 rounded mt-1"></div>
-
-        <div className="flex flex-col flex-1 gap-2">
-          {/* اسکلتون عنوان */}
-          <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-          {/* اسکلتون دسته‌بندی */}
-          <div className="h-3 bg-gray-100 rounded w-1/2"></div>
-        </div>
-
-        <div className="flex flex-col items-end gap-1">
-          {/* اسکلتون قیمت */}
-          <div className="h-4 bg-gray-200 rounded w-16"></div>
-          {/* اسکلتون قیمت اصلی */}
-          <div className="h-3 bg-gray-100 rounded w-12"></div>
-        </div>
-      </div>
-    ));
-  };
-
   return (
     <>
       <header data-sb-top="page" className="bg-white shadow-md py-2 sm:py-3 px-2 sm:px-4 sticky top-0 z-50">
@@ -168,126 +84,8 @@ export default function Header() {
             />
           </Link>
 
-          {/* جستجو */}
-          {/* روی موبایل جستجو ردیف دوم است و هنگام اسکرول به پایین جمع می‌شود (با تایپ یا فوکوس باز می‌ماند) تا هدر چسبان فضای صفحه را نخورد */}
-          <div
-            className={`relative order-3 sm:order-none basis-full sm:basis-auto flex-1 w-full sm:w-auto mx-0 sm:mx-6 transition-[max-height,opacity,margin] duration-300 ${
-              searchCollapsed
-                ? "max-h-0 -mt-2 overflow-hidden opacity-0 sm:max-h-none sm:mt-0 sm:overflow-visible sm:opacity-100"
-                : "max-h-24 opacity-100"
-            }`}
-            onFocus={() => setSearchFocused(true)}
-            onBlur={() => setSearchFocused(false)}
-          >
-            <div className="relative">
-              <input
-                ref={searchInputRef}
-                type="text"
-                className={`w-full pr-2 sm:pr-4 pl-10 sm:pl-12 py-1 sm:py-2 border rounded-lg focus:outline-none text-right text-sm sm:text-base bg-transparent relative z-10 ${loading
-                  ? "border-gray-200 cursor-not-allowed opacity-60"
-                  : "border-gray-300 focus:ring-2 focus:ring-pink-500"
-                  }`}
-                value={searchQuery}
-                onChange={(e) => !loading && setSearchQuery(e.target.value)}
-                placeholder="جستجو در فروشگاه چرخ خیاطی ارکیده"
-                disabled={loading || isMaintenance}
-              />
-
-              {/* آیکون جستجو با انیمیشن سه‌بعدی */}
-              <motion.div
-                className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 pointer-events-none z-20"
-                animate={isSearching ? {
-                  scale: [1, 1.2, 1],
-                  rotateY: [0, 180, 360],
-                } : {
-                  scale: 1,
-                  rotateY: 0,
-                  boxShadow: "0px 0px 0px rgba(0,0,0,0)"
-                }}
-                transition={isSearching ? {
-                  duration: 1.5,
-                  repeat: Infinity,
-                  ease: "easeInOut"
-                } : {
-                  duration: 0.3
-                }}
-              >
-                <Search className={`w-4 h-4 sm:w-5 sm:h-5 ${isSearching ? 'text-pink-500' :
-                  loading ? 'text-gray-300' : 'text-gray-400'
-                  }`} />
-              </motion.div>
-            </div>
-
-            <AnimatePresence>
-              {(isSearchOpen && searchQuery.trim() !== "") && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="absolute w-full bg-white border border-gray-300 rounded-lg shadow-lg mt-1 z-10 overflow-hidden"
-                >
-                  <ScrollArea className="max-h-60">
-                  {/* نمایش اسکلتون در حین جستجو */}
-                  {showSkeleton ? (
-                    <SkeletonLoader />
-                  ) : filteredProducts.length === 0 ? (
-                    <div className="p-3 text-center text-gray-500 text-sm">
-                      محصول مورد نظر یافت نشد.
-                    </div>
-                  ) : (
-                    filteredProducts.map((product) => (
-                      <div
-                        key={product.id}
-                        className={`p-2 flex items-start gap-2 hover:bg-gray-50 transition-colors ${loading ? "cursor-not-allowed opacity-60" : "cursor-pointer"
-                          }`}
-                        onClick={() => {
-                          if (loading) return;
-                          router.push(`/products/${product.slug}`);
-                          setIsSearchOpen(false);
-                          setSearchQuery("");
-                        }}
-                      >
-                        {product.image && (
-                          <AppImage
-                            src={product.image}
-                            alt={product.name}
-                            width={32}
-                            height={32}
-                            className="w-8 h-8 object-cover rounded mt-1"
-                          />
-                        )}
-                        <div className="flex flex-col text-sm flex-1">
-                          <span className="font-medium">{product.name}</span>
-                          {product.Category?.name && (
-                            <span className="text-xs text-gray-500">
-                              در دسته {product.Category.name}
-                            </span>
-                          )}
-                        </div>
-                        <div className="text-right">
-                          {product.finalPrice && product.finalPrice < product.price ? (
-                            <>
-                              <span className="text-red-500 font-semibold text-xs block">
-                                {product.finalPrice.toLocaleString("fa-IR")} تومان
-                              </span>
-                              <span className="text-gray-400 line-through text-[11px] block">
-                                {product.price.toLocaleString("fa-IR")}
-                              </span>
-                            </>
-                          ) : (
-                            <span className="text-gray-700 font-semibold text-xs">
-                              {product.price.toLocaleString("fa-IR")} تومان
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    ))
-                  )}
-                  </ScrollArea>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+          {/* جستجو: فیلد همیشه‌دیدنی؛ با کلیک کارت جستجو باز و پشتش مات می‌شود (HeaderSearch). روی گوشی ردیف دوم است و با اسکرول به پایین جمع می‌شود */}
+          <HeaderSearch disabled={loading || isMaintenance} />
 
           {/* آیکون‌ها */}
           <div className={`order-2 sm:order-none flex items-center gap-1 sm:gap-4 text-gray-600 [&>a]:p-1.5 sm:[&>a]:p-0${isMaintenance ? 'opacity-50 pointer-events-none grayscale' : ''}`}>

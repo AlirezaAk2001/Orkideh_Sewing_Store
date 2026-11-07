@@ -200,6 +200,907 @@ html.sb-dragging * {
   }
 }
 
+/* ═══ جستجو (SearchGlyph.jsx، SearchOrb.jsx، ExpandSearch.jsx، HeaderSearch.jsx) ═══
+   «گوی براق» (.xs-orb) نشان همهٔ جستجوهای سایت است: کروی و سه‌بعدی مثل دکمه‌های خود سایت، شکلش مثل مایع آرام موج می‌خورد (xs-blob)، حباب از آن بالا می‌رود (.xs-bubble)،
+   ذره‌بین نرم معلق است (xs-float) و هر چند ثانیه خودش را پاک می‌کند و از صفر می‌کشد (xs-draw-*). با هاور گوی به سمت نشانگر کج می‌شود (هوک useOrbTilt: --rx/--ry/--gx/--gy)،
+   نور براقش دنبال نشانگر می‌آید و حلقه‌ای دورش کشیده می‌شود (.xs-halo). این کلاس‌ها مشترک‌اند و سه جا از آن‌ها استفاده می‌شود:
+   • جستجوی جمع‌شونده داخل صفحه (ExpandSearch: .xs): با کلیک گوی مثل مایع کش می‌آید (عرض فنری + قطره‌هایی که با فیلتر goo جدا و جذب می‌شوند)، بعد فیلد سفید با لبهٔ صورتی ظاهر می‌شود.
+   • فیلد ثابت هدر (HeaderSearch: .hs-trigger): همان گوی کوچک داخل یک فیلد سفید همیشه‌دیدنی؛ با هاور نواری صورتی از سمت گوی دور کل لبهٔ فیلد پر می‌شود (--hs-fill) و گوی کج و براق می‌شود.
+   هاور فقط وقتی کار می‌کند که نشانگر واقعاً حرکت کرده باشد (data-hot از useOrbTilt)؛ فیلدی که زیر نشانگرِ ایستاده باز یا بسته می‌شود بی‌دلیل واکنش نشان نمی‌دهد.
+   • کارت جستجوی هدر (.sp-*): با کلیک روی فیلد، کارت از جای گوی فنری باز می‌شود و صفحهٔ پشتش کم‌نور و مات می‌شود؛ با هر تایپ کمانی دور گوی کارت می‌چرخد (.xs-busy).
+   با «کاهش حرکت» موج، حباب، معلق‌بودن، کشیدن ذره‌بین و حرکت‌های باز شدن حذف می‌شوند و فقط محو شدن ساده می‌ماند. */
+@keyframes xs-blob {
+  0%,
+  100% {
+    border-radius: 50% 50% 50% 50% / 50% 50% 50% 50%;
+  }
+  25% {
+    border-radius: 56% 44% 52% 48% / 48% 56% 44% 52%;
+  }
+  50% {
+    border-radius: 46% 54% 44% 56% / 55% 45% 55% 45%;
+  }
+  75% {
+    border-radius: 52% 48% 58% 42% / 44% 56% 46% 54%;
+  }
+}
+@keyframes xs-rise {
+  0% {
+    transform: translate(0, 0) scale(0.4);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.95;
+  }
+  100% {
+    transform: translate(var(--dx, 0), -30px) scale(1);
+    opacity: 0;
+  }
+}
+@keyframes xs-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-1.3px);
+  }
+}
+/* ذره‌بین: اول دسته پاک می‌شود، بعد عدسی؛ از صفر اول عدسی کشیده می‌شود و بعد دسته. دَش ۱۰۰ و فاصلهٔ ۲۰۰ تا هنگام پاک‌شدگی حتی سرِ گردِ دسته هم نقطه نیندازد */
+@keyframes xs-draw-ring {
+  0%,
+  78% {
+    stroke-dashoffset: 0;
+    animation-timing-function: ease-in;
+  }
+  84%,
+  86% {
+    stroke-dashoffset: 150;
+    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  96%,
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes xs-draw-handle {
+  0%,
+  74% {
+    stroke-dashoffset: 0;
+    animation-timing-function: ease-in;
+  }
+  78%,
+  94% {
+    stroke-dashoffset: 150;
+    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes xs-draw-glint {
+  0%,
+  76% {
+    opacity: 0.5;
+  }
+  80%,
+  92% {
+    opacity: 0;
+  }
+  98%,
+  100% {
+    opacity: 0.5;
+  }
+}
+@keyframes xs-orbit {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes xs-jelly {
+  0% {
+    scale: 1 1;
+  }
+  22% {
+    scale: 1.04 0.86;
+  }
+  52% {
+    scale: 0.985 1.07;
+  }
+  100% {
+    scale: 1 1;
+  }
+}
+
+.xs-orb {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: var(--xs-w, var(--xs-size, 2.5rem));
+  height: var(--xs-size, 2.5rem);
+  padding: 0;
+  border-radius: 9999px;
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 10px 20px -9px color-mix(in oklab, var(--color-brand-600) 75%, transparent);
+  transform: perspective(260px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) scale(var(--sc, 1));
+  transition: width 0.8s cubic-bezier(0.3, 1.2, 0.4, 1), box-shadow 0.3s ease, transform 0.28s ease-out, color 0.3s ease 0.2s;
+}
+.xs-skin {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  background: linear-gradient(145deg, var(--color-brand-400), var(--color-brand-600));
+  box-shadow: inset 0 -7px 10px color-mix(in oklab, var(--color-brand-700) 60%, #000), inset 0 1px 1px rgb(255 255 255 / 0.4);
+  transition: box-shadow 0.4s ease;
+}
+/* نور براق: نقطهٔ روشنی که با هاور دنبال نشانگر می‌آید */
+.xs-skin::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(circle at var(--gx, 30%) var(--gy, 22%), rgb(255 255 255 / 0.85), rgb(255 255 255 / 0) 46%);
+  transition: opacity 0.3s ease;
+}
+.xs-bubble {
+  position: absolute;
+  z-index: 1;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #fff, var(--color-brand-300));
+  opacity: 0;
+  pointer-events: none;
+}
+.xs-halo,
+.xs-busy {
+  position: absolute;
+  z-index: 2;
+  overflow: visible;
+  pointer-events: none;
+  transform: rotate(-90deg);
+}
+/* حلقهٔ هاور درست روی حاشیهٔ گوی می‌نشیند: فاصلهٔ ۱.۵ و ضخامت ۲.۵ پیکسل از لبهٔ گوی (شعاع ۴۵.۳ از ۵۰ واحد در قابی که ۵ پیکسل بزرگ‌تر از گوی است)؛ تا کشیده نشده کاملاً پنهان است */
+.xs-halo {
+  inset: -5px;
+  width: calc(100% + 10px);
+  height: calc(100% + 10px);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.xs-halo circle {
+  fill: none;
+  stroke: var(--color-brand-500);
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-dasharray: 1 2;
+  stroke-dashoffset: 1.05;
+  transition: stroke-dashoffset 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+/* کمان «در حال جستجو» کمی دورتر از لبه می‌چرخد */
+.xs-busy {
+  inset: -6px;
+  width: calc(100% + 12px);
+  height: calc(100% + 12px);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.xs-busy circle {
+  fill: none;
+  stroke: var(--color-brand-500);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-dasharray: 0.26 0.74;
+}
+.is-busy .xs-busy {
+  opacity: 1;
+  animation: xs-orbit 0.75s linear infinite;
+}
+.xs-glyph {
+  position: relative;
+  z-index: 3;
+  display: block;
+  overflow: visible;
+  filter: drop-shadow(0 2px 3px color-mix(in oklab, var(--color-brand-700) 70%, transparent));
+}
+.xs-glyph-lens,
+.xs-glyph-handle {
+  transform-box: fill-box;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.xs-glyph-lens {
+  transform-origin: center;
+}
+.xs-glyph-handle {
+  transform-origin: 0 0;
+}
+.xs-glyph-ring,
+.xs-glyph-handle {
+  stroke-dasharray: 100 200;
+}
+.xs-glyph-glint {
+  opacity: 0.5;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .xs-orb:not(.xs-open) {
+    animation: xs-blob 7s ease-in-out infinite;
+  }
+  .xs-orb:not(.xs-open) .xs-bubble {
+    animation: xs-rise 3.6s ease-in infinite;
+  }
+  .xs-orb:not(.xs-open) .xs-glyph {
+    animation: xs-float 3s ease-in-out infinite;
+  }
+  .xs-orb:not(.xs-open) .xs-glyph-ring {
+    animation: xs-draw-ring 8s linear infinite;
+  }
+  .xs-orb:not(.xs-open) .xs-glyph-handle {
+    animation: xs-draw-handle 8s linear infinite;
+  }
+  .xs-orb:not(.xs-open) .xs-glyph-glint {
+    animation: xs-draw-glint 8s linear infinite;
+  }
+  .xs-orb.xs-open {
+    animation: xs-jelly 0.75s ease-out;
+  }
+}
+.xs-orb:disabled,
+.hs-trigger:disabled .xs-orb {
+  filter: grayscale(0.5);
+  opacity: 0.6;
+}
+
+/* هاور: گوی بزرگ‌تر و براق‌تر می‌شود، ذره‌بین جان می‌گیرد و حلقه‌ای درست روی حاشیهٔ گوی دورش پر می‌شود (کجی و نور را useOrbTilt می‌دهد).
+   شرط، حرکت واقعی نشانگر روی گوی است (data-hot)، نه خود :hover: وقتی فیلد جمع می‌شود و گوی زیر نشانگرِ ایستاده می‌ماند یا نشانگر لحظه‌ای از رویش می‌گذرد، حلقه نباید بپرد */
+@media (hover: hover) {
+  .xs-orb[data-hot]:not(.xs-open) {
+    box-shadow: 0 16px 28px -10px color-mix(in oklab, var(--color-brand-600) 85%, transparent);
+  }
+  .xs-orb[data-hot]:not(.xs-open) .xs-halo {
+    opacity: 1;
+  }
+  .xs-orb[data-hot]:not(.xs-open) .xs-halo circle {
+    stroke-dashoffset: 0;
+  }
+  .xs-orb[data-hot]:not(.xs-open) .xs-glyph-lens {
+    transform: scale(1.14) translate(-0.4px, -0.4px);
+  }
+  .xs-orb[data-hot]:not(.xs-open) .xs-glyph-handle {
+    transform: rotate(-16deg) scale(1.12);
+  }
+}
+.xs-orb:not(.xs-open):active {
+  transform: perspective(260px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) scale(0.92);
+}
+
+/* فیلد جمع‌شونده داخل صفحه (ExpandSearch) */
+.xs {
+  --xs-dir: -1; /* جهت کش آمدن: به چپ؛ در حالت rest (گوی انتهای ردیف) به راست */
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+.xs-goo {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+}
+.xs-drip {
+  position: absolute;
+  inset-inline-start: 0.7rem;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  background: var(--color-brand-500);
+  opacity: 0;
+  transform: translateX(0) scale(0.5);
+  transition: transform 0.7s cubic-bezier(0.3, 1.2, 0.4, 1), opacity 0.2s ease;
+}
+.xs.is-open .xs-drip {
+  opacity: 1;
+  transform: translateX(calc(var(--f) * var(--xs-ow, 300px) * var(--xs-dir))) scale(1.1);
+  transition-delay: calc(var(--n) * 50ms);
+}
+.xs-fill {
+  position: absolute;
+  inset: 2px;
+  z-index: 1;
+  border-radius: 9999px;
+  background: var(--xs-fill, #fff);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.xs.is-open .xs-fill {
+  opacity: 1;
+  transition-delay: 0.45s;
+}
+.xs.is-open .xs-orb {
+  --xs-w: var(--xs-open, 100%);
+  border-radius: 9999px;
+  color: var(--color-brand-600);
+  cursor: text;
+  transform: none;
+  box-shadow: 0 8px 22px -14px color-mix(in oklab, var(--color-brand-500) 50%, transparent);
+  /* ذره‌بین تا رسیدن فیلد سفید سفید می‌ماند (روی نوار صورتی گم نشود) و بعد صورتی می‌شود */
+  transition: width 0.8s cubic-bezier(0.3, 1.2, 0.4, 1), box-shadow 0.3s ease, transform 0.28s ease-out, color 0.3s ease 0.5s;
+}
+.xs.is-open .xs-skin {
+  box-shadow: inset 0 1px 1px rgb(255 255 255 / 0.4);
+}
+.xs.is-open .xs-orb:focus-within {
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--color-brand-300) 35%, transparent), 0 14px 30px -14px color-mix(in oklab, var(--color-brand-500) 60%, transparent);
+}
+.xs.is-open .xs-skin::before,
+.xs.is-open .xs-bubble,
+.xs.is-open .xs-halo {
+  display: none;
+}
+.xs.is-open .xs-glyph {
+  filter: none;
+}
+.xs--rest {
+  --xs-dir: 1;
+  width: 100%;
+  min-height: var(--xs-size);
+}
+.xs--rest .xs-orb {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-end: 0;
+}
+.xs-rest {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  min-width: 0;
+  min-height: var(--xs-size);
+  padding-inline-end: calc(var(--xs-size) + 0.5rem);
+  cursor: pointer;
+  text-align: start;
+  transition: opacity 0.3s ease, transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.xs.is-open .xs-rest {
+  opacity: 0;
+  transform: translateX(10px);
+  pointer-events: none;
+}
+.xs-btn {
+  position: absolute;
+  z-index: 3;
+  inset-block: 0;
+  inset-inline-start: 0;
+  display: grid;
+  place-items: center;
+  width: var(--xs-size);
+  color: inherit;
+  border-radius: 9999px;
+  cursor: inherit;
+}
+.xs-btn:focus-visible {
+  outline: 3px solid var(--color-brand-200);
+  outline-offset: 3px;
+}
+.xs-body {
+  display: contents;
+}
+.xs-input {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding-inline: var(--xs-size);
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--color-gray-800);
+  font: inherit;
+  font-size: 0.875rem;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.xs.is-open .xs-input {
+  opacity: 1;
+  transition-delay: 0.5s;
+}
+.xs-input::placeholder {
+  color: var(--color-gray-400);
+}
+.xs-x {
+  position: absolute;
+  z-index: 3;
+  inset-block: 0;
+  inset-inline-end: 0;
+  display: grid;
+  place-items: center;
+  width: var(--xs-size);
+  color: var(--color-gray-400);
+  border-radius: 9999px;
+  opacity: 0;
+  transform: scale(0.4) rotate(-90deg);
+  transition: opacity 0.2s ease, transform 0.22s ease-out, color 0.2s ease, background-color 0.2s ease;
+}
+@keyframes xs-x-in {
+  from {
+    opacity: 0;
+    transform: scale(0.4) rotate(-90deg);
+  }
+}
+.xs.is-open .xs-x {
+  opacity: 1;
+  transform: none;
+  animation: xs-x-in 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) 0.55s backwards;
+}
+@media (hover: hover) {
+  .xs-x:hover {
+    color: var(--color-brand-600);
+    background-color: var(--color-brand-50);
+  }
+  .xs.is-open .xs-x:hover {
+    transform: rotate(90deg);
+    transition: opacity 0.2s ease, transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.2s ease, background-color 0.2s ease;
+  }
+}
+/* فوکوسی که بعد از بسته‌شدن برگردانده می‌شود حلقهٔ فوکوس نشان نمی‌دهد (تا با Esc دور گوی نواری نماند)؛ با Tab بعدی دوباره عادی است */
+.xs-btn[data-restored]:focus-visible,
+.hs-trigger[data-restored]:focus-visible {
+  outline: 0;
+}
+@media (max-width: 639px) {
+  .xs--phone-row.is-open {
+    flex-basis: 100%;
+    width: 100%;
+  }
+}
+
+/* فیلد ثابت هدر فروشگاه (HeaderSearch). لبه گرادیانیِ دو رنگ است (خاکستری + صورتی) و --hs-fill مرز آن‌ها را از سمت گوی (چپ) تا انتها می‌برد: با هاور نوار صورتی دور کل فیلد پر می‌شود */
+@property --hs-fill {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 0%;
+}
+.hs-trigger {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  height: 2.5rem;
+  padding-inline: 1rem 0.25rem;
+  border: 1.5px solid transparent;
+  border-radius: 9999px;
+  background:
+    linear-gradient(#fff, #fff) padding-box,
+    linear-gradient(to right, var(--color-brand-500) calc(var(--hs-fill) - 14%), var(--color-gray-300) var(--hs-fill)) border-box;
+  color: var(--color-gray-500);
+  cursor: text;
+  text-align: start;
+  transition: --hs-fill 0.3s ease-out, box-shadow 0.3s ease, transform 0.3s ease, color 0.25s ease;
+}
+@media (min-width: 640px) {
+  .hs-trigger {
+    height: 2.75rem;
+    padding-inline-start: 1.25rem;
+  }
+}
+.hs-trigger:focus-visible {
+  outline: 3px solid var(--color-brand-200);
+  outline-offset: 2px;
+}
+.hs-trigger:disabled {
+  cursor: not-allowed;
+  background:
+    linear-gradient(var(--color-gray-50), var(--color-gray-50)) padding-box,
+    linear-gradient(var(--color-gray-200), var(--color-gray-200)) border-box;
+}
+@media (hover: hover) {
+  .hs-trigger[data-hot]:enabled {
+    --hs-fill: 114%;
+    color: var(--color-gray-700);
+    box-shadow: 0 14px 32px -18px color-mix(in oklab, var(--color-brand-500) 65%, transparent), 0 0 0 4px color-mix(in oklab, var(--color-brand-300) 20%, transparent);
+    transform: translateY(-1px);
+    transition: --hs-fill 0.75s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease, transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), color 0.25s ease;
+  }
+}
+.hs-trigger-hint {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 0.875rem;
+}
+@media (min-width: 640px) {
+  .hs-trigger-hint {
+    font-size: 0.95rem;
+  }
+}
+.hs-slash {
+  display: none;
+  flex: none;
+  padding: 0.2rem 0.45rem;
+  border: 1px solid var(--color-gray-200);
+  border-radius: 0.45rem;
+  background: var(--color-gray-50);
+  color: var(--color-gray-500);
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 1;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+@media (hover: hover) and (pointer: fine) {
+  .hs-slash {
+    display: block;
+  }
+  .hs-trigger[data-hot]:enabled .hs-slash {
+    border-color: var(--color-brand-600);
+    background: var(--color-brand-600);
+    color: #fff;
+  }
+}
+.hs-orb {
+  --xs-size: 2rem;
+  cursor: inherit;
+}
+@media (min-width: 640px) {
+  .hs-orb {
+    --xs-size: 2.25rem;
+  }
+}
+
+/* کارت جستجو و پس‌زمینهٔ مات */
+.sp-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: color-mix(in oklab, #1a0f24 42%, transparent);
+  backdrop-filter: blur(8px) saturate(1.1);
+  opacity: 0;
+  visibility: hidden;
+  overscroll-behavior: contain;
+  transition: opacity 0.35s ease, visibility 0s linear 0.5s;
+}
+.sp-layer.is-open {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.35s ease, visibility 0s;
+}
+.sp-card {
+  position: absolute;
+  inset-inline: 0;
+  top: clamp(0.75rem, 9vh, 5rem);
+  width: min(40rem, calc(100% - 1.5rem));
+  margin-inline: auto;
+  overflow: hidden;
+  border-radius: 1.5rem;
+  background: #fff;
+  box-shadow: 0 40px 80px -30px rgb(20 5 30 / 0.7), 0 0 0 1px rgb(255 255 255 / 0.6) inset;
+  transform-origin: var(--ox, 50%) var(--oy, 0);
+  transform: scale(0.35);
+  opacity: 0;
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
+}
+.sp-layer.is-open .sp-card {
+  transform: none;
+  opacity: 1;
+  transition: transform 0.65s cubic-bezier(0.22, 1.2, 0.36, 1), opacity 0.25s ease;
+}
+.sp-top {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.85rem 1.2rem;
+  border-bottom: 1px solid var(--color-gray-100);
+}
+.sp-orb {
+  --xs-size: 2.25rem;
+  cursor: default;
+}
+.sp-field {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  height: 2.5rem;
+}
+.sp-input {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--color-gray-900);
+  font: inherit;
+  font-size: 1.05rem;
+}
+.sp-input::placeholder {
+  color: transparent;
+}
+.sp-hint {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  color: var(--color-gray-400);
+  font-size: 1rem;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.sp-esc {
+  display: none;
+  flex: none;
+  padding: 0.3rem 0.5rem;
+  border: 1px solid var(--color-gray-200);
+  border-radius: 0.5rem;
+  background: var(--color-gray-50);
+  color: var(--color-gray-500);
+  font-size: 0.68rem;
+  font-weight: 600;
+  line-height: 1;
+}
+.sp-close {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 9999px;
+  color: var(--color-gray-500);
+  transition: background-color 0.2s ease, color 0.2s ease, transform 0.22s ease-out;
+}
+@media (hover: hover) and (pointer: fine) {
+  .sp-esc {
+    display: block;
+  }
+  .sp-close {
+    display: none;
+  }
+}
+.sp-bodywrap {
+  overflow: hidden;
+  transition: height 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.sp-pane {
+  padding: 0.6rem 0.75rem 0.75rem;
+}
+.sp-pane--results {
+  padding: 0;
+}
+.sp-pane--results .sb-hide {
+  overscroll-behavior: contain;
+}
+.sp-group + .sp-group {
+  margin-top: 0.6rem;
+}
+.sp-cap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0.25rem 0.35rem 0.4rem;
+  color: var(--color-gray-500);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.sp-clear {
+  padding: 0.15rem 0.5rem;
+  border-radius: 9999px;
+  color: var(--color-brand-600);
+  font-size: 0.72rem;
+  font-weight: 600;
+  transition: background-color 0.2s ease;
+}
+.sp-clear:hover {
+  background: var(--color-brand-50);
+}
+.sp-recent {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.55rem 0.65rem;
+  border-radius: 0.9rem;
+  color: var(--color-gray-800);
+  font-size: 0.9rem;
+  text-align: start;
+  transition: background-color 0.2s ease, transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.sp-recent:hover,
+.sp-recent[data-active] {
+  background: var(--color-brand-50);
+  transform: translateX(-3px);
+}
+.sp-recent:hover .hs-go,
+.sp-recent[data-active] .hs-go {
+  opacity: 1;
+  transform: none;
+}
+.sp-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.sp-chip {
+  padding: 0.4rem 0.9rem;
+  border: 1px solid var(--color-brand-100);
+  border-radius: 9999px;
+  background: var(--color-brand-50);
+  color: var(--color-brand-700);
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease-out;
+}
+.sp-chip:hover,
+.sp-chip:focus-visible {
+  background: var(--color-brand-500);
+  color: #fff;
+  transform: translateY(-2px) scale(1.05);
+  transition: background-color 0.2s ease, color 0.2s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.sp-tip {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.4rem;
+  color: var(--color-gray-500);
+  font-size: 0.875rem;
+}
+.sp-foot {
+  display: none;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.6rem 1.1rem;
+  border-top: 1px solid var(--color-gray-100);
+  background: var(--color-gray-50);
+  color: var(--color-gray-500);
+  font-size: 0.75rem;
+}
+.sp-foot span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.sp-foot kbd {
+  padding: 0.15rem 0.4rem;
+  border: 1px solid var(--color-gray-200);
+  border-radius: 0.4rem;
+  background: #fff;
+  font-size: 0.68rem;
+  font-weight: 600;
+  line-height: 1.1;
+}
+@media (hover: hover) and (pointer: fine) {
+  .sp-foot {
+    display: flex;
+  }
+}
+@keyframes sp-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .sp-layer.is-open .sp-rise {
+    animation: sp-rise 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: calc(0.2s + var(--i, 0) * 45ms);
+  }
+}
+
+/* ردیف نتایج */
+.hs-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.55rem 0.65rem;
+  border-radius: 0.9rem;
+  transition: background-color 0.2s ease;
+}
+.hs-item:hover,
+.hs-item[data-active] {
+  background: var(--color-brand-50);
+}
+.hs-thumb {
+  flex: none;
+  transition: transform 0.22s ease-out;
+}
+.hs-item:hover .hs-thumb,
+.hs-item[data-active] .hs-thumb {
+  transform: scale(1.08) rotate(-2deg);
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.hs-go {
+  flex: none;
+  color: var(--color-brand-500);
+  opacity: 0;
+  transform: translateX(8px);
+  transition: opacity 0.2s ease, transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.hs-item:hover .hs-go,
+.hs-item[data-active] .hs-go {
+  opacity: 1;
+  transform: none;
+}
+.hs-mark {
+  padding-inline: 0.1rem;
+  border-radius: 0.25rem;
+  background: color-mix(in oklab, var(--color-brand-200) 70%, transparent);
+  color: var(--color-brand-700);
+}
+.hs-all {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--color-gray-100);
+  background: linear-gradient(90deg, color-mix(in oklab, var(--color-brand-50) 80%, #fff), #fff);
+  color: var(--color-brand-700);
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: background-color 0.2s ease;
+}
+.hs-all[data-active],
+.hs-all:hover {
+  background: var(--color-brand-50);
+}
+.hs-all svg {
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.hs-all:hover svg,
+.hs-all[data-active] svg {
+  transform: translateX(-4px);
+}
+@media (hover: hover) {
+  .sp-close:hover {
+    background: var(--color-brand-50);
+    color: var(--color-brand-600);
+    transform: rotate(90deg);
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sp-card,
+  .sp-layer.is-open .sp-card {
+    transform: none;
+    transition: opacity 0.2s ease;
+  }
+  .xs-orb {
+    transform: none;
+  }
+  .xs-orb,
+  .xs-x,
+  .xs-rest,
+  .xs-drip,
+  .xs-fill,
+  .xs-input,
+  .sp-bodywrap {
+    transition-duration: 0.01s;
+    transition-delay: 0s;
+  }
+  .xs-bubble,
+  .xs-drip {
+    display: none;
+  }
+  .xs.is-open .xs-x {
+    animation: none;
+  }
+  .hs-trigger,
+  .hs-trigger[data-hot]:enabled {
+    transition-duration: 0.01s;
+  }
+}
+@media print {
+  .sp-layer,
+  .hs-slot {
+    display: none !important;
+  }
+}
+
 /* ظاهر شدن بخش‌ها هنگام اسکرول (Reveal.jsx)؛ فقط وقتی جاوااسکریپت فعال است و کاربر «کاهش حرکت» نخواسته، وگرنه همه‌چیز از اول دیده می‌شود */
 @media (scripting: enabled) and (prefers-reduced-motion: no-preference) {
   [data-reveal] {

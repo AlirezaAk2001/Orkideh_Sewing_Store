@@ -3,11 +3,12 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { LayoutGrid, PackageSearch, Search, SearchX, Trash2, TriangleAlert, X } from "lucide-react";
+import { LayoutGrid, PackageSearch, SearchX, Trash2, TriangleAlert, X } from "lucide-react";
 import Icon from "@mdi/react";
 import { mdiStoreCogOutline } from "@mdi/js";
 import { getImagePath } from "@/app/utils/getImagePath";
 import AppImage from "@/app/components/AppImage";
+import ExpandSearch from "@/app/components/ExpandSearch";
 import { tracksStock } from "@/lib/stock";
 import { LOW_STOCK_THRESHOLD } from "@/lib/statsMath";
 import PageHeader from "@/app/admin/_shell/PageHeader";
@@ -270,29 +271,18 @@ export default function AdminProducts() {
 
   const toolbar = (
     <>
-      <label className="relative block w-full sm:max-w-xs">
-        <span className="sr-only">جستجوی محصول</span>
-        <Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" aria-hidden="true" />
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-          placeholder="جستجو بر اساس نام محصول..."
-          className="h-10 w-full rounded-xl border border-gray-200 bg-gray-50/70 ps-9 pe-9 text-sm text-gray-800 transition placeholder:text-gray-400 hover:border-gray-300 focus:border-brand-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-100"
-        />
-        {hasSearch && (
-          <button
-            type="button"
-            aria-label="پاک کردن جستجو"
-            onClick={() => setSearch("")}
-            className="btn-flat absolute end-1.5 top-1/2 grid h-7 w-7 -translate-y-1/2 cursor-pointer place-items-center rounded-lg text-gray-400 transition hover:bg-gray-200 hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300"
-          >
-            <X className="h-4 w-4" aria-hidden="true" />
-          </button>
-        )}
-      </label>
+      {/* جستجو: دایرهٔ آیکون که با کلیک به فیلد کشیده می‌شود؛ تا متنی هست باز می‌ماند (ExpandSearch) */}
+      <ExpandSearch
+        label="جستجوی محصول"
+        placeholder="جستجو بر اساس نام محصول..."
+        value={search}
+        onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+        onClear={() => { setSearch(""); setPage(1); }}
+        phoneFullRow
+        className="sm:w-80"
+      />
 
-      <div ref={filterRef} role="group" aria-label="فیلتر دسته‌بندی" className="seg flex max-w-full gap-1 overflow-x-auto rounded-xl bg-gray-100 p-1 [scrollbar-width:none]">
+      <div ref={filterRef} role="group" aria-label="فیلتر دسته‌بندی" className="seg flex max-w-full gap-1 overflow-x-auto rounded-xl bg-gray-100 p-1 [scrollbar-width:none] max-sm:min-w-0 max-sm:flex-1">
         {CATEGORY_FILTERS.map((f) => {
           const on = categoryFilter === f.id;
           return (

@@ -3,8 +3,9 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowUpDown, BadgePercent, Banknote, BookOpen, Boxes, Check, FunnelPlus, ChevronDown, ChevronLeft, ChevronRight, FunnelX, LayoutGrid, Package, PackageCheck, SlidersHorizontal, X, PackageSearch  } from "lucide-react";
+import { ArrowUpDown, BadgePercent, Banknote, BookOpen, Boxes, Check, FunnelPlus, ChevronDown, ChevronLeft, ChevronRight, FunnelX, LayoutGrid, Package, PackageCheck, SlidersHorizontal, PackageSearch  } from "lucide-react";
 import CategoryIcon from "@/app/components/CategoryIcon";
+import ExpandSearch from "@/app/components/ExpandSearch";
 import ProductCard from "@/app/components/ProductCard";
 import { SORTS, activeFilterCount, buildListUrl, pageItems, parsePrice } from "@/lib/productQuery";
 
@@ -97,37 +98,26 @@ function FilterPanel({ params, bounds, onApply, clearHref }) {
       className="rounded-2xl border border-brand-100 bg-gradient-to-br from-white via-white to-brand-50/60 p-4 shadow-sm sm:p-5"
     >
       {/* جستجوی نام برند یا محصول: لینک‌های نوار برندهای صفحهٔ اصلی همین فیلتر را با نام برند پر می‌کنند */}
-      <div className="mb-4 rounded-xl bg-white/80 p-4 ring-1 ring-gray-200">
-        <label htmlFor="product-search" className="mb-3 flex items-center gap-2 text-sm font-medium text-gray-800">
-          <span className="grid h-8 w-8 place-items-center rounded-lg bg-brand-50 text-brand-600">
-            <PackageSearch className="h-5 w-5" aria-hidden="true" />
-          </span>
-          نام برند یا نام محصول
-        </label>
-        <div className="relative">
-          <input
-            id="product-search"
-            type="text"
-            inputMode="search"
-            enterKeyHint="search"
-            autoComplete="off"
-            maxLength={60}
-            placeholder="مثلاً ژانومه یا ژانومه ۶۲۵"
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            className={`${FIELD} min-h-11 border-gray-300 pe-10 focus:border-brand-500 focus:ring-brand-200`}
-          />
-          {text !== "" && (
-            <button
-              type="button"
-              onClick={() => setText("")}
-              aria-label="پاک‌کردن جستجو"
-              className="btn-flat absolute inset-y-0 end-1 grid w-9 cursor-pointer place-items-center rounded-lg text-gray-400 transition hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
-            >
-              <X className="h-4 w-4" aria-hidden="true" />
-            </button>
-          )}
-        </div>
+      {/* جمع‌شده فقط برچسب و دایرهٔ آیکون دیده می‌شود؛ با کلیک (روی دایره یا برچسب) فیلد از دایره روی همین ردیف باز می‌شود و تا متنی هست باز می‌ماند (ExpandSearch) */}
+      <div className="mb-4 rounded-xl bg-white/80 p-3 ring-1 ring-gray-200 sm:p-4">
+        <ExpandSearch
+          size="lg"
+          label="جستجوی نام برند یا نام محصول"
+          inputId="product-search"
+          inputProps={{ maxLength: 60 }}
+          placeholder="مثلاً ژانومه یا ژانومه ۶۲۵"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          onClear={() => setText("")}
+          rest={
+            <span className="flex items-center gap-2 text-sm font-medium text-gray-800">
+              <span className="grid h-8 w-8 place-items-center rounded-lg bg-brand-50 text-brand-600">
+                <PackageSearch className="h-5 w-5" aria-hidden="true" />
+              </span>
+              نام برند یا نام محصول
+            </span>
+          }
+        />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)_auto]">
