@@ -20,12 +20,20 @@ export async function GET(req) {
     // فقط مواردی که Product حذف نشده دارند
     const liveFavorites = (favorites || []).filter(f => f.Product);
 
-    const formatted = liveFavorites.map((f) => ({
-      id: f.productId,
-      name: f.Product.name,
-      price: f.Product.finalPrice || f.Product.price,
-      image: f.Product.image,
-    }));
+    // slug برای لینک کارت، و درصد و قیمت قبلی برای نشان تخفیف (فقط وقتی کالا واقعاً تخفیف دارد)
+    const formatted = liveFavorites.map((f) => {
+      const p = f.Product;
+      const discounted = p.discount > 0 && p.finalPrice && p.finalPrice < p.price;
+      return {
+        id: f.productId,
+        name: p.name,
+        price: p.finalPrice || p.price,
+        image: p.image,
+        slug: p.slug,
+        discount: discounted ? p.discount : null,
+        oldPrice: discounted ? p.price : null,
+      };
+    });
 
     return NextResponse.json({ favorites: formatted }, { status: 200 });
   } catch (err) {

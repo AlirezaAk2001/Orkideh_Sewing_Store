@@ -1,51 +1,104 @@
 "use client";
 
-import PageLoader from "@/app/components/PageLoader";
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useAuth } from "@/lib/context";
+import "./_ui/profile.css";
+import { Suspense, useEffect, useState } from "react";
+import { flushSync } from "react-dom";
+import { useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogContentText,
-  DialogActions,
-  Button,
-} from "@mui/material";
+import { mdiDeleteCircleOutline, mdiHeartOutline, mdiLogoutVariant } from "@mdi/js";
+import PageLoader from "@/app/components/PageLoader";
+import { useAuth, useCart, useFavorites } from "@/lib/context";
+import { flyToCart } from "@/lib/flyToCart";
+import { prefersReducedMotion } from "@/lib/motion";
+import AddressesView from "./_ui/AddressesView";
+import CartView from "./_ui/CartView";
+import ConfirmDialog from "./_ui/ConfirmDialog";
+import { Dock, TabBar } from "./_ui/Dock";
+import FavoritesView from "./_ui/FavoritesView";
+import OrdersView from "./_ui/OrdersView";
+import Overview from "./_ui/Overview";
+import ProfileBackdrop from "./_ui/ProfileBackdrop";
+import SettingsView from "./_ui/SettingsView";
+import { normalizeTab, tabHref } from "./_ui/tabs";
+import { useOrders } from "./_ui/useOrders";
 
-import Icon from "@mdi/react";
-import { mdiAccountCircleOutline } from "@mdi/js";
-import { mdiCardAccountDetailsOutline } from "@mdi/js";
-import { mdiAccountBoxEditOutline } from "@mdi/js";
-import { mdiEmailOutline } from '@mdi/js';
-import { mdiAccountCogOutline } from '@mdi/js';
-import { mdiLogoutVariant, mdiCloseCircleOutline } from '@mdi/js';
-import ShoppingBagOutlinedIcon from "@mui/icons-material/ShoppingBagOutlined";
-import FavoriteBorderOutlinedIcon from "@mui/icons-material/FavoriteBorderOutlined";
-import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
-import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
-import { MapPinHouse, IterationCcw } from "lucide-react";
-import OrdersPage from "@/app/orders/page";
-import FavoritesPage from "@/app/favorites/page";
-import SettingsPage from "@/app/settings/page";
-import CartPage from "@/app/cart/page";
-import AddressesPage from "@/app/addresses/page";
+// عوض‌شدن بخش با View Transitions مرورگر (روی مرورگرهای بی‌پشتیبانی یا با «کاهش حرکت» فوری): محتوا نرم جابه‌جا می‌شود و اگر از یک کاشی نمای کلی آمده باشیم،
+// همان کاشی به عنوان بخش مقصد باز می‌شود (هر دو نام morph می‌گیرند). نام‌ها بعد از پایان گذار پاک می‌شوند
+function runTransition(update, from) {
+  if (typeof document.startViewTransition !== "function" || prefersReducedMotion()) {
+    update();
+    return;
+  }
+  const root = document.documentElement;
+  root.classList.add("pf-vt");
+  if (from) from.style.viewTransitionName = "morph";
+  const transition = document.startViewTransition(() => {
+    if (from) from.style.viewTransitionName = "";
+    update();
+    const head = document.querySelector(".pf .vh");
+    if (from && head) head.style.viewTransitionName = "morph";
+  });
+  transition.finished.finally(() => {
+    root.classList.remove("pf-vt");
+    if (from) from.style.viewTransitionName = "";
+    document.querySelectorAll('.pf [style*="view-transition-name"]').forEach((el) => {
+      el.style.viewTransitionName = "";
+    });
+  });
+}
 
-export default function ProfilePage() {
-  const { currentUser, logout, loading } = useAuth();
-  const [activeTab, setActiveTab] = useState(null);
-  const [isMobile, setIsMobile] = useState(false);
-  const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
+// نور دنبال‌کنندهٔ ماوس روی کاشی‌ها
+function spotlight(e) {
+  const tile = e.target.closest?.(".tile");
+  if (!tile) return;
+  const r = tile.getBoundingClientRect();
+  tile.style.setProperty("--mx", `${e.clientX - r.left}px`);
+  tile.style.setProperty("--my", `${e.clientY - r.top}px`);
+}
+
+// پنل کاربری: داشبورد بنتو با دوک شناور کنار صفحه (روی موبایل نوار پایین). بخش فعال در آدرس است (/profile?tab=orders)، ولی عوض‌شدنش بدون رفت‌وآمد
+// به سرور و با گذار نرم انجام می‌شود؛ دکمهٔ برگشت و لینک‌دادن مثل قبل کار می‌کنند
+function ProfileView() {
+  const { currentUser, logout, loading, addresses } = useAuth();
+  const { cartItems, cartCount, addToCart } = useCart();
+  const { favorites, favoritesCount, removeFromFavorites } = useFavorites();
   const router = useRouter();
+  const params = useSearchParams();
 
-  const handleLogout = () => {
-    setLogoutDialogOpen(true);
+  const urlTab = normalizeTab(params.get("tab"));
+  const [tab, setTab] = useState(urlTab);
+  // آدرس از بیرون عوض شد (برگشت مرورگر، لینک): بخش را دنبالش بیاور
+  useEffect(() => setTab(urlTab), [urlTab]);
+
+  const { orders, payingId, deletingId, payOrder, deleteOrder } = useOrders(currentUser?.id, tab);
+
+  const [logoutOpen, setLogoutOpen] = useState(false);
+  const [askFav, setAskFav] = useState(null);
+  const [leavingFav, setLeavingFav] = useState(null);
+
+  useEffect(() => {
+    const name = sessionStorage.getItem("welcomeMessage");
+    if (name) {
+      toast.success(`خوش آمدید ${name} عزیز 🎉`, { position: "top-center" });
+      sessionStorage.removeItem("welcomeMessage");
+    }
+  }, []);
+
+  if (loading || !currentUser) {
+    return <PageLoader className="min-h-[60vh]" label="در حال بارگذاری اطلاعات کاربر..." />;
+  }
+
+  const go = (key, from) => {
+    if (key === tab) return;
+    runTransition(() => {
+      flushSync(() => setTab(key));
+      window.history.pushState(null, "", tabHref(key));
+      window.scrollTo({ top: 0 });
+    }, from);
   };
 
   const confirmLogout = async () => {
-    setLogoutDialogOpen(false);
+    setLogoutOpen(false);
     try {
       await logout();
       toast.success("شما با موفقیت از حساب خارج شدید.");
@@ -56,192 +109,82 @@ export default function ProfilePage() {
     }
   };
 
-  useEffect(() => {
-    const name = sessionStorage.getItem("welcomeMessage");
-    if (name) {
-      toast.success(`خوش آمدید ${name} عزیز 🎉`, { position: "top-center" });
-      sessionStorage.removeItem("welcomeMessage");
-    }
-  }, []);
-
-  // مدیریت اندازه صفحه
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  const tabContent = {
-    orders: <OrdersPage />,
-    cart: <CartPage />,
-    favorites: <FavoritesPage />,
-    settings: <SettingsPage />,
-    addresses: <AddressesPage />,
+  // برداشتن از علاقه‌مندی‌ها (از نمای کلی و بخش علاقه‌مندی‌ها): بعد از تأیید، کارت کم‌رنگ می‌شود و بعد برداشته می‌شود
+  const confirmUnfav = () => {
+    const item = askFav;
+    setAskFav(null);
+    setLeavingFav(item.id);
+    setTimeout(() => {
+      removeFromFavorites(item.id);
+      setLeavingFav(null);
+      toast.success("محصول موردنظر از علاقه‌مندی‌های شما حذف شد.", { icon: "🗑️" });
+    }, 330);
   };
 
-  // منتظر بارگذاری کامل
-  if (loading || !currentUser) {
-    return (
-      <PageLoader className="min-h-[60vh]" label="در حال بارگذاری اطلاعات کاربر..." />
-    );
-  }
+  // افزودن به سبد با پرواز تصویر؛ پیام موفقیت یا خطا را خود سبد بعد از پاسخ سرور نشان می‌دهد
+  const addCart = (item, button) => {
+    addToCart({ id: item.id, name: item.name, price: item.price, quantity: 1, image: item.image });
+    flyToCart(button.closest("article"), button);
+  };
 
-  const tabs = [
-    { key: "orders", icon: <ShoppingBagOutlinedIcon />, label: "سفارش‌های من" },
-    { key: "addresses", icon: <MapPinHouse />, label: "آدرس‌های من" },
-    { key: "cart", icon: <ShoppingCartOutlinedIcon />, label: "سبد خرید" },
-    { key: "favorites", icon: <FavoriteBorderOutlinedIcon />, label: "علاقه‌مندی‌های من" },
-    { key: "settings", icon: <Icon path={mdiAccountCogOutline} size={1} />, label: "تنظیمات حساب کاربری" },
-  ];
+  const placed = orders ? orders.filter((o) => o.status !== "pending").length : null;
+  const counts = { orders: placed, addresses: addresses.length, cart: cartCount, favorites: favoritesCount };
 
-  // منو و محتوای تب با flex کنار هم می‌نشینند (روی موبایل زیر هم)؛ پنل‌ها دیگر absolute نیستند، پس از لبهٔ صفحه بیرون نمی‌زنند
-  return (
-    <div className="relative isolate min-h-[calc(100vh-5rem)] w-full overflow-hidden px-4 py-6 md:py-10" dir="rtl">
-
-      {/* بکگراند */}
-      <div
-        className="absolute inset-0 -z-10"
-        style={{
-          backgroundImage: `url(/image/back-user.webp)`,
-          backgroundRepeat: "no-repeat",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          filter: "blur(6px)",
-          opacity: 0.45,
-          transform: "scale(1.05)",
-        }}
+  const views = {
+    overview: (
+      <Overview
+        user={currentUser}
+        orders={orders}
+        cartItems={cartItems}
+        cartCount={cartCount}
+        favorites={favorites}
+        addresses={addresses}
+        payingId={payingId}
+        leavingFav={leavingFav}
+        onGo={go}
+        onPay={payOrder}
+        onUnfav={setAskFav}
+        onAdd={addCart}
       />
+    ),
+    orders: <OrdersView orders={orders} payingId={payingId} deletingId={deletingId} onPay={payOrder} onDelete={deleteOrder} />,
+    addresses: <AddressesView />,
+    cart: <CartView onGo={go} />,
+    favorites: <FavoritesView favorites={favorites} leavingId={leavingFav} onUnfav={setAskFav} onAdd={addCart} />,
+    settings: <SettingsView user={currentUser} placedOrders={placed} onLogout={() => setLogoutOpen(true)} />,
+  };
 
-      {/* دیالوگ تأیید خروج */}
-      <Dialog
-        open={logoutDialogOpen}
-        onClose={() => setLogoutDialogOpen(false)}
-        dir="rtl"
-        PaperProps={{
-          sx: { borderRadius: "12px" },
-        }}
-      >
-        <DialogTitle
-          sx={{
-            fontFamily: "Vazirmatn, sans-serif",
-            display: "flex",
-            alignItems: "center",
-            gap: 1,
-            backgroundColor: "#ef4444",
-            color: "#ffffff",
-            borderBottom: "3px solid",
-            borderColor: "#b91c1c",
-            px: 3,
-            py: 1.5,
-          }}
-        >
-          <Icon path={mdiLogoutVariant} size={1} color="#ffffff" />
-          خروج از حساب
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText sx={{ fontFamily: "Vazirmatn, sans-serif", marginTop: "6px" }}>
-            آیا مطمئن هستید که می‌خواهید از حساب کاربری خود خارج شوید؟
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={() => setLogoutDialogOpen(false)}
-            sx={{ fontFamily: "Vazirmatn, sans-serif" }}
-          >
-            <Icon path={mdiCloseCircleOutline} size={1} />
-            انصراف
-          </Button>
-          <Button
-            onClick={confirmLogout}
-            color="error"
-            variant="contained"
-            sx={{ fontFamily: "Vazirmatn, sans-serif" }}
-          >
-            <Icon path={mdiLogoutVariant} size={1} />
-            بله، خروج
-          </Button>
-        </DialogActions>
-      </Dialog>
+  return (
+    <div className="pf" dir="rtl" data-tab={tab} onPointerMove={spotlight}>
+      <ProfileBackdrop />
 
-      <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-4 md:flex-row md:items-start md:justify-center md:gap-6">
-        {/* منو */}
-        <motion.div
-          layout="position"
-          transition={{ duration: 0.5, ease: "easeInOut" }}
-          className="w-full shrink-0 rounded-xl border border-white/40 bg-white/70 p-4 shadow-2xl backdrop-blur-md sm:p-6 md:w-80"
-        >
-          {/* پروفایل کاربر با نمایش نام کاربری */}
-          <div className="mb-3 flex items-center gap-3 border-b pb-3">
-            <Icon path={mdiAccountCircleOutline} size={1} className="shrink-0 text-gray-600" />
-            <div className="min-w-0">
-              <p className="flex items-center gap-1 text-sm sm:text-base">
-                <Icon path={mdiCardAccountDetailsOutline} size={0.8} className="shrink-0" />
-                <span className="truncate">نام و نام خانوادگی: {currentUser?.name || "کاربر مهمان"}</span>
-              </p>
-              <p className="flex items-center gap-1 text-sm sm:text-base">
-                <Icon path={mdiAccountBoxEditOutline} size={0.8} className="shrink-0" />
-                <span className="truncate">نام کاربری: {currentUser?.username || "نام کاربری تنظیم نشده"}</span>
-              </p>
-              <p className="flex items-center gap-1 text-sm sm:text-base">
-                <Icon path={mdiEmailOutline} size={0.8} className="shrink-0" />
-                <span className="truncate">ایمیل: {currentUser?.email || "ایمیل ثبت نشده"}</span>
-              </p>
-            </div>
-          </div>
-
-          {/* روی موبایل شبکهٔ ۳ستونه (همهٔ گزینه‌ها بدون اسکرول افقی دیده می‌شوند)، روی دسکتاپ فهرست عمودی */}
-          <nav className="grid grid-cols-3 gap-2 md:flex md:flex-col md:gap-3" aria-label="حساب کاربری">
-            {tabs.map((tab) => (
-              <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
-                aria-current={activeTab === tab.key ? "page" : undefined}
-                className={`flex cursor-pointer flex-col items-center justify-center gap-1 rounded-lg p-2 text-center text-xs transition-all duration-300 md:flex-row md:justify-start md:gap-2 md:text-right md:text-base
-              ${activeTab === tab.key
-                    ? "bg-blue-100 font-semibold text-blue-600"
-                    : "text-gray-700 hover:bg-gray-100"
-                  }`}
-              >
-                {tab.icon}
-                {tab.label}
-              </button>
-            ))}
-
-            <button
-              onClick={handleLogout}
-              className="flex cursor-pointer flex-col items-center justify-center gap-1 rounded-lg bg-red-50 p-2 text-center text-xs text-red-600 hover:bg-red-100 md:flex-row md:justify-start md:gap-2 md:text-right md:text-base"
-            >
-              <LogoutOutlinedIcon /> خروج از حساب
-            </button>
-          </nav>
-        </motion.div>
-
-        {/* محتوای تب‌ها */}
-        <AnimatePresence mode="wait">
-          {activeTab && (
-            <motion.div
-              key={activeTab}
-              initial={{ opacity: 0, x: isMobile ? 0 : -40, y: isMobile ? 20 : 0 }}
-              animate={{ opacity: 1, x: 0, y: 0 }}
-              exit={{ opacity: 0, x: isMobile ? 0 : -40, y: isMobile ? 20 : 0 }}
-              transition={{ duration: 0.4, ease: "easeInOut" }}
-              className="w-full min-w-0 rounded-xl border border-white/40 bg-white/70 p-4 shadow-2xl backdrop-blur-md sm:p-6 md:w-[34rem] lg:w-[40rem]"
-            >
-              {tabContent[activeTab]}
-              <button
-                onClick={() => setActiveTab(null)}
-                className="mt-6 flex cursor-pointer items-center gap-1 rounded-lg bg-gray-200 px-3 py-2 text-sm transition-all hover:bg-gray-300 sm:px-4 sm:text-base"
-              >
-                <IterationCcw className="text-gray-700" />
-                بازگشت
-              </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
+      <div className="app">
+        <Dock tab={tab} counts={counts} onNav={go} onLogout={() => setLogoutOpen(true)} />
+        <div className="main" id="profile-content">
+          {views[tab]}
+        </div>
       </div>
+
+      <TabBar tab={tab} counts={counts} onNav={go} />
+
+      <ConfirmDialog open={logoutOpen} onClose={() => setLogoutOpen(false)} onConfirm={confirmLogout} title="خروج از حساب" icon={mdiLogoutVariant} confirmLabel="بله، خروج" confirmIcon={mdiLogoutVariant} cancelLabel="انصراف">
+        آیا مطمئن هستید که می‌خواهید از حساب کاربری خود خارج شوید؟
+      </ConfirmDialog>
+
+      <ConfirmDialog open={!!askFav} onClose={() => setAskFav(null)} onConfirm={confirmUnfav} title="حذف از علاقه‌مندی‌ها" icon={mdiHeartOutline} confirmLabel="بله، حذف کن" confirmIcon={mdiDeleteCircleOutline}>
+        محصول
+        <strong style={{ color: "#E53935", margin: "0 4px" }}>«{askFav?.name}»</strong>
+        از علاقه‌مندی‌های شما حذف خواهد شد. آیا مطمئن هستید؟
+      </ConfirmDialog>
     </div>
+  );
+}
+
+// useSearchParams (بخش فعال در آدرس) باید پشت Suspense باشد تا ساخت صفحه نشکند
+export default function ProfilePage() {
+  return (
+    <Suspense fallback={<PageLoader className="min-h-[60vh]" label="در حال بارگذاری اطلاعات کاربر..." />}>
+      <ProfileView />
+    </Suspense>
   );
 }

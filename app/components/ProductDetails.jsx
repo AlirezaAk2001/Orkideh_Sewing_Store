@@ -297,10 +297,15 @@ export default function ProductDetails({ product, initialComments = [], related 
     if (isFavorite) {
       setDialog({ open: true, type: "favorite", name: product.name });
     } else {
+      // قیمت نهایی (همان که API علاقه‌مندی‌ها برمی‌گرداند) و نشان تخفیف و لینک برای کارت علاقه‌مندی‌های پنل کاربری
+      const discounted = product.discount > 0 && product.finalPrice < product.price;
       addToFavorites({
         id: product.id,
         name: product.name,
-        price: product.price,
+        price: product.finalPrice || product.price,
+        oldPrice: discounted ? product.price : null,
+        discount: discounted ? product.discount : null,
+        slug: product.slug,
         image: product.image,
       });
       setHeartPop(true);
