@@ -3,8 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import axios from "axios";
+import Avatar from "@/app/components/Avatar";
 import { useAuth } from "@/lib/context";
 import { evaluatePassword, STRENGTH_LABELS } from "@/lib/passwordStrength";
+import AvatarPicker from "./AvatarPicker";
 import { Ic } from "./icons";
 import { dateFa, fa } from "./format";
 import { ViewHead } from "./parts";
@@ -94,7 +96,7 @@ function UsernameCard() {
 
   const tone = state === "ok" ? "ok" : state === "bad" ? "bad" : "";
   return (
-    <section className="tile scard rise" style={{ "--i": 2 }}>
+    <section className="tile scard rise" style={{ "--i": 3 }}>
       <h3>
         <span className="ib">
           <Ic n="user" />
@@ -160,7 +162,7 @@ function PasswordCard() {
 
   const type = show ? "text" : "password";
   return (
-    <section className="tile scard rise" style={{ "--i": 3 }}>
+    <section className="tile scard rise" style={{ "--i": 4 }}>
       <h3>
         <span className="ib">
           <Ic n="lock" />
@@ -237,16 +239,31 @@ function PasswordCard() {
   );
 }
 
-// تنظیمات حساب: کارت پروفایل (آواتار با پالس، ایمیل، تاریخ عضویت، تعداد سفارش‌ها و خروج) و کارت‌های نام کاربری و رمز عبور
+// کارت «تغییر آواتار»: انتخاب‌گر آواتار (AvatarPicker). مداد کارت صورتی نمای کلی مستقیم به همین کارت می‌آید (tabIndex برای همین است: بعد از رسیدن، فوکوس روی کارت می‌نشیند)
+function AvatarCard() {
+  return (
+    <section id="avatar-card" className="tile scard rise" style={{ "--i": 2 }} tabIndex={-1} aria-labelledby="avatar-title">
+      <h3 id="avatar-title">
+        <span className="ib">
+          <Ic n="imageUp" />
+        </span>
+        تغییر آواتار
+      </h3>
+      <p className="sd">عکس خودتان یا یکی از طرح‌های فروشگاه؛ در هدر سایت، پنل و زیر نظرهایتان دیده می‌شود.</p>
+      <AvatarPicker />
+    </section>
+  );
+}
+
+// تنظیمات حساب: کارت پروفایل (آواتار با پالس، ایمیل، تاریخ عضویت، تعداد سفارش‌ها و خروج) و کارت‌های آواتار، نام کاربری و رمز عبور
 export default function SettingsView({ user, placedOrders, onLogout }) {
-  const initial = Array.from(user?.name?.trim() || "؟")[0];
   return (
     <>
-      <ViewHead icon="sliders" title="تنظیمات حساب" sub="نام کاربری و رمز عبور" />
+      <ViewHead icon="sliders" title="تنظیمات حساب" sub="آواتار، نام کاربری و رمز عبور" />
       <div className="sgrid">
         <aside className="tile me-card rise" style={{ "--i": 1 }}>
-          <div className="av">
-            <i>{initial}</i>
+          <div className="me-av">
+            <Avatar value={user?.avatar} name={user?.name} size={100} label={user?.name || "حساب کاربری"} />
           </div>
           <h3>{user?.name}</h3>
           <div className="sub">@{user?.username}</div>
@@ -277,6 +294,7 @@ export default function SettingsView({ user, placedOrders, onLogout }) {
           </button>
         </aside>
         <div className="scol">
+          <AvatarCard />
           <UsernameCard />
           <PasswordCard />
         </div>

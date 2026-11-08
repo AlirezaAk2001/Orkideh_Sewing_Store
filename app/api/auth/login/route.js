@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 import prisma from "@/lib/prisma";
 import { clientIp, hit, peek, reset, tooManyRequests } from "@/lib/rateLimit";
 import { issueToken } from "@/lib/session";
+import { avatarFields } from "@/lib/avatar";
 
 // فقط تلاش‌های ناموفق شمرده می‌شوند. قفل برای «حساب + IP» است، پس کسی نمی‌تواند از جای دیگر
 // حساب دیگران (مثلاً ادمین) را قفل کند؛ سقف جداگانه‌ای هم برای کل IP هست (پشت NAT چند کاربر یک IP دارند).
@@ -112,6 +113,7 @@ export async function POST(req) {
         is_admin: user.is_admin,
         is_verified: user.is_verified,
         role: user.is_admin ? "admin" : "user",
+        ...avatarFields(user),
       },
       token,
     });

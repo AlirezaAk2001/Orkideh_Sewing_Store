@@ -16,8 +16,9 @@ model User {
   is_verified      Boolean            @default(false)
   created_at       DateTime           @default(now())
   username         String             @unique
-  profileImageUrl  String?
-  updatedAt        DateTime?          @default(now()) @updatedAt @db.Timestamp(6)
+  profileImageUrl  String?            // آواتار انتخاب‌شدهٔ کاربر: خالی = پیش‌فرض، "initial"، "preset:<کلید>" یا "/uploads/<فایل>" (lib/avatar.js)
+  googleImageUrl   String?            // عکس حساب گوگل (از google-callback)؛ جدا نگه داشته می‌شود تا کاربر بعد از انتخاب طرح دیگر بتواند به آن برگردد
+  updatedAt       DateTime?          @default(now()) @updatedAt @db.Timestamp(6)
   Cart             Cart[]
   Favorite         Favorite[]
   VerificationCode VerificationCode[]

@@ -2453,3 +2453,68 @@ html.sb-dragging * {
     animation: num-tick 0.22s ease-out both;
   }
 }
+
+/* ───────── آواتار کاربر (app/components/Avatar.jsx) ─────────
+   اندازه از --s می‌آید (پیش‌فرض ۴۰ پیکسل)، پس هر جا فقط یک متغیر عوض می‌شود. حالت‌ها با data-type:
+   initial = حرف اول روی گرادیان برند، preset = طرح آماده (رنگ زمینه از --c0 و --c1)، photo / google = عکس */
+.av {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: var(--s, 40px);
+  height: var(--s, 40px);
+  flex: none;
+  border-radius: 50%;
+  overflow: hidden;
+  color: #fff;
+  font-size: calc(var(--s, 40px) * 0.44);
+  font-style: normal;
+  font-weight: 800;
+  line-height: 1;
+  user-select: none;
+  background: radial-gradient(circle at 30% 22%, var(--color-brand-400), var(--color-brand-700));
+  box-shadow: inset 0 0 0 max(1.5px, calc(var(--s, 40px) * 0.03)) rgb(255 255 255 / 0.5);
+}
+.av > b {
+  font-weight: inherit;
+}
+.av > svg,
+.av > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.av > img {
+  object-fit: cover;
+}
+.av[data-type="photo"],
+.av[data-type="google"] {
+  background: #f3eaf1;
+  box-shadow: 0 0 0 1px rgb(31 18 38 / 0.08);
+}
+.av[data-type="preset"] {
+  background:
+    radial-gradient(ellipse 54% 54% at 30% 18%, rgb(255 255 255 / 0.4), rgb(255 255 255 / 0)),
+    linear-gradient(135deg, var(--c0), var(--c1));
+  box-shadow: none;
+}
+/* آواتار هدر: لینک گرد به پروفایل؛ با هاور یک حلقهٔ برند دورش می‌افتد */
+.av-link {
+  display: grid;
+  place-items: center;
+  flex: none;
+  border-radius: 50%;
+  transition: box-shadow 0.25s;
+}
+.av-link:hover,
+.av-link:focus-visible {
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--color-brand-400);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .av-link {
+    transition: box-shadow 0.25s, transform 0.3s cubic-bezier(0.34, 1.5, 0.5, 1);
+  }
+  .av-link:hover {
+    transform: scale(1.06);
+  }
+}

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Heart, User2, Info, LogIn, LogOut } from "lucide-react";
+import { Heart, Info, LogIn, LogOut } from "lucide-react";
 import Icon from '@mdi/react';
 import { mdiCartOutline } from '@mdi/js';
 import { useRouter, usePathname } from "next/navigation";
@@ -9,6 +9,7 @@ import { useAuth, useFavorites, useCart } from "../../lib/context";
 import { AnimatePresence, motion } from "framer-motion";
 import { Tooltip } from 'react-tooltip';
 import SiteLogo from "./SiteLogo";
+import Avatar from "./Avatar";
 import HeaderSearch from "./HeaderSearch";
 import { useSiteLogo } from "./useSiteLogo";
 import { useRiseKey } from "@/lib/motion";
@@ -151,18 +152,15 @@ export default function Header() {
                   exit={{ opacity: 0, scale: 0.9 }}
                   className="flex items-center gap-2"
                 >
+                  {/* آواتار کاربر جای آیکون آدمک قبلی است (انتخاب‌شده در تنظیمات پنل: حرف اول، طرح آماده، عکس شخصی یا عکس گوگل) */}
                   <Link
                     href={currentUser.is_admin ? "/admin" : "/profile"}
-                    className={`transition-colors ${loading
-                      ? "cursor-not-allowed opacity-50 pointer-events-none"
-                      : "hover:text-pink-600 cursor-pointer"
-                      }`}
+                    className={`av-link ${loading ? "cursor-not-allowed opacity-50 pointer-events-none" : "cursor-pointer"}`}
                     aria-label="حساب کاربری"
                     data-tooltip-id="profile-tooltip"
                     data-tooltip-content={loading ? "در حال بارگذاری..." : currentUser.is_admin ? "پنل مدیریت" : "پروفایل کاربری"}
                   >
-                    <User2 className={`w-7 sm:w-6 h-7 sm:h-6 ${loading ? "text-gray-400" : ""
-                      }`} />
+                    <Avatar value={currentUser.avatar} name={currentUser.name} className="[--s:34px] sm:[--s:38px]" />
                   </Link>
                   <button
                     onClick={() => !loading && logout("/")}

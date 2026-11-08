@@ -3,6 +3,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Scissors, Spool } from "lucide-react";
+import Avatar from "@/app/components/Avatar";
 import { useCountUp } from "@/app/admin/_ui/useCountUp";
 import { compactText } from "@/app/admin/_dashboard/format";
 import { scrollBehavior } from "@/lib/motion";
@@ -517,7 +518,6 @@ function Lead({ orders, cartCount }) {
 // نمای کلی: سلام، جملهٔ خلاصه و کاشی‌های بنتو. هر کاشی داده‌ٔ زنده نشان می‌دهد و با کلیک به بخش خودش می‌رود؛ بنابراین «دسترسی سریع» جدا لازم نیست
 export default function Overview({ user, orders, cartItems, cartCount, favorites, addresses, payingId, leavingFav, onGo, onPay, onUnfav, onAdd }) {
   const first = user?.name?.trim().split(/\s+/)[0] || "کاربر";
-  const initial = Array.from(user?.name?.trim() || "؟")[0];
   const focus = orders && (orders.find((o) => o.status === "processing") ?? orders.find((o) => o.status === "pending") ?? orders[0] ?? null);
   const loading = orders == null;
 
@@ -532,8 +532,12 @@ export default function Overview({ user, orders, cartItems, cartCount, favorites
         </svg>
         <div className="hero-in">
           <div className="hero-id">
-            <div className="hero-av" role="img" aria-label={user?.name || "حساب کاربری"}>
-              <i>{initial}</i>
+            <div className="hero-av">
+              <Avatar value={user?.avatar} name={user?.name} label={user?.name || "حساب کاربری"} />
+              {/* مداد: مستقیم به کارت «تغییر آواتار» در تنظیمات می‌رود (پنجرهٔ جدا باز نمی‌شود) */}
+              <button type="button" className="pen" data-tip="تغییر آواتار" aria-label="تغییر آواتار" onClick={() => onGo("settings", null, "avatar-card")}>
+                <Ic n="pencil" />
+              </button>
               {user?.name && (
                 <span className="tip" aria-hidden="true">
                   {user.name}

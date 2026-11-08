@@ -47,6 +47,23 @@ function runTransition(update, from) {
   });
 }
 
+// بعد از عوض‌شدن بخش: اگر مقصد کارت مشخصی است (مدادِ آواتار در کارت صورتی) صفحه تا همان کارت می‌رود و فوکوس و یک چشمک ملایم می‌گیرد
+// (data-spot در profile.css)، وگرنه بالای صفحه. اسکرول فوری است؛ نرم‌بودن حرکت را خود گذار بین بخش‌ها می‌دهد
+function arrive(anchor) {
+  const target = anchor ? document.getElementById(anchor) : null;
+  if (!target) {
+    window.scrollTo({ top: 0 });
+    return;
+  }
+  // جای کارت از offsetTop حساب می‌شود، نه از getBoundingClientRect: کارت هنوز در انیمیشن ورودش ۲۰ پیکسل پایین‌تر است و scrollIntoView همان را می‌دید
+  let top = 0;
+  for (let el = target; el; el = el.offsetParent) top += el.offsetTop;
+  window.scrollTo({ top: Math.max(0, top - (parseFloat(getComputedStyle(target).scrollMarginTop) || 0)) });
+  target.focus({ preventScroll: true });
+  target.setAttribute("data-spot", "");
+  target.addEventListener("animationend", (e) => e.animationName === "pf-spot" && target.removeAttribute("data-spot"));
+}
+
 // نور دنبال‌کنندهٔ ماوس روی کاشی‌ها
 function spotlight(e) {
   const tile = e.target.closest?.(".tile");
@@ -88,12 +105,16 @@ function ProfileView() {
     return <PageLoader className="min-h-[60vh]" label="در حال بارگذاری اطلاعات کاربر..." />;
   }
 
-  const go = (key, from) => {
-    if (key === tab) return;
+  // anchor (اختیاری): شناسهٔ کارتی که بعد از رسیدن به بخش باید به آن رفت
+  const go = (key, from, anchor) => {
+    if (key === tab) {
+      if (anchor) arrive(anchor);
+      return;
+    }
     runTransition(() => {
       flushSync(() => setTab(key));
       window.history.pushState(null, "", tabHref(key));
-      window.scrollTo({ top: 0 });
+      arrive(anchor);
     }, from);
   };
 

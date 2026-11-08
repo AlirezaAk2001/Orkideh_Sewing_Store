@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
+import { avatarFields } from "@/lib/avatar";
 
 // متد GET - برای دریافت اطلاعات کاربر با توکن
 export async function GET(req) {
@@ -8,8 +9,9 @@ export async function GET(req) {
   if (auth.error) return auth.error;
 
   const role = auth.user.is_admin ? "admin" : "user";
+  const { profileImageUrl, googleImageUrl, ...rest } = auth.user;
   return NextResponse.json({
-    user: { ...auth.user, role },
+    user: { ...rest, ...avatarFields({ profileImageUrl, googleImageUrl }), role },
   });
 }
 
@@ -35,11 +37,15 @@ export async function PUT(req) {
         username: true,
         is_admin: true,
         is_verified: true,
+        created_at: true,
+        profileImageUrl: true,
+        googleImageUrl: true,
       },
     });
 
+    const { profileImageUrl, googleImageUrl, ...rest } = user;
     return NextResponse.json({
-      user: { ...user, role: user.is_admin ? "admin" : "user" },
+      user: { ...rest, ...avatarFields({ profileImageUrl, googleImageUrl }), role: user.is_admin ? "admin" : "user" },
     });
   } catch (error) {
     console.error("❌ PUT User Error:", error);

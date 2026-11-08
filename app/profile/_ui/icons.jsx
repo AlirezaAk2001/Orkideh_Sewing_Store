@@ -38,6 +38,12 @@ import {
   X,
   ArrowLeft,
   LoaderCircle,
+  ImageUp,
+  Sparkles,
+  Trash2,
+  Upload,
+  ZoomIn,
+  ZoomOut,
 } from "lucide-react";
 
 // آیکون‌های پنل با همان نام کوتاهی که طرح استفاده می‌کند. ظاهرشان (اندازه، ضخامت خط، گوشه‌ها) از .pf svg.i در profile.css می‌آید
@@ -81,6 +87,12 @@ const ICONS = {
   briefcase: Briefcase,
   x: X,
   loader: LoaderCircle,
+  imageUp: ImageUp,
+  sparkles: Sparkles,
+  trash2: Trash2,
+  upload: Upload,
+  zoomIn: ZoomIn,
+  zoomOut: ZoomOut,
 };
 
 export function Ic({ n, className = "" }) {

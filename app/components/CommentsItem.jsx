@@ -4,36 +4,12 @@ import { useAuth } from "@/lib/context";
 import axios from "axios";
 import toast from "react-hot-toast";
 import StarRating from "./StarRating";
+import Avatar from "./Avatar";
 import moment from 'moment-jalaali';
 
 export default function CommentsItem({ comment, onDelete }) {
   const { currentUser } = useAuth();
   const isAdmin = currentUser?.is_admin;
-
-  // تابع برای استخراج حرف اول نام کاربر
-  const getInitial = (name) => {
-    if (!name) return "ن";
-    return name.charAt(0);
-  };
-
-  // تابع برای تولید رنگ بر اساس حرف اول
-  const getAvatarColor = (name) => {
-    if (!name) return "bg-gray-500";
-
-    const colors = [
-      "bg-blue-500",
-      "bg-green-500",
-      "bg-red-500",
-      "bg-yellow-500",
-      "bg-purple-500",
-      "bg-pink-500",
-      "bg-indigo-500",
-      "bg-teal-500",
-    ];
-
-    const charCode = name.charCodeAt(0);
-    return colors[charCode % colors.length];
-  };
 
   const handleDelete = async () => {
     if (!isAdmin) return;
@@ -74,17 +50,13 @@ export default function CommentsItem({ comment, onDelete }) {
   }
 
   const userName = comment.User?.name || "کاربر ناشناس";
-  const userInitial = getInitial(userName);
-  const avatarColor = getAvatarColor(userName);
 
   return (
     <div className="border rounded-xl p-2 sm:p-3 md:p-4 mb-2 sm:mb-3" dir="rtl">
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-2 sm:gap-3">
-          {/* آواتار کاربر */}
-          <div className={`flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 ${avatarColor} text-white rounded-full`}>
-            <span className="text-sm sm:text-base font-bold">{userInitial}</span>
-          </div>
+          {/* آواتار کاربر (حرف اول، طرح آماده یا عکسی که خودش در تنظیمات پنل انتخاب کرده) */}
+          <Avatar value={comment.User?.avatar} name={comment.User?.name} className="[--s:32px] sm:[--s:40px]" />
 
           <div>
             <strong className="text-sm sm:text-base md:text-lg">{userName}</strong>

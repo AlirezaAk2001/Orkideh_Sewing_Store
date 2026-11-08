@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { requireUser, requireAdmin } from "@/lib/auth";
+import { commentUserSelect, withCommentAvatar } from "@/lib/comments";
 
 // GET: دریافت کامنت‌های تأیید شده محصول (همراه با adminReply)
 export async function GET(req, { params }) {
@@ -16,12 +17,12 @@ export async function GET(req, { params }) {
       where: { productId: productIdNum, approved: true },
       orderBy: { createdAt: "desc" },
       include: {
-        User: { select: { id: true, name: true, username: true } },
+        User: { select: commentUserSelect },
         Product: { select: { id: true, name: true } },
       },
     });
 
-    return NextResponse.json(comments);
+    return NextResponse.json(comments.map(withCommentAvatar));
   } catch (error) {
     console.error("خطا در دریافت نظرات:", error);
     return NextResponse.json(
@@ -107,13 +108,13 @@ export async function POST(req, { params }) {
         approved: false,
       },
       include: {
-        User: { select: { id: true, name: true, username: true } },
+        User: { select: commentUserSelect },
         Product: { select: { id: true, name: true } },
       },
     });
 
     return NextResponse.json({
-      comment,
+      comment: withCommentAvatar(comment),
       message: "نظر شما با موفقیت ثبت شد و پس از تأیید مدیریت نمایش داده خواهد شد",
       orderId: deliveredOrder.id,
     });
