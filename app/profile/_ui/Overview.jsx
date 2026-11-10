@@ -300,7 +300,7 @@ function DonutTile({ orders, onGo }) {
   );
 }
 
-/* ───────── نمودار خرید ۶ ماه اخیر (دست‌ساز، بدون کتابخانه) ───────── */
+/* ───────── نمودار سفارش‌های ۶ ماه اخیر (دست‌ساز، بدون کتابخانه) ───────── */
 
 function SpendChart({ months }) {
   const ref = useRef(null);
@@ -383,23 +383,25 @@ function SpendChart({ months }) {
 
 function SpendTile({ orders }) {
   const { months, total, previous } = spendingByMonth(orders);
-  // تغییر نسبت به شش ماهِ پیش از آن؛ بدون سابقه، نشان داده نمی‌شود
-  const change = previous > 0 ? Math.round(((total - previous) / previous) * 100) : null;
+  // تغییر نسبت به شش ماهِ پیش از آن؛ بدون سابقه یا وقتی در شش ماه اخیر هیچ خریدی نیست («۱۰۰٪ کاهش» کنار «۰ تومان» حرف تازه‌ای نمی‌زند)، نشان داده نمی‌شود
+  const change = previous > 0 && total > 0 ? Math.round(((total - previous) / previous) * 100) : null;
   return (
     <article className="tile t-spend rise" style={{ "--i": 3 }}>
       <div className="t-head">
         <div className="t-title">
           <span className="ib">
-            <Ic n="trend" />
+            <Ic n="receipt" />
           </span>
-          خرید ۶ ماه اخیر
+          سفارش‌های ۶ ماه اخیر
         </div>
       </div>
-      <div>
+      <div className={total === 0 ? "spend-row none" : undefined}>
         <span className="big">
           <Count to={total} delay={700} />
           <small>تومان</small>
         </span>
+        {/* «خرید» (نه «سفارش»): فقط سفارش‌های جاری و تحویل‌شده حساب می‌شوند؛ ممکن است سفارشِ منتظر پرداخت یا مرجوعی داشته باشد */}
+        {total === 0 && <span className="nobuy">در ۶ ماه اخیر هیچ خریدی نداشته‌اید</span>}
         {change != null && change !== 0 && (
           <span className={`delta ${change < 0 ? "down" : ""}`} title="نسبت به شش ماه قبل از آن">
             <Ic n="trend" />

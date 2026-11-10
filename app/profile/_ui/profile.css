@@ -313,6 +313,9 @@
 .pf .big small { font-size: 14px; font-weight: 600; color: var(--ink-3); margin-inline-start: 6px; }
 .pf .delta { display: inline-flex; align-items: center; gap: 4px; margin-inline-start: 8px; padding: 2px 9px; border-radius: 99px; font-size: 12px; font-weight: 800; color: #15803d; background: #dcfce7; vertical-align: middle; }
 .pf .delta svg { width: 14px; height: 14px; }
+/* بدون هیچ خریدی در شش ماه اخیر: ردیف مبلغ دو سر می‌شود؛ مبلغ سمت راست و چیپ پیام سمت چپ (به‌جای چیپ درصد) */
+.pf .spend-row.none { display: flex; align-items: center; gap: 8px 12px; flex-wrap: wrap; }
+.pf .nobuy { display: inline-flex; align-items: center; height: 28px; padding-inline: 12px; margin-inline-start: auto; border-radius: 99px; font-size: 12px; font-weight: 800; white-space: nowrap; color: var(--brand-700); background: var(--brand-100); }
 .pf .chart { position: relative; margin-top: 14px; height: 150px; touch-action: pan-y; }
 .pf .chart svg { width: 100%; height: 100%; overflow: visible; display: block; }
 .pf .chart .ln { fill: none; stroke: url(#pf-lg); stroke-width: 3.5; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset 1.6s 0.3s cubic-bezier(0.5, 0, 0.2, 1); }
@@ -323,8 +326,7 @@
 .pf .chart .cross { position: absolute; top: 0; bottom: 0; width: 1.5px; background: linear-gradient(var(--brand-400), transparent); opacity: 0; transition: opacity 0.2s; pointer-events: none; }
 .pf .chart .dotp { position: absolute; width: 14px; height: 14px; margin: -7px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 3.5px var(--brand-600), 0 6px 14px rgb(190 24 93 / 0.5); opacity: 0; transition: opacity 0.2s, left 0.12s, top 0.12s; pointer-events: none; }
 .pf .chart .ctip { position: absolute; top: -8px; translate: -50% -100%; padding: 4px 11px; border-radius: 11px; background: var(--plum); color: #fff; font-size: 12px; font-weight: 700; white-space: nowrap; opacity: 0; transition: opacity 0.2s, left 0.12s; pointer-events: none; }
-.pf .chart.hov .cross, .pf .chart.hov .dotp, .pf .chart.hov .ctip { opacity: 1; }
-.pf .xl { display: flex; justify-content: space-between; margin-top: 8px; font-size: 11.5px; color: var(--ink-3); padding-inline: 2px; }
+.pf .chart.hov .cross, .pf .chart.hov .dotp, .pf .chart.hov .ctip { opacity: 1; }.pf .xl { display: flex; justify-content: space-between; margin-top: 8px; font-size: 11.5px; color: var(--ink-3); padding-inline: 2px; }
 
 /* cart tile */
 .pf .fan { position: relative; height: 112px; margin: 2px 0 14px; }
