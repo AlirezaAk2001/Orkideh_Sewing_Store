@@ -531,7 +531,7 @@ function FavTile({ favorites, leavingId, onUnfav, onAdd }) {
           <div className="em-ic">
             <Ic n="heart" />
           </div>
-          <b>هنوز چیزی ذخیره نکرده‌اید</b>
+          <b>هنوز محصولی ذخیره نکرده‌اید</b>
           <span>با زدن قلب روی هر محصول، اینجا نگهش می‌داریم.</span>
         </div>
       )}
