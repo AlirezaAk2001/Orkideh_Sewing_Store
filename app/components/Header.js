@@ -106,10 +106,11 @@ export default function Header() {
               data-tooltip-id="favorites-tooltip"
               data-tooltip-content={loading ? "در حال بارگذاری..." : "مشاهده علاقه‌مندی‌ها"}
             >
-              <Heart key={heartKey} className={`w-7 sm:w-6 h-7 sm:h-6 ${loading ? "text-gray-400" : ""} ${heartKey ? "heart-pop" : ""}`} />
+              {/* keyها پیشوند دارند: قلب و شمارنده هر دو عدد هستند و با «۱ علاقه‌مندی» هر دو key=1 می‌شدند (هشدار key تکراری در React) */}
+              <Heart key={`heart-${heartKey}`} className={`w-7 sm:w-6 h-7 sm:h-6 ${loading ? "text-gray-400" : ""} ${heartKey ? "heart-pop" : ""}`} />
               {!loading && favoritesCount > 0 && (
                 <span
-                  key={favoritesCount}
+                  key={`count-${favoritesCount}`}
                   className="badge-pop absolute -top-1 sm:-top-2 -right-1 sm:-right-2 text-white text-xs rounded-full w-4 sm:w-3 h-4 sm:h-3 flex items-center justify-center bg-red-500"
                   data-tooltip-id="favorites-count-tooltip"
                   data-tooltip-content={`${favoritesCount.toLocaleString("fa-IR")} محصول در علاقه‌مندی‌ها`}
