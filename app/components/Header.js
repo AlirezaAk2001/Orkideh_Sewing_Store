@@ -13,6 +13,12 @@ import Avatar from "./Avatar";
 import HeaderSearch from "./HeaderSearch";
 import { useSiteLogo } from "./useSiteLogo";
 import { useRiseKey } from "@/lib/motion";
+import { authUrl } from "@/lib/redirect";
+import { tabHref } from "@/app/profile/_ui/tabs";
+
+// سبد خرید و علاقه‌مندی‌ها بخش‌های پنل کاربری‌اند؛ مهمان اول وارد می‌شود و بعد به همان بخش برمی‌گردد
+const CART_HREF = tabHref("cart");
+const FAVORITES_HREF = tabHref("favorites");
 
 // لوگوی هدر در همهٔ صفحه‌ها هست: لوگوی پیش‌فرض SVG انیمیشن‌دار است و لوگوی دیگر از optimizer می‌گذرد تا PNG سنگین برای یک دایرهٔ کوچک دانلود نشود
 const MotionSiteLogo = motion.create(SiteLogo);
@@ -48,28 +54,6 @@ export default function Header() {
     }
   };
 
-  // مدیریت کلیک سبد خرید
-  const handleCartClick = (e) => {
-    if (loading) return;
-    e.preventDefault();
-    if (!currentUser) {
-      router.push("/auth?redirect=/cart");
-    } else {
-      router.push("/cart");
-    }
-  };
-
-  // مدیریت کلیک علاقه‌مندی‌ها
-  const handleFavoritesClick = (e) => {
-    if (loading) return;
-    e.preventDefault();
-    if (!currentUser) {
-      router.push("/auth?redirect=/favorites");
-    } else {
-      router.push("/favorites");
-    }
-  };
-
   return (
     <>
       <header data-sb-top="page" className="bg-white shadow-md py-2 sm:py-3 px-2 sm:px-4 sticky top-0 z-50">
@@ -97,7 +81,7 @@ export default function Header() {
           <div className={`order-2 sm:order-none flex items-center gap-1 sm:gap-4 text-gray-600 [&>a]:p-1.5 sm:[&>a]:p-0${isMaintenance ? 'opacity-50 pointer-events-none grayscale' : ''}`}>
             {/* علاقه‌مندی‌ها */}
             <Link
-              href={loading ? "#" : !currentUser ? "/auth?redirect=/favorites" : "/favorites"}
+              href={loading ? "#" : !currentUser ? authUrl(FAVORITES_HREF) : FAVORITES_HREF}
               className={`relative transition-colors ${loading
                 ? "cursor-not-allowed opacity-50 pointer-events-none"
                 : "hover:text-pink-600 cursor-pointer"
@@ -182,7 +166,7 @@ export default function Header() {
 
             {/* سبد خرید */}
             <Link
-              href={loading ? "#" : !currentUser ? "/auth?redirect=/cart" : "/cart"}
+              href={loading ? "#" : !currentUser ? authUrl(CART_HREF) : CART_HREF}
               className={`relative transition-colors ${loading
                 ? "cursor-not-allowed opacity-50 pointer-events-none"
                 : "hover:text-pink-600 cursor-pointer"

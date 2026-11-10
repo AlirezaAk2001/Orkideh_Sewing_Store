@@ -1,7 +1,7 @@
 "use client";
 
 import "./_ui/profile.css";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
@@ -10,6 +10,7 @@ import PageLoader from "@/app/components/PageLoader";
 import { useAuth, useCart, useFavorites } from "@/lib/context";
 import { flyToCart } from "@/lib/flyToCart";
 import { prefersReducedMotion } from "@/lib/motion";
+import { authUrl } from "@/lib/redirect";
 import AddressesView from "./_ui/AddressesView";
 import CartView from "./_ui/CartView";
 import ConfirmDialog from "./_ui/ConfirmDialog";
@@ -100,6 +101,27 @@ function ProfileView() {
       sessionStorage.removeItem("welcomeMessage");
     }
   }, []);
+
+  // سبد خرید، علاقه‌مندی‌ها و سفارش‌ها صفحهٔ جدا ندارند و آدرس‌های قدیمی‌شان به همین پنل می‌آید؛ پس مهمان (یا کسی که نشستش تمام شده) به صفحهٔ ورود می‌رود
+  // و بعد از ورود به همین بخش برمی‌گردد. خروج عمدی از حساب (رویداد auth:logout) مقصد خودش را دارد و نباید با این هدایت قاطی شود
+  const loggedOut = useRef(false);
+  useEffect(() => {
+    const mark = () => (loggedOut.current = true);
+    window.addEventListener("auth:logout", mark);
+    return () => window.removeEventListener("auth:logout", mark);
+  }, []);
+  useEffect(() => {
+    if (!loading && !currentUser && !loggedOut.current) router.replace(authUrl(`/profile${window.location.search}`));
+  }, [loading, currentUser, router]);
+
+  // برگشت از درگاه با پرداخت موفق (/payment-result ← /profile?paid=1): پیام موفقیت یک بار نشان داده می‌شود و پارامتر از آدرس برداشته می‌شود تا رفرش دوباره آن را نشان ندهد.
+  // id ثابت از دوبار اجرای افکت در حالت توسعه جلوی دو پیام را می‌گیرد
+  const paid = params.get("paid") === "1";
+  useEffect(() => {
+    if (!paid || !currentUser) return;
+    toast.success("پرداخت انجام شد و سفارش شما ثبت شد 🎉", { id: "paid", position: "top-center", duration: 6000 });
+    window.history.replaceState(null, "", tabHref(tab));
+  }, [paid, currentUser, tab]);
 
   if (loading || !currentUser) {
     return <PageLoader className="min-h-[60vh]" label="در حال بارگذاری اطلاعات کاربر..." />;

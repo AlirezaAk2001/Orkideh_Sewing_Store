@@ -12,6 +12,7 @@ import { productImages } from "@/lib/productImages";
 import { Tooltip } from 'react-tooltip';
 import { useCart, useFavorites, useAuth } from "@/lib/context";
 import { authUrl } from "@/lib/redirect";
+import { tabHref } from "@/app/profile/_ui/tabs";
 import { isSoldOut, maxPurchasable } from "@/lib/stock";
 import { flyToCart } from "@/lib/flyToCart";
 import SellerBox from "./SellerBox";
@@ -335,7 +336,7 @@ export default function ProductDetails({ product, initialComments = [], related 
     <button
       key="in-cart"
       type="button"
-      onClick={() => router.push("/cart")}
+      onClick={() => router.push(tabHref("cart"))}
       className={`flex h-11 flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl bg-gray-900 text-sm font-medium text-white transition hover:bg-gray-800 active:scale-[0.98] ${popButtons ? "pop-in" : ""}`}
     >
       <BaggageClaim className="h-5 w-5" />
@@ -468,7 +469,7 @@ export default function ProductDetails({ product, initialComments = [], related 
                 {isInCart ? (
                   <div className={`flex gap-2 flex-1 ${popButtons ? "pop-in" : ""}`}>
                     <button
-                      onClick={() => router.push("/cart")}
+                      onClick={() => router.push(tabHref("cart"))}
                       className="w-full flex items-center justify-center gap-1 py-3 rounded-lg bg-gray-900 text-white hover:bg-gray-800 transition cursor-pointer"
                     >
                       <BaggageClaim className="w-5 h-5" />

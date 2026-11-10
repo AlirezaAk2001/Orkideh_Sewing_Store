@@ -1,10 +1,7 @@
-// صفحه‌های خصوصی (حساب کاربری، سبد خرید، پرداخت، ورود، ادمین) نباید در نتایج جست‌وجو بیایند
+// صفحه‌های خصوصی (حساب کاربری، پرداخت، ورود، ادمین) نباید در نتایج جست‌وجو بیایند
 const NOINDEX_PATHS = [
   "/admin",
-  "/cart",
   "/profile",
-  "/orders",
-  "/favorites",
   "/addresses",
   "/settings",
   "/payment-result",
@@ -19,6 +16,15 @@ const nextConfig = {
   // داخل <head> می‌گذارد و برای بقیه بعد از <head> می‌فرستد. پیام‌رسان‌های ایرانی در آن فهرست نیستند و بعضی ربات‌ها فقط <head> را می‌خوانند؛
   // پس برای همهٔ درخواست‌ها داخل <head> می‌آید (هزینه‌اش یک کوئری سبک پیش از ارسال صفحه است).
   htmlLimitedBots: /.*/,
+  // سبد خرید، علاقه‌مندی‌ها و سفارش‌ها دیگر صفحهٔ جدا ندارند و بخش‌های پنل کاربری‌اند؛ آدرس‌های قدیمی (بوکمارک، لینک‌های ذخیره‌شده) به همان بخش می‌روند.
+  // موقت (۳۰۷) است تا مرورگر مقصد را برای همیشه به خاطر نسپارد
+  async redirects() {
+    return [
+      { source: "/cart", destination: "/profile?tab=cart", permanent: false },
+      { source: "/favorites", destination: "/profile?tab=favorites", permanent: false },
+      { source: "/orders", destination: "/profile?tab=orders", permanent: false },
+    ];
+  },
   async headers() {
     return [
       ...NOINDEX_PATHS.map((path) => ({

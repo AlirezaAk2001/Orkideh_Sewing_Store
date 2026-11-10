@@ -6,11 +6,12 @@ import { FaInstagram } from "react-icons/fa";
 import SiteLogo from "./SiteLogo";
 import { LOGO } from "@/lib/siteLogo";
 import { STORE } from "@/lib/contact";
+import { tabHref } from "@/app/profile/_ui/tabs";
 
 const LINKS = [
   { href: "/products", label: "همه محصولات" },
-  { href: "/cart", label: "سبد خرید" },
-  { href: "/favorites", label: "علاقه‌مندی‌ها" },
+  { href: tabHref("cart"), label: "سبد خرید" },
+  { href: tabHref("favorites"), label: "علاقه‌مندی‌ها" },
   { href: "/profile", label: "حساب کاربری" },
   { href: "/about", label: "درباره ما و تماس" },
 ];

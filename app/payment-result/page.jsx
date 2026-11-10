@@ -4,6 +4,10 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/lib/context"; // مسیر واقعی خودت رو قرار بده
 import PageLoader from "@/app/components/PageLoader";
+import { tabHref } from "@/app/profile/_ui/tabs";
+
+// مقصدهای بعد از درگاه همه در پنل کاربری‌اند: پرداخت موفق ← نمای کلی (با پیام موفقیت)، ناموفق ← سبد، سفارش ذخیره‌شده ← بخش سفارش‌ها
+const AFTER_PAID = "/profile?paid=1";
 
 export default function PaymentResultPage() {
   const [status, setStatus] = useState("در حال بررسی پرداخت...");
@@ -21,7 +25,7 @@ export default function PaymentResultPage() {
 
       if (!trackId) {
         setStatus("شناسه تراکنش یافت نشد!");
-        setTimeout(() => router.push("/cart"), 2000);
+        setTimeout(() => router.push(tabHref("cart")), 2000);
         return;
       }
 
@@ -40,7 +44,7 @@ export default function PaymentResultPage() {
         // اگر پاسخ 200 ولی نتیجه غیر از 100/201
         console.warn("Payment verification returned unexpected result:", data);
         setStatus(`پرداخت ناموفق ❌ (${data?.message || data?.error || "تراکنش نامعتبر"})`);
-        setTimeout(() => router.push("/cart"), 2500);
+        setTimeout(() => router.push(tabHref("cart")), 2500);
       } catch (err) {
         // اگر سرور با 400 برگردونده اما داخل body نتیجه 201 هست => treat as success
         const respData = err?.response?.data;
@@ -53,7 +57,7 @@ export default function PaymentResultPage() {
         // در غیر این صورت خطای واقعی است
         console.error("Verify error:", err);
         setStatus(`پرداخت ناموفق ❌ ${respData?.error || "سفارش شما ذخیره شده، می‌توانید بعداً تکمیل کنید."}`);
-        setTimeout(() => router.push("/orders"), 4000); // ← به orders نه cart
+        setTimeout(() => router.push(tabHref("orders")), 4000); // سفارش ذخیره شده؛ از بخش سفارش‌ها می‌شود دوباره پرداختش کرد
       }
     };
 
@@ -83,9 +87,9 @@ export default function PaymentResultPage() {
         // خطا در پاکسازی سرور نباید مانع نمایش موفقیت یا هدایت شود
       }
 
-      // 3) هدایت به صفحه سفارش‌ها
+      // 3) هدایت به پنل کاربری؛ نمای کلی پیام «پرداخت موفق» را نشان می‌دهد
       setTimeout(() => {
-        router.push("/orders");
+        router.push(AFTER_PAID);
       }, 1200);
     };
 
@@ -102,7 +106,7 @@ export default function PaymentResultPage() {
       <div className="bg-white p-6 rounded-lg shadow-md max-w-sm w-full">
         {busy && <PageLoader size="md" className="mb-5" />}
         <h2 className="text-xl font-bold mb-4">{status}</h2>
-        <p className="text-gray-600">لطفاً تا زمان انتقال به صفحه‌ی سفارش‌ها صبر کنید...</p>
+        <p className="text-gray-600">لطفاً تا زمان انتقال به پنل کاربری صبر کنید...</p>
       </div>
     </div>
   );
