@@ -75,8 +75,8 @@ function OrderCard({ order, index, open, leaving, busy, onToggle, onPay, onAskDe
           <Stack items={items.map((it) => ({ id: it.id, image: it.Product?.image, name: it.Product?.name }))} size={46} />
           {order.status === "processing" && <MiniTracker />}
           <span className="chip" style={{ "--c": s.c }}>
-            {/* نقطهٔ سفارش جاری همان نقطهٔ تپندهٔ داشبورد است (beat-dot در globals.css)؛ وضعیت‌های دیگر نقطهٔ ساکن دارند */}
-            <i className={order.status === "processing" ? "beat-dot" : undefined} />
+            {/* نقطهٔ چیپ همهٔ وضعیت‌ها همان نقطهٔ تپندهٔ داشبورد است (beat-dot در globals.css) و هالهٔ هر کدام به رنگ وضعیت خودش است */}
+            <i className="beat-dot" />
             {s.label}
           </span>
         </div>
