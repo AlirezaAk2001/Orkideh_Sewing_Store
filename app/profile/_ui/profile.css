@@ -302,6 +302,8 @@
 .pf .legend li { display: flex; align-items: center; gap: 9px; padding: 9px 12px; border-radius: 14px; font-size: 13px; background: rgb(255 255 255 / 0.5); box-shadow: 0 0 0 1px var(--line); transition: background 0.2s, box-shadow 0.25s, opacity 0.25s, translate 0.2s; cursor: default; }
 /* کارت وضعیتِ هاورشده (از روی خود کارت یا از روی قطعهٔ نمودار) از جایش بلند می‌شود و بقیهٔ کارت‌ها کم‌رنگ می‌شوند؛ همان لحظه قطعهٔ نمودار هم پررنگ و بقیهٔ قطعه‌ها کم‌رنگ‌اند */
 .pf .legend.dim li:not(.hot) { opacity: 0.4; }
+/* تعداد کارت‌ها فرد (سه یا یک) شد، کارت آخر تنها در ردیف خودش و تمام‌عرض است */
+.pf .legend li:last-child:nth-child(odd) { grid-column: 1 / -1; }
 .pf .legend li:hover, .pf .legend li.hot { translate: 0 -3px; background: rgb(255 255 255 / 0.95); box-shadow: 0 0 0 1px color-mix(in oklab, var(--c) 40%, var(--line)), 0 12px 20px -14px color-mix(in oklab, var(--c) 75%, #000); }
 .pf .legend i { width: 9px; height: 9px; border-radius: 50%; background: var(--c); flex: none; }
 .pf .legend b { margin-inline-start: auto; font-weight: 800; }

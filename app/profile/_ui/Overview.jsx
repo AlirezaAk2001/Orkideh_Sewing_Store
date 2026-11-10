@@ -284,9 +284,11 @@ function DonutTile({ orders, onGo }) {
           </div>
         </div>
         <ul className={`legend ${hot ? "dim" : ""}`}>
-          {ST_KEYS.map((k) => (
+          {/* وضعیتی که سفارش ندارد کارت ندارد؛ اگر تعداد کارت‌ها فرد باشد، آخری تمام‌عرض می‌شود (CSS) */}
+          {used.map((k) => (
             <li key={k} className={hot === k ? "hot" : ""} style={{ "--c": ST[k].c }} onPointerEnter={() => setHot(k)} onPointerLeave={() => setHot(null)}>
-              <i />
+              {/* همان نقطهٔ تپنده‌ای که در لجند حلقهٔ داشبورد ادمین هست (beat-dot در globals.css) */}
+              <i className="beat-dot" />
               {ST[k].label}
               <b>{fa(counts[k])}</b>
             </li>
