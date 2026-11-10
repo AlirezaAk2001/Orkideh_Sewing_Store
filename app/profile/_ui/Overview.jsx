@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Scissors, Spool } from "lucide-react";
 import Avatar from "@/app/components/Avatar";
@@ -190,9 +190,16 @@ function TrackTile({ order, onGo, onPay, paying }) {
 
 /* ───────── حلقهٔ وضعیت سفارش‌ها ───────── */
 
+// خط نور حلقه: یک خط باریک (با هالهٔ نرم) که هر چند ثانیه یک بار یک دور کامل دور حلقه می‌گردد و فقط روی خود قطعه‌ها دیده می‌شود (ماسک از همان قطعه‌ها).
+// وقتی قطعه‌ای هاور شده فقط ماسکِ همان قطعه می‌ماند و خط فقط از ابتدا تا انتهای همان قطعه می‌گذرد (مدت گذر به اندازهٔ طول قطعه، بعد مکث و دوباره).
+// واحد همه‌چیز درصد محیط حلقه است (r = ۱۵٫۹۱۵۵ یعنی محیط ۱۰۰)؛ گردی انتهای قطعه ۲٫۶ واحد بیرون می‌زند، پس خط کمی زودتر شروع و دیرتر تمام می‌شود
+const SWEEP_LAP = 2.5; // ثانیه برای یک دور کامل
+const SWEEP_REST = 0.52; // سهم گذر از هر چرخه (بقیه مکث)
+
 function DonutTile({ orders, onGo }) {
   const arrived = useArrived();
   const [hot, setHot] = useState(null);
+  const maskId = `pf-donut-${useId().replace(/[^a-zA-Z0-9]/g, "")}`;
   const counts = countByStatus(orders);
   const total = orders.length;
   // بین بخش‌ها شکاف می‌افتد؛ اگر فقط یک وضعیت باشد، حلقهٔ کامل است
@@ -203,39 +210,62 @@ function DonutTile({ orders, onGo }) {
     const pct = (counts[k] / total) * 100;
     const dash = Math.max(0.01, pct - gap);
     const off = -(cum + gap / 2);
+    const from = cum + gap / 2;
     cum += pct;
-    return { k, dash, off };
+    return { k, dash, off, from, to: from + dash };
   });
+  const focus = segs.find((s) => s.k === hot);
+  // خط نور: بدون هاور دور کل حلقه؛ با هاور فقط روی قطعهٔ هاورشده (اگر وضعیتی سفارش ندارد، قطعه‌ای نیست و خط هم نمی‌آید)
+  const sweepVars = focus
+    ? { "--s": focus.from - 2, "--e": focus.to + 2, "--d": `${Math.max(1.8, Math.max(0.7, (focus.dash + 4) * (SWEEP_LAP / 100)) / SWEEP_REST).toFixed(2)}s`, "--w": "0s" }
+    : { "--s": 0, "--e": 100, "--d": `${(SWEEP_LAP / SWEEP_REST).toFixed(2)}s`, "--w": "1.8s" };
+  const showSweep = arrived && segs.length > 0 && (!hot || focus);
+  const dashes = ({ dash }) => (arrived ? `${dash.toFixed(2)} ${(100 - dash).toFixed(2)}` : "0 100");
 
   return (
-    <article className="tile t-donut rise" style={{ "--i": 2 }} {...tileLink("orders", "وضعیت سفارش‌ها", onGo)}>
+    <article className="tile t-donut rise" style={{ "--i": 2 }} {...tileLink("orders", "آمار سفارش‌ها", onGo)}>
       <div className="t-head">
         <div className="t-title">
           <span className="ib">
             <Ic n="bag" />
           </span>
-          وضعیت سفارش‌ها
+          آمار سفارش‌ها
         </div>
         <span className="t-go">
           <Ic n="arrowL" />
         </span>
       </div>
       <div className="donut-wrap">
-        <div className={`donut ${hot ? "dim" : ""}`}>
+        <div className={`donut ${focus ? "dim" : ""}`}>
           <svg viewBox="0 0 42 42" aria-hidden="true">
+            <defs>
+              <mask id={maskId} maskUnits="userSpaceOnUse" x="-4" y="-4" width="50" height="50">
+                {segs
+                  .filter(({ k }) => !focus || focus.k === k)
+                  .map((s) => (
+                    <circle key={s.k} className="mk" cx="21" cy="21" r="15.9155" style={{ strokeWidth: focus ? 6.6 : 5.2, strokeDashoffset: s.off.toFixed(2), strokeDasharray: dashes(s) }} />
+                  ))}
+              </mask>
+            </defs>
             <circle className="trk" cx="21" cy="21" r="15.9155" />
-            {segs.map(({ k, dash, off }) => (
+            {segs.map((s) => (
               <circle
-                key={k}
-                className={`seg ${hot === k ? "hot" : ""}`}
+                key={s.k}
+                className={`seg ${hot === s.k ? "hot" : ""}`}
                 cx="21"
                 cy="21"
                 r="15.9155"
-                style={{ stroke: ST[k].c, strokeDashoffset: off.toFixed(2), strokeDasharray: arrived ? `${dash.toFixed(2)} ${(100 - dash).toFixed(2)}` : "0 100" }}
-                onPointerEnter={() => setHot(k)}
+                style={{ stroke: ST[s.k].c, strokeDashoffset: s.off.toFixed(2), strokeDasharray: dashes(s) }}
+                onPointerEnter={() => setHot(s.k)}
                 onPointerLeave={() => setHot(null)}
               />
             ))}
+            {showSweep && (
+              <g key={focus ? focus.k : "all"} mask={`url(#${maskId})`} style={sweepVars}>
+                <circle className="sw halo" cx="21" cy="21" r="15.9155" />
+                <circle className="sw core" cx="21" cy="21" r="15.9155" />
+              </g>
+            )}
           </svg>
           <div className="mid">
             <b>
@@ -244,7 +274,7 @@ function DonutTile({ orders, onGo }) {
             <span>سفارش</span>
           </div>
         </div>
-        <ul className="legend">
+        <ul className={`legend ${hot ? "dim" : ""}`}>
           {ST_KEYS.map((k) => (
             <li key={k} className={hot === k ? "hot" : ""} style={{ "--c": ST[k].c }} onPointerEnter={() => setHot(k)} onPointerLeave={() => setHot(null)}>
               <i />

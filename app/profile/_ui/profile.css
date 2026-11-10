@@ -284,12 +284,23 @@
 .pf .donut .seg { stroke-linecap: round; stroke-dasharray: 0 100; transition: stroke-dasharray 1.2s var(--ease), stroke-width 0.25s, opacity 0.25s; }
 .pf .donut.dim .seg { opacity: 0.25; }
 .pf .donut.dim .seg.hot { opacity: 1; stroke-width: 6.6; }
-.pf .donut .mid { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; line-height: 1.2; }
+/* خط نور حلقه (Overview.jsx DonutTile): یک خط باریک روشن با هالهٔ نرم پشتش که هر چند ثانیه یک بار دور حلقه می‌گردد؛ ماسک از خود قطعه‌هاست (.mk کپی قطعه‌ها)، پس فقط روی رنگ‌ها دیده می‌شود نه شکاف‌ها.
+   با هاور روی یک قطعه (یا کارتش) فقط ماسک همان قطعه می‌ماند و خط از ابتدا تا انتهای آن می‌گذرد، مکث می‌کند و دوباره. --s و --e ابتدا و انتهای گذر (درصد محیط)، --d طول چرخه، --w تأخیر شروع،
+   --o جابه‌جایی هاله پشت خط. با «کاهش حرکت» دیده نمی‌شود. */
+.pf .donut .mk { stroke: #fff; stroke-linecap: round; stroke-dasharray: 0 100; transition: stroke-dasharray 1.2s var(--ease), stroke-width 0.25s; }
+.pf .donut .sw { stroke: #fff; stroke-width: 9; stroke-linecap: butt; pointer-events: none; opacity: 0; transition: none; animation: pf-sw-move var(--d) cubic-bezier(0.45, 0, 0.55, 1) var(--w) infinite, pf-sw-fade var(--d) linear var(--w) infinite; }
+.pf .donut .sw.core { stroke-dasharray: 0.9 99.1; stroke-opacity: 0.95; --o: 0; }
+.pf .donut .sw.halo { stroke-dasharray: 3.6 96.4; stroke-opacity: 0.4; --o: 2.7; filter: blur(0.7px); }
+@keyframes pf-sw-move { 0% { stroke-dashoffset: calc((var(--o) - var(--s)) * 1px); } 52%, 100% { stroke-dashoffset: calc((var(--o) - var(--e)) * 1px); } }
+@keyframes pf-sw-fade { 0% { opacity: 0; } 4% { opacity: 1; } 48% { opacity: 1; } 52%, 100% { opacity: 0; } }
+.pf .donut .mid { position: absolute; inset: 0; pointer-events: none; display: grid; place-content: center; text-align: center; line-height: 1.2; }
 .pf .donut .mid b { font-size: 34px; font-weight: 800; }
 .pf .donut .mid span { font-size: 12px; color: var(--ink-3); }
 .pf .legend { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.pf .legend li { display: flex; align-items: center; gap: 9px; padding: 9px 12px; border-radius: 14px; font-size: 13px; background: rgb(255 255 255 / 0.5); box-shadow: 0 0 0 1px var(--line); transition: background 0.2s, box-shadow 0.2s; cursor: default; }
-.pf .legend li:hover, .pf .legend li.hot { background: rgb(255 255 255 / 0.85); box-shadow: 0 0 0 1px var(--line); }
+.pf .legend li { display: flex; align-items: center; gap: 9px; padding: 9px 12px; border-radius: 14px; font-size: 13px; background: rgb(255 255 255 / 0.5); box-shadow: 0 0 0 1px var(--line); transition: background 0.2s, box-shadow 0.25s, opacity 0.25s, translate 0.2s; cursor: default; }
+/* کارت وضعیتِ هاورشده (از روی خود کارت یا از روی قطعهٔ نمودار) از جایش بلند می‌شود و بقیهٔ کارت‌ها کم‌رنگ می‌شوند؛ همان لحظه قطعهٔ نمودار هم پررنگ و بقیهٔ قطعه‌ها کم‌رنگ‌اند */
+.pf .legend.dim li:not(.hot) { opacity: 0.4; }
+.pf .legend li:hover, .pf .legend li.hot { translate: 0 -3px; background: rgb(255 255 255 / 0.95); box-shadow: 0 0 0 1px color-mix(in oklab, var(--c) 40%, var(--line)), 0 12px 20px -14px color-mix(in oklab, var(--c) 75%, #000); }
 .pf .legend i { width: 9px; height: 9px; border-radius: 50%; background: var(--c); flex: none; }
 .pf .legend b { margin-inline-start: auto; font-weight: 800; }
 
@@ -636,6 +647,8 @@ html.pf-vt::view-transition-old(pf-header), html.pf-vt::view-transition-new(pf-h
   .pf .needle { opacity: 1; }
   .pf .chart .ln { stroke-dashoffset: 0; }
   .pf .chart .ar { opacity: 1; }
+  .pf .donut .sw { display: none; }
+  .pf .legend li:hover, .pf .legend li.hot { translate: none; }
 }
 .pf .bg > * { z-index: 1; }
 .pf .pcard .im a { display: block; width: 100%; height: 100%; }
