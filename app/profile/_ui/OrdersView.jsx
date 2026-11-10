@@ -1,9 +1,10 @@
 "use client";
 
-import { useLayoutEffect, useRef, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import { mdiDeleteCircleOutline, mdiTrashCanOutline } from "@mdi/js";
+import { useSegmentSlide } from "@/app/admin/_ui/useSegmentSlide";
 import { useCart } from "@/lib/context";
 import ConfirmDialog from "./ConfirmDialog";
 import { Ic } from "./icons";
@@ -18,33 +19,18 @@ const FILTERS = [
   ["pending", "ناتمام"],
 ];
 
-// فیلتر با قرص سفید لغزان: قرص پشت دکمهٔ فعال با اندازه‌گیری جا می‌گیرد (left فیزیکی، چون offsetLeft هم فیزیکی است) و با فنر می‌لغزد
+// ترتیب نمایش در تب «همه»: وضعیت‌ها به ترتیب خود تب‌ها می‌آیند (جاری، تحویل‌شده، مرجوع و آخر ناتمام) و داخل هر وضعیت ترتیب سرور می‌ماند (تازه‌ترین اول)
+const RANK = Object.fromEntries(FILTERS.slice(1).map(([k], i) => [k, i]));
+
+// فیلتر با قرص سفید لغزان: همان تب‌های قطعه‌ای پنل ادمین (.seg / .seg-tab در globals.css). قرص سفیدِ تب فعال شبه‌عنصر خود تب است و با هاور همراهش بالا می‌آید،
+// لغزشش بین تب‌ها را useSegmentSlide می‌دهد، و حرکت سه‌بعدی تب‌ها (بلندشدن، کج‌شدن، لبهٔ ضخامت با ButtonDepth) را خودکار دارد
 function FilterSeg({ value, counts, onChange }) {
-  const ref = useRef(null);
-  const pill = useRef(null);
-
-  const place = () => {
-    const cur = ref.current?.querySelector('[aria-pressed="true"]');
-    if (!cur || !pill.current) return;
-    pill.current.style.left = `${cur.offsetLeft}px`;
-    pill.current.style.width = `${cur.offsetWidth}px`;
-  };
-
-  useLayoutEffect(place, [value, counts]);
-  useLayoutEffect(() => {
-    const el = ref.current;
-    const ro = new ResizeObserver(place);
-    ro.observe(el);
-    el.querySelectorAll("button").forEach((b) => ro.observe(b));
-    document.fonts?.ready.then(place);
-    return () => ro.disconnect();
-  }, []);
+  const ref = useSegmentSlide(value);
 
   return (
-    <div className="fseg" ref={ref}>
-      <span className="pill" ref={pill} aria-hidden="true" />
+    <div className="fseg seg" ref={ref}>
       {FILTERS.map(([k, label]) => (
-        <button key={k} type="button" aria-pressed={value === k} onClick={() => onChange(k)}>
+        <button key={k} type="button" className="seg-tab" aria-pressed={value === k} data-on={value === k ? "" : undefined} onClick={() => onChange(k)}>
           {label}
           <em>{fa(counts[k])}</em>
         </button>
@@ -78,7 +64,8 @@ function OrderCard({ order, index, open, leaving, busy, onToggle, onPay, onAskDe
   const detailId = `order-${order.id}-details`;
 
   return (
-    <article className={`ocard ${open ? "open" : ""} ${leaving ? "leave" : ""}`} style={{ "--c": s.c, "--i": index }}>
+    // id و tabIndex: «جزئیات سفارش» نمای کلی صفحه را تا این کارت می‌آورد، فوکوس می‌دهد و دورش پالس می‌زند (arrive در page.jsx، data-spot در profile.css)
+    <article id={`order-card-${order.id}`} tabIndex={-1} className={`ocard ${open ? "open" : ""} ${leaving ? "leave" : ""}`} style={{ "--c": s.c, "--i": index }}>
       <div className="oc-main">
         <div className="oc-id">
           <b>سفارش شمارهٔ {fa(order.userOrderNumber)}</b>
@@ -87,8 +74,9 @@ function OrderCard({ order, index, open, leaving, busy, onToggle, onPay, onAskDe
         <div className="oc-mid">
           <Stack items={items.map((it) => ({ id: it.id, image: it.Product?.image, name: it.Product?.name }))} size={46} />
           {order.status === "processing" && <MiniTracker />}
-          <span className={`chip ${order.status === "processing" ? "live" : ""}`} style={{ "--c": s.c }}>
-            <i />
+          <span className="chip" style={{ "--c": s.c }}>
+            {/* نقطهٔ سفارش جاری همان نقطهٔ تپندهٔ داشبورد است (beat-dot در globals.css)؛ وضعیت‌های دیگر نقطهٔ ساکن دارند */}
+            <i className={order.status === "processing" ? "beat-dot" : undefined} />
             {s.label}
           </span>
         </div>
@@ -167,7 +155,7 @@ export default function OrdersView({ orders, payingId, deletingId, onPay, onDele
   const loading = orders == null;
   const all = orders ?? [];
   const counts = { all: all.length, ...countByStatus(all) };
-  const list = all.filter((o) => filter === "all" || o.status === filter);
+  const list = filter === "all" ? [...all].sort((a, b) => (RANK[a.status] ?? FILTERS.length) - (RANK[b.status] ?? FILTERS.length)) : all.filter((o) => o.status === filter);
 
   const toggle = (id) =>
     setOpen((prev) => {

@@ -32,17 +32,18 @@ function useArrived() {
   return on;
 }
 
-// کاشی قابل‌کلیک: کل کاشی به بخشش می‌رود (با morph)؛ دکمه‌ها و لینک‌های داخلش کار خودشان را می‌کنند
-const tileLink = (key, label, onGo) => ({
+// کاشی قابل‌کلیک: کل کاشی به بخشش می‌رود (با morph)؛ دکمه‌ها و لینک‌های داخلش کار خودشان را می‌کنند.
+// anchor (اختیاری): شناسهٔ کارتی در بخش مقصد که صفحه تا آن می‌رود و دورش پالس می‌زند (go در page.jsx)
+const tileLink = (key, label, onGo, anchor) => ({
   role: "link",
   tabIndex: 0,
   "aria-label": label,
   onClick: (e) => {
     if (e.target.closest("a,button")) return;
-    onGo(key, e.currentTarget);
+    onGo(key, e.currentTarget, anchor);
   },
   onKeyDown: (e) => {
-    if (e.key === "Enter" && e.target === e.currentTarget) onGo(key, e.currentTarget);
+    if (e.key === "Enter" && e.target === e.currentTarget) onGo(key, e.currentTarget, anchor);
   },
 });
 
@@ -99,6 +100,8 @@ function TrackTile({ order, onGo, onPay, paying }) {
   const items = order.OrderItems ?? [];
   const qty = items.reduce((sum, it) => sum + it.quantity, 0);
   const s = ST[order.status];
+  // کارت همین سفارش در «سفارش‌های من» (OrderCard، OrdersView): صفحه تا آن می‌رود و دورش پالس می‌زند
+  const anchor = `order-card-${order.id}`;
   const state = (i) => (done || i < cur ? "done" : i === cur ? "now" : "later");
   const small = (i) => {
     if (i === 0) return dateFa(order.createdAt);
@@ -107,7 +110,7 @@ function TrackTile({ order, onGo, onPay, paying }) {
   };
 
   return (
-    <article className="tile t-track rise" style={{ "--i": 1 }} {...tileLink("orders", "وضعیت سفارش، رفتن به سفارش‌ها", onGo)}>
+    <article className="tile t-track rise" style={{ "--i": 1 }} {...tileLink("orders", "وضعیت سفارش، رفتن به سفارش‌ها", onGo, anchor)}>
       <div className="t-head">
         <div className="t-title">
           <span className="ib">
@@ -179,7 +182,7 @@ function TrackTile({ order, onGo, onPay, paying }) {
               {paying ? "در حال انتقال…" : "ادامهٔ پرداخت"}
             </button>
           )}
-          <button type="button" className="btn btn-white sm" onClick={(e) => onGo("orders", e.currentTarget.closest(".tile"))}>
+          <button type="button" className="btn btn-white sm" onClick={(e) => onGo("orders", e.currentTarget.closest(".tile"), anchor)}>
             جزئیات سفارش
           </button>
         </div>

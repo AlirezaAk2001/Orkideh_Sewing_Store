@@ -148,9 +148,7 @@
 
 .pf .chip { display: inline-flex; align-items: center; gap: 6px; height: 26px; padding-inline: 10px; border-radius: 99px; font-size: 12px; font-weight: 700; white-space: nowrap; color: var(--c, var(--ink-2)); background: color-mix(in srgb, var(--c, #888) 12%, white); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c, #888) 28%, white); }
 .pf .chip i { width: 6px; height: 6px; border-radius: 50%; background: var(--c); }
-.pf .chip.live i { animation: pf-ping 1.8s ease-out infinite; }
 .pf .chip svg { width: 14px; height: 14px; }
-@keyframes pf-ping { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--c) 55%, transparent); } 100% { box-shadow: 0 0 0 9px transparent; } }
 .pf .muted { color: var(--ink-2); }
 .pf .num { font-weight: 800; letter-spacing: -0.01em; }
 
@@ -419,17 +417,33 @@
 .pf .vh::before { display: none; }
 
 .pf .fseg { position: relative; display: inline-flex; flex-wrap: wrap; gap: 4px; padding: 4px; border-radius: 17px; background: rgb(80 30 90 / 0.06); }
-.pf .fseg button { position: relative; z-index: 1; display: inline-flex; align-items: center; gap: 7px; height: 36px; padding-inline: 14px; border-radius: 13px; font-size: 13px; font-weight: 700; color: var(--ink-2); transition: color 0.25s; }
+/* تب‌های فیلتر: .seg / .seg-tab مشترک با ادمین (globals.css): قرص سفید تب فعال ::before خود تب است (useSegmentSlide می‌لغزاندش) و حرکت سه‌بعدی هاور را ButtonDepth و globals.css می‌دهند؛
+   transition همان قاعدهٔ سراسری .seg-tab است (این‌جا نباید transition بگذاریم تا transform و سایه گذار داشته باشند) */
+.pf .fseg { position: relative; display: inline-flex; flex-wrap: wrap; gap: 4px; padding: 4px; border-radius: 17px; background: rgb(80 30 90 / 0.06); }
+.pf .fseg button { display: inline-flex; align-items: center; gap: 7px; height: 36px; padding-inline: 14px; border-radius: 13px; font-size: 13px; font-weight: 700; color: var(--ink-2); }
 .pf .fseg button em { font-style: normal; display: grid; place-items: center; min-width: 20px; height: 20px; padding-inline: 5px; border-radius: 10px; font-size: 11px; background: rgb(80 30 90 / 0.08); transition: background 0.25s, color 0.25s; }
 .pf .fseg button[aria-pressed="true"] { color: var(--brand-700); }
 .pf .fseg button[aria-pressed="true"] em { background: var(--brand-600); color: #fff; }
-.pf .fseg .pill { position: absolute; z-index: 0; top: 4px; height: 36px; border-radius: 13px; background: #fff; box-shadow: 0 2px 6px rgb(80 20 90 / 0.14), 0 0 0 1px var(--line); transition: left 0.5s var(--spring), width 0.5s var(--spring); }
+.pf .fseg .seg-tab::before { box-shadow: 0 2px 6px rgb(80 20 90 / 0.14), 0 0 0 1px var(--line); }
+/* تب غیرفعال با هاور زمینهٔ سفید کم‌رنگ می‌گیرد تا بلند که شد لبهٔ سه‌بعدی رنگ خودش را داشته باشد (مثل تب‌های ادمین) */
+@media (hover: hover) { .pf .fseg .seg-tab:not([data-on]):hover { background: rgb(255 255 255 / 0.6); color: var(--ink); } }
 
 .pf .olist { display: grid; gap: 14px; }
 .pf .ocard { position: relative; border-radius: 24px; background: var(--glass); backdrop-filter: blur(20px) saturate(1.4); box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.92), 0 0 0 1px var(--line), 0 18px 36px -26px rgb(110 20 90 / 0.4); overflow: hidden; transition: box-shadow 0.35s, translate 0.35s var(--ease), opacity 0.4s, scale 0.4s; animation: pf-rise 0.6s var(--ease) both; animation-delay: calc(var(--i, 0) * 60ms); }
 .pf .ocard::before { content: ""; position: absolute; inset-block: 0; inset-inline-start: 0; width: 5px; background: var(--c); }
 .pf .ocard:hover { translate: 0 -2px; box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.95), 0 0 0 1px color-mix(in srgb, var(--c) 30%, transparent), 0 26px 44px -26px color-mix(in srgb, var(--c) 55%, transparent); }
 .pf .ocard.leave { opacity: 0; scale: 0.96; }
+/* رسیدن از «جزئیات سفارش» نمای کلی (page.jsx arrive): کارت زیر هدر چسبان جا می‌گیرد (اگر کارت اول باشد صفحه همان بالا می‌ماند و هدر و تب‌ها دیده می‌شوند)، فوکوس می‌گیرد
+   و دورش سه بار پالس به رنگ وضعیتش می‌زند: حلقه‌ای که از لبهٔ کارت بیرون می‌رود و محو می‌شود. کارت overflow: hidden دارد پس حلقه سایهٔ خود کارت است (نه شبه‌عنصر)؛ سایه‌های پایه
+   در keyframes تکرار شده‌اند. پالس بعد از پایان گذار بین بخش‌ها و انیمیشن ورود شروع می‌شود (تأخیر ۰٫۶ ثانیه) */
+.pf .ocard { scroll-margin-top: 230px; }
+@container app (max-width: 820px) { .pf .ocard { scroll-margin-top: 96px; } }
+.pf .ocard:focus { outline: none; }
+.pf .ocard[data-spot] { animation: pf-rise 0.6s var(--ease) both, pf-ocard-pulse 1.2s ease-out 3; animation-delay: calc(var(--i, 0) * 60ms), calc(var(--i, 0) * 60ms + 0.6s); }
+@keyframes pf-ocard-pulse {
+  0% { box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.92), 0 0 0 1px var(--line), 0 18px 36px -26px rgb(110 20 90 / 0.4), 0 0 0 0 color-mix(in srgb, var(--c) 55%, transparent); }
+  100% { box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.92), 0 0 0 1px var(--line), 0 18px 36px -26px rgb(110 20 90 / 0.4), 0 0 0 16px color-mix(in srgb, var(--c) 0%, transparent); }
+}
 .pf .oc-main { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 18px; padding: 18px 24px 18px 20px; }
 .pf .oc-id b { display: block; font-size: 17px; font-weight: 800; }
 .pf .oc-id small { color: var(--ink-3); font-size: 12.5px; }
@@ -444,6 +458,8 @@
 .pf .mini i { position: relative; z-index: 1; width: 14px; height: 14px; border-radius: 50%; background: #e5dcea; box-shadow: 0 0 0 3px rgb(255 255 255 / 0.9); flex: none; }
 .pf .mini i.d { background: var(--c); }
 .pf .mini i.n { background: #fff; box-shadow: 0 0 0 3px var(--c); }
+/* نقطهٔ «اکنون» همان حلقهٔ پالس نقطهٔ مرحلهٔ جاریِ کاشی وضعیت سفارش داشبورد را دارد (pf-ring، ۲ ثانیه) ولی به رنگ وضعیت */
+.pf .mini i.n::after { content: ""; position: absolute; inset: -5px; border-radius: 50%; border: 2px solid color-mix(in srgb, var(--c) 55%, transparent); animation: pf-ring 2s ease-out infinite; }
 .pf .mini u { flex: 1; height: 3px; background: repeating-linear-gradient(90deg, #e1d6e6 0 6px, transparent 6px 10px); }
 .pf .mini u.d { background: repeating-linear-gradient(90deg, var(--c) 0 6px, transparent 6px 10px); }
 .pf .detail { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.5s var(--ease); }

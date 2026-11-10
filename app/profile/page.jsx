@@ -47,8 +47,8 @@ function runTransition(update, from) {
   });
 }
 
-// بعد از عوض‌شدن بخش: اگر مقصد کارت مشخصی است (مدادِ آواتار در کارت صورتی) صفحه تا همان کارت می‌رود و فوکوس و یک چشمک ملایم می‌گیرد
-// (data-spot در profile.css)، وگرنه بالای صفحه. اسکرول فوری است؛ نرم‌بودن حرکت را خود گذار بین بخش‌ها می‌دهد
+// بعد از عوض‌شدن بخش: اگر مقصد کارت مشخصی است (مدادِ آواتار در کارت صورتی، «جزئیات سفارش» کاشی وضعیت سفارش) صفحه تا همان کارت می‌رود و فوکوس و یک چشمک ملایم
+// (کارت آواتار) یا پالس رنگی (کارت سفارش) می‌گیرد (data-spot در profile.css)، وگرنه بالای صفحه. اسکرول فوری است؛ نرم‌بودن حرکت را خود گذار بین بخش‌ها می‌دهد
 function arrive(anchor) {
   const target = anchor ? document.getElementById(anchor) : null;
   if (!target) {
@@ -61,7 +61,7 @@ function arrive(anchor) {
   window.scrollTo({ top: Math.max(0, top - (parseFloat(getComputedStyle(target).scrollMarginTop) || 0)) });
   target.focus({ preventScroll: true });
   target.setAttribute("data-spot", "");
-  target.addEventListener("animationend", (e) => e.animationName === "pf-spot" && target.removeAttribute("data-spot"));
+  target.addEventListener("animationend", (e) => (e.animationName === "pf-spot" || e.animationName === "pf-ocard-pulse") && target.removeAttribute("data-spot"));
 }
 
 // نور دنبال‌کنندهٔ ماوس روی کاشی‌ها

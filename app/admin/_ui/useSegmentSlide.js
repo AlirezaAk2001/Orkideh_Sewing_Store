@@ -19,6 +19,8 @@ export function useSegmentSlide(active) {
     previous.current = el;
     if (!el || !old || old === el || !old.isConnected || typeof el.animate !== "function") return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    // تب‌هایی که روی گوشی در دو ردیف می‌شکنند (فیلتر سفارش‌های پروفایل): بین دو ردیف لغزش افقی معنا ندارد، قرص همان‌جا ظاهر می‌شود
+    if (Math.abs(old.offsetTop - el.offsetTop) > 4) return;
     const fromLeft = old.offsetLeft - el.offsetLeft;
     const fromRight = el.offsetLeft + el.offsetWidth - (old.offsetLeft + old.offsetWidth);
     el.animate([{ left: `${fromLeft}px`, right: `${fromRight}px` }, { left: "0px", right: "0px" }], {
