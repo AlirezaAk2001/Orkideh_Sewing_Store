@@ -1,6 +1,6 @@
 import Icon from "@mdi/react";
 import CategoryOutlinedIcon from "@mui/icons-material/CategoryOutlined";
-import { LayoutDashboard, ShoppingBag } from "lucide-react";
+import { LayoutDashboard, ShoppingBag, Truck } from "lucide-react";
 import { mdiAccountFileText, mdiCommentAccountOutline, mdiPanoramaVariantOutline } from "@mdi/js";
 
 // آیکون‌ها همان‌هایی‌اند که روی کارت‌های میان‌بر داشبورد هم هستند (هر بخش در همه‌جا یک آیکون دارد)؛ همه ۲۰ پیکسل
@@ -15,6 +15,7 @@ export const NAV_GROUPS = [
       { href: "/admin/banners", label: "بنرها", icon: <Icon path={mdiPanoramaVariantOutline} size="20px" aria-hidden="true" /> },
       { href: "/admin/categories", label: "دسته‌بندی‌ها", icon: <CategoryOutlinedIcon fontSize="small" aria-hidden="true" /> },
       { href: "/admin/products", label: "محصولات", icon: <ShoppingBag className="h-5 w-5" aria-hidden="true" /> },
+      { href: "/admin/shipping", label: "روش‌های ارسال", icon: <Truck className="h-5 w-5" aria-hidden="true" /> },
     ],
   },
   {

@@ -8,7 +8,8 @@ import { useSegmentSlide } from "@/app/admin/_ui/useSegmentSlide";
 import { useCart } from "@/lib/context";
 import ConfirmDialog from "./ConfirmDialog";
 import { Ic } from "./icons";
-import { dateFa, fa, toman } from "./format";
+import { costLabel } from "@/lib/shipping";
+import { dateFa, dateTimeFa, fa, faDigits, toman } from "./format";
 import { Empty, ST, Stack, Thumb, ViewHead, countByStatus } from "./parts";
 
 const FILTERS = [
@@ -56,12 +57,41 @@ function MiniTracker() {
   );
 }
 
+// یک سطر اطلاعات جزئیات: کاشی آیکون کوچک، برچسب کم‌رنگ و مقدار (wide = تمام‌عرض)
+function DInfo({ icon, label, wide = false, children }) {
+  return (
+    <div className={`di ${wide ? "wide" : ""}`}>
+      <span className="ic">
+        <Ic n={icon} />
+      </span>
+      <div>
+        <dt>{label}</dt>
+        <dd>{children}</dd>
+      </div>
+    </div>
+  );
+}
+
 function OrderCard({ order, index, open, leaving, busy, onToggle, onPay, onAskDelete, onRebuy, rebuying }) {
   const s = ST[order.status];
   const items = order.OrderItems ?? [];
   const qty = items.reduce((a, it) => a + it.quantity, 0);
   const firstSlug = items[0]?.Product?.slug;
   const detailId = `order-${order.id}-details`;
+  const showList = items.length > 1 || items.some((it) => it.quantity > 1);
+  const single = showList ? null : items[0];
+  const goodsTotal = items.reduce((sum, it) => sum + it.price * it.quantity, 0);
+  const hasShipping = order.shippingMethod != null; // سفارش‌های قبل از قابلیت ارسال روش ندارند و ریز مبلغ هم نمی‌آید (مبلغ کارت همان جمع کالاهاست)
+  const settledLabel = order.status === "delivered" ? "تاریخ تحویل" : order.status === "returned" ? "تاریخ مرجوعی" : null;
+
+  const copyTrack = async (code) => {
+    try {
+      await navigator.clipboard.writeText(String(code));
+      toast.success("کد پیگیری کپی شد.");
+    } catch {
+      toast.error("کپی انجام نشد؛ کد را دستی انتخاب کنید.");
+    }
+  };
 
   return (
     // id و tabIndex: «جزئیات سفارش» نمای کلی صفحه را تا این کارت می‌آورد، فوکوس می‌دهد و دورش پالس می‌زند (arrive در page.jsx، data-spot در profile.css)
@@ -117,25 +147,90 @@ function OrderCard({ order, index, open, leaving, busy, onToggle, onPay, onAskDe
           <Ic n="chevD" className="chev" />
         </button>
       </div>
+      {/* جزئیات: فقط چیزهایی که روی کارت نیست. فهرست کالاها فقط وقتی می‌آید که بیشتر از یک کالا یا تعداد بیشتر از ۱ باشد؛ برای یک کالای تک، نامش (لینک‌دار) بالای آدرس می‌نشیند.
+          بعد آدرس و کد پستی، شمارهٔ تماس، شیوهٔ ارسال، زمان ثبت، (تحویل‌شده/مرجوعی) تاریخ تحویل یا مرجوعی و (پرداخت‌شده) کد پیگیری با دکمهٔ کپی؛ و ریز مبلغ وقتی سفارش هزینهٔ ارسال دارد */}
       <div className="detail" id={detailId}>
         <div>
-          <div className="drows">
-            {items.map((it) => {
-              const p = it.Product;
-              const href = p?.slug ? `/products/${p.slug}` : null;
-              return (
-                <div className="drow" key={it.id}>
-                  <Thumb src={p?.image} alt="" width={54} height={54} />
-                  <div className="nm">
-                    {href ? <Link href={href}>{p?.name}</Link> : p?.name ?? "نامشخص"}
-                    <small>
-                      {fa(it.quantity)} عدد × {toman(it.price)}
-                    </small>
-                  </div>
-                  <b>{toman(it.price * it.quantity)}</b>
+          <div className="dbody">
+            {showList && (
+              <div className="drows">
+                {items.map((it) => {
+                  const p = it.Product;
+                  const href = p?.slug ? `/products/${p.slug}` : null;
+                  return (
+                    <div className="drow" key={it.id}>
+                      <Thumb src={p?.image} alt="" width={54} height={54} />
+                      <div className="nm">
+                        {href ? <Link href={href}>{p?.name}</Link> : p?.name ?? "نامشخص"}
+                        <small>
+                          {fa(it.quantity)} عدد × {toman(it.price)}
+                        </small>
+                      </div>
+                      <b>{toman(it.price * it.quantity)}</b>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+            <dl className="dinfo">
+              {single && (
+                <DInfo icon="bag" label="کالا" wide>
+                  {single.Product?.slug ? <Link href={`/products/${single.Product.slug}`}>{single.Product.name}</Link> : single.Product?.name ?? "نامشخص"}
+                </DInfo>
+              )}
+              <DInfo icon="pin" label="آدرس تحویل" wide>
+                {order.Address ? (
+                  <>
+                    {faDigits(order.Address.address)}
+                    <small>|</small>
+                    <small>کد پستی: {faDigits(order.Address.postalCode)}</small>
+                  </>
+                ) : (
+                  "آدرسی ثبت نشده است"
+                )}
+              </DInfo>
+              <DInfo icon="phone" label="شمارهٔ تماس">
+                <bdi dir="ltr">{faDigits(order.phoneNumber) || "—"}</bdi>
+              </DInfo>
+              {hasShipping && (
+                <DInfo icon="truck" label="شیوهٔ ارسال">
+                  {order.shippingMethod}
+                  <small> · {costLabel(order.shippingCost, fa)}</small>
+                </DInfo>
+              )}
+              <DInfo icon="cal" label="زمان ثبت سفارش">
+                {dateTimeFa(order.createdAt)}
+              </DInfo>
+              {settledLabel && (
+                <DInfo icon={order.status === "delivered" ? "packcheck" : "undo"} label={settledLabel}>
+                  {dateTimeFa(order.updatedAt)}
+                </DInfo>
+              )}
+              {order.status !== "pending" && order.paymentTrackId && (
+                <DInfo icon="receipt" label="کد پیگیری پرداخت">
+                  <bdi dir="ltr">{faDigits(order.paymentTrackId)}</bdi>
+                  <button type="button" className="ib-btn xs" onClick={() => copyTrack(order.paymentTrackId)} aria-label="کپی کد پیگیری پرداخت">
+                    <Ic n="copy" />
+                  </button>
+                </DInfo>
+              )}
+            </dl>
+            {hasShipping && (
+              <div className="dsum">
+                <div>
+                  <span>جمع کالاها</span>
+                  <b>{toman(goodsTotal)}</b>
                 </div>
-              );
-            })}
+                <div>
+                  <span>هزینهٔ ارسال</span>
+                  <b className={order.shippingCost > 0 ? undefined : "free"}>{costLabel(order.shippingCost, fa)}</b>
+                </div>
+                <div className="tot">
+                  <span>{order.status === "pending" ? "مبلغ قابل پرداخت" : "مبلغ پرداخت‌شده"}</span>
+                  <b>{toman(order.totalPrice)}</b>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

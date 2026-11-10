@@ -97,6 +97,10 @@ model Order {
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
   paymentTrackId  String?  @unique
+  // شیوهٔ ارسالِ انتخاب‌شده (نام روش در لحظهٔ ثبت سفارش، تا با تغییر تنظیمات بعدی سفارش‌های قدیمی عوض نشوند) و هزینهٔ آن به تومان.
+  // totalPrice جمع کالاها + shippingCost است؛ سفارش‌های قبل از این قابلیت shippingMethod = null و shippingCost = 0 دارند
+  shippingMethod String?
+  shippingCost   Float    @default(0)
   User        User        @relation(fields: [userId], references: [id])
   Address     Address?    @relation(fields: [addressId], references: [id])
   OrderItems  OrderItem[]

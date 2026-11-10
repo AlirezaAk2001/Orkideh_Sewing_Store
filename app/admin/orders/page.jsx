@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
-import { CalendarDays, Hourglass, MapPin, PackageCheck, Phone, ShoppingBag, Undo2 } from "lucide-react";
+import { CalendarDays, Hourglass, MapPin, PackageCheck, Phone, ShoppingBag, Truck, Undo2 } from "lucide-react";
 import Icon from "@mdi/react";
 import { mdiAccountFileText } from "@mdi/js";
 import PageHeader from "@/app/admin/_shell/PageHeader";
@@ -89,6 +89,12 @@ function OrderCard({ order, index, busy, onStatus }) {
           <Info icon={MapPin} label="آدرس و کد پستی" className="sm:col-span-2">
             {toPersianNumbers(order.Address?.address) || "نامشخص"}، کد پستی: {toPersianNumbers(order.Address?.postalCode) || "نامشخص"}
           </Info>
+          {/* سفارش‌های قبل از قابلیت ارسال روشی ندارند و این ردیف را ندارند */}
+          {order.shippingMethod != null && (
+            <Info icon={Truck} label="شیوهٔ ارسال" className="sm:col-span-2">
+              {order.shippingMethod} — {order.shippingCost > 0 ? `${fa(order.shippingCost)} تومان` : "رایگان"}
+            </Info>
+          )}
         </dl>
 
         <section className="mt-4 rounded-xl bg-gray-50/80 p-3" aria-label="اقلام سفارش">
@@ -111,6 +117,7 @@ function OrderCard({ order, index, busy, onStatus }) {
         <footer className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-dashed border-gray-200 pt-4">
           <p className="text-sm text-gray-500">
             قیمت کل: <strong className="text-lg font-extrabold tabular-nums text-gray-900">{fa(order.totalPrice)}</strong> <span className="text-xs">تومان</span>
+            {order.shippingCost > 0 && <span className="block text-xs text-gray-400">شامل هزینهٔ ارسال {fa(order.shippingCost)} تومان</span>}
           </p>
 
           {order.status === "processing" && (

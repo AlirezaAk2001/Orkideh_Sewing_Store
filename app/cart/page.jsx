@@ -15,6 +15,7 @@ import AppImage from "@/app/components/AppImage";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useChangeKey } from "@/lib/motion";
+import { useShipping } from "@/lib/useShipping";
 import { ClipboardList, CreditCard, Plus, Minus } from "lucide-react";
 import { TrashCan } from "@/app/components/ActionIcons";
 import Icon from '@mdi/react';
@@ -104,6 +105,10 @@ export default function CartPage() {
   const [qtyLoading, setQtyLoading] = useState(null);
 
   const totalPrice = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  // شیوهٔ ارسال: روش‌ها و هزینه‌شان را مدیر تنظیم می‌کند؛ مبلغ قابل پرداخت = جمع کالاها + هزینهٔ روش انتخاب‌شده (سرور همین را از تنظیمات خودش می‌سازد)
+  const ship = useShipping();
+  const payable = totalPrice + ship.cost;
+  const shipReady = !ship.loading && !ship.error;
 
   const handleQuantity = async (item, quantity) => {
     setQtyLoading(item.id);
@@ -266,6 +271,11 @@ export default function CartPage() {
       return;
     }
 
+    if (!shipReady) {
+      toast("روش‌های ارسال هنوز بارگذاری نشده‌اند.", { icon: "⚠️" });
+      return;
+    }
+
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
@@ -276,7 +286,7 @@ export default function CartPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ phoneNumber }),
+        body: JSON.stringify({ phoneNumber, shippingMethod: ship.selected }),
       });
       const orderData = await orderRes.json();
       if (!orderRes.ok) throw new Error(orderData.error || "خطا در ثبت سفارش");
@@ -546,9 +556,53 @@ export default function CartPage() {
               <span>تعداد کالاها</span>
               <Tick value={cartCount}>{cartCount.toLocaleString("fa-IR")}</Tick>
             </div>
+            <div className="mt-2 flex items-center justify-between text-sm text-gray-600">
+              <span>جمع کالاها</span>
+              <Tick value={totalPrice}>{totalPrice.toLocaleString("fa-IR")} تومان</Tick>
+            </div>
+
+            {/* شیوهٔ ارسال */}
+            {ship.loading && <div className="mt-3 h-12 animate-pulse rounded-lg bg-gray-200" aria-hidden="true" />}
+            {ship.error && (
+              <p role="alert" className="mt-3 flex items-center gap-2 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+                روش‌های ارسال دریافت نشد.
+                <button type="button" onClick={ship.reload} className="ms-auto cursor-pointer font-semibold underline underline-offset-4">
+                  تلاش دوباره
+                </button>
+              </p>
+            )}
+            {ship.methods?.length > 0 && (
+              <fieldset className="mt-3 min-w-0 border-t border-gray-200 pt-3">
+                <legend className="mb-2 text-sm font-semibold text-gray-700">شیوهٔ ارسال</legend>
+                <div className="grid gap-2">
+                  {ship.methods.map((m) => (
+                    <label
+                      key={m.id}
+                      className={`flex cursor-pointer items-center gap-3 rounded-lg border bg-white px-3 py-2.5 text-sm transition focus-within:ring-2 focus-within:ring-pink-300 ${
+                        ship.selected === m.id ? "border-pink-500 ring-1 ring-pink-500" : "border-gray-200 hover:border-pink-300"
+                      }`}
+                    >
+                      <input type="radio" name="shipping" value={m.id} checked={ship.selected === m.id} onChange={() => ship.setSelected(m.id)} className="h-4 w-4 cursor-pointer accent-pink-600" />
+                      <span className="min-w-0 flex-1">
+                        <span className="block font-medium text-gray-800">{m.label}</span>
+                        {m.description && <span className="block text-xs text-gray-500">{m.description}</span>}
+                      </span>
+                      <span className="shrink-0 font-bold text-gray-800">{m.cost > 0 ? `${m.cost.toLocaleString("fa-IR")} تومان` : <span className="text-green-600">رایگان</span>}</span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+            )}
+            {ship.method && (
+              <div className="mt-3 flex items-center justify-between text-sm text-gray-600">
+                <span>هزینهٔ ارسال</span>
+                {ship.cost > 0 ? <Tick value={ship.cost}>{ship.cost.toLocaleString("fa-IR")} تومان</Tick> : <span className="font-semibold text-green-600">رایگان</span>}
+              </div>
+            )}
+
             <div className="mt-3 flex items-center justify-between border-t border-gray-200 pt-3">
               <span className="font-semibold text-gray-700">مبلغ قابل پرداخت</span>
-              <Tick value={totalPrice} className="text-lg font-bold text-pink-600">{totalPrice.toLocaleString("fa-IR")} تومان</Tick>
+              <Tick value={payable} className="text-lg font-bold text-pink-600">{payable.toLocaleString("fa-IR")} تومان</Tick>
             </div>
           </div>
 
@@ -584,7 +638,7 @@ export default function CartPage() {
               <div className="flex gap-2 mt-3">
                 <button
                   type="submit"
-                  disabled={loading || !isPhoneValid}
+                  disabled={loading || !isPhoneValid || !shipReady}
                   className="flex items-center justify-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 >
                   {loading ? (

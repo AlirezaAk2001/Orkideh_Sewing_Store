@@ -29,6 +29,17 @@ import DialogActions from "@mui/material/DialogActions";
 import Button from "@mui/material/Button";
 import { Box, Skeleton } from "@mui/material";
 
+// شیوهٔ ارسال و هزینهٔ آن (سفارش‌های قدیمی که روش ندارند چیزی نشان نمی‌دهند)
+function ShippingLine({ order }) {
+  if (order.shippingMethod == null) return null;
+  return (
+    <p className="mt-1 flex gap-1 text-sm text-gray-700">
+      <Icon path={mdiTruckDeliveryOutline} size={0.9} />
+      ارسال: {order.shippingMethod} — {order.shippingCost > 0 ? `${order.shippingCost.toLocaleString("fa-IR")} تومان` : "رایگان"}
+    </p>
+  );
+}
+
 export default function OrdersPage() {
   const { currentUser } = useAuth();
   const { cartItems, clearCart } = useCart();
@@ -340,6 +351,7 @@ export default function OrdersPage() {
                         <Icon path={mdiTagOutline} size={0.9} />
                         قیمت کل: {order.totalPrice.toLocaleString("fa-IR")} تومان
                       </p>
+                      <ShippingLine order={order} />
                       <div className="mt-2">
                         <h3 className="text-sm font-medium text-gray-900 flex gap-1">
                           <Icon path={mdiShoppingOutline} size={0.9} />
@@ -398,6 +410,7 @@ export default function OrdersPage() {
                     <Icon path={mdiTagOutline} size={0.9} />
                     قیمت کل: {order.totalPrice.toLocaleString("fa-IR")} تومان
                   </p>
+                      <ShippingLine order={order} />
                   <div className="mt-2">
                     <h3 className="text-sm font-medium text-gray-900 flex gap-1">
                       <Icon path={mdiShoppingOutline} size={0.9} />
@@ -484,6 +497,7 @@ export default function OrdersPage() {
                   <Icon path={mdiTagOutline} size={0.9} />
                   قیمت کل: {order.totalPrice.toLocaleString("fa-IR")} تومان
                 </p>
+                      <ShippingLine order={order} />
                 <div className="mt-2">
                   <h3 className="text-sm font-medium text-gray-900 flex gap-1">
                     <Icon path={mdiShoppingOutline} size={0.9} />

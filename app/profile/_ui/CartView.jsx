@@ -5,6 +5,7 @@ import Link from "next/link";
 import toast from "react-hot-toast";
 import { mdiCartMinus, mdiDeleteCircleOutline, mdiDeleteSweepOutline } from "@mdi/js";
 import { useAuth, useCart } from "@/lib/context";
+import { useShipping } from "@/lib/useShipping";
 import ConfirmDialog from "./ConfirmDialog";
 import { Ic } from "./icons";
 import { fa, toEn, toman } from "./format";
@@ -66,7 +67,11 @@ export default function CartView({ onGo }) {
   const [askRemove, setAskRemove] = useState(null);
   const [askClear, setAskClear] = useState(false);
 
+  const ship = useShipping();
   const total = cartItems.reduce((s, it) => s + it.price * it.quantity, 0);
+  // مبلغ قابل پرداخت = جمع کالاها + هزینهٔ روش ارسال انتخاب‌شده (سرور همین را از تنظیمات خودش می‌سازد)
+  const payable = total + ship.cost;
+  const shipReady = !ship.loading && !ship.error;
   const num = toEn(phone);
   const phoneOk = /^09\d{9}$/.test(num);
 
@@ -103,13 +108,14 @@ export default function CartView({ onGo }) {
     if (!currentUser) return toast("برای ثبت سفارش، ابتدا وارد حساب کاربری خود شوید.", { icon: "⚠️" });
     if (!cartItems.length) return toast("سبد خرید شما خالی است.", { icon: "⚠️" });
     if (!phoneOk) return toast("شماره تلفن نامعتبر است.", { icon: "⚠️" });
+    if (!shipReady) return toast("روش‌های ارسال هنوز بارگذاری نشده‌اند.", { icon: "⚠️" });
 
     setPaying(true);
     try {
       const orderRes = await fetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json", ...auth() },
-        body: JSON.stringify({ phoneNumber: num }),
+        body: JSON.stringify({ phoneNumber: num, shippingMethod: ship.selected }),
       });
       const orderData = await orderRes.json();
       if (!orderRes.ok) throw new Error(orderData.error || "خطا در ثبت سفارش");
@@ -185,10 +191,51 @@ export default function CartView({ onGo }) {
                 <Tick value={total}>{toman(total)}</Tick>
               </b>
             </div>
+            {/* شیوهٔ ارسال: روش‌ها و هزینه‌شان را مدیر در پنل مدیریت (ارسال) تنظیم می‌کند؛ بدون روش فعال این بخش نمی‌آید */}
+            {ship.loading && <div className="ship-skel" aria-hidden="true" />}
+            {ship.error && (
+              <div className="ship-msg" role="alert">
+                روش‌های ارسال دریافت نشد.
+                <button type="button" onClick={ship.reload}>
+                  تلاش دوباره
+                </button>
+              </div>
+            )}
+            {ship.methods?.length > 0 && (
+              <fieldset className="ship">
+                <legend>شیوهٔ ارسال</legend>
+                {ship.methods.map((m) => (
+                  <label key={m.id} className={`opt ${ship.selected === m.id ? "on" : ""}`}>
+                    <input type="radio" name="ship" value={m.id} checked={ship.selected === m.id} onChange={() => ship.setSelected(m.id)} />
+                    <span className="rd" aria-hidden="true" />
+                    <span className="tx">
+                      <b>{m.label}</b>
+                      {m.description && <small>{m.description}</small>}
+                    </span>
+                    <span className="pr">
+                      {m.cost > 0 ? (
+                        <>
+                          {fa(m.cost)}
+                          <small>تومان</small>
+                        </>
+                      ) : (
+                        <em className="free">رایگان</em>
+                      )}
+                    </span>
+                  </label>
+                ))}
+              </fieldset>
+            )}
+            {ship.method && (
+              <div className="srow">
+                <span>هزینهٔ ارسال</span>
+                <b>{ship.cost > 0 ? <Tick value={ship.cost}>{toman(ship.cost)}</Tick> : <span className="free">رایگان</span>}</b>
+              </div>
+            )}
             <div className="stotal">
               <span>مبلغ قابل پرداخت</span>
               <b>
-                <Tick value={total}>{fa(total)}</Tick>
+                <Tick value={payable}>{fa(payable)}</Tick>
                 <small>تومان</small>
               </b>
             </div>
@@ -202,7 +249,7 @@ export default function CartView({ onGo }) {
                 {!phone ? "برای هماهنگی ارسال، شمارهٔ همراه را وارد کنید" : phoneOk ? "شمارهٔ معتبر است" : "شماره با ۰۹ شروع می‌شود و ۱۱ رقم است"}
               </div>
             </div>
-            <button type="submit" className="btn btn-primary" disabled={!phoneOk || paying}>
+            <button type="submit" className="btn btn-primary" disabled={!phoneOk || paying || !shipReady}>
               <Ic n={paying ? "loader" : "shield"} className={paying ? "spin" : ""} />
               {paying ? "در حال انتقال به درگاه…" : "تأیید و پرداخت"}
             </button>

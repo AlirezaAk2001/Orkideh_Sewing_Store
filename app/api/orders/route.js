@@ -3,6 +3,8 @@ import prisma from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
 import { tracksStock } from "@/lib/stock";
 import { isValidPhone } from "@/lib/validation";
+import { chooseMethod } from "@/lib/shipping";
+import { getShippingMethods } from "@/lib/shippingConfig";
 
 export async function GET(req) {
   const auth = await requireUser(req);
@@ -58,7 +60,7 @@ export async function POST(req) {
   const userId = auth.user.id;
 
   try {
-    const { phoneNumber } = await req.json();
+    const { phoneNumber, shippingMethod: methodId } = await req.json();
     if (!phoneNumber) {
       return NextResponse.json({ error: "شماره تلفن لازم است" }, { status: 400 });
     }
@@ -101,12 +103,21 @@ export async function POST(req) {
       );
     }
 
-    // محاسبه قیمت کل
-    const totalPrice = cartItems.reduce(
+    // شیوهٔ ارسال: فقط شناسهٔ روش از مرورگر می‌آید؛ نام و هزینه را خود سرور از تنظیمات (پنل مدیریت) می‌خواند.
+    // اگر هیچ روش فعالی تعریف نشده، سفارش بدون ارسال ثبت می‌شود
+    const shipping = chooseMethod(await getShippingMethods(), methodId);
+    if (shipping === undefined) {
+      return NextResponse.json({ error: "روش ارسال را انتخاب کنید", code: "SHIPPING_REQUIRED" }, { status: 400 });
+    }
+    const shippingCost = shipping ? shipping.cost : 0;
+
+    // محاسبه قیمت کل: جمع کالاها + هزینهٔ ارسال (همین مبلغ به درگاه می‌رود و در تأیید پرداخت با آن مقایسه می‌شود)
+    const goodsTotal = cartItems.reduce(
       (sum, item) =>
         sum + (item.Product.finalPrice ?? item.Product.price) * item.quantity,
       0
     );
+    const totalPrice = goodsTotal + shippingCost;
 
     // ساخت سفارش
     const order = await prisma.order.create({
@@ -115,6 +126,8 @@ export async function POST(req) {
         addressId: address.id,
         phoneNumber,
         totalPrice,
+        shippingMethod: shipping ? shipping.label : null,
+        shippingCost,
         status: "pending",
         OrderItems: {
           create: cartItems.map((item) => ({

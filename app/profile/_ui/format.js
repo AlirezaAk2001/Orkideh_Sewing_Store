@@ -12,6 +12,18 @@ export const toEn = (value) =>
 
 export const dateFa = (value) => new Date(value).toLocaleDateString("fa-IR");
 
+// تاریخ شمسی همراه ساعت (مثلاً ۱۴۰۴/۱۲/۱ ـ ساعت ۱۴:۳۵) به وقت مرورگر
+export const dateTimeFa = (value) => {
+  const d = new Date(value);
+  return `${d.toLocaleDateString("fa-IR")} · ساعت ${d.toLocaleTimeString("fa-IR", { hour: "2-digit", minute: "2-digit" })}`;
+};
+
+// رقم‌های لاتین (و عربی) یک متن را فارسی می‌کند؛ برای شماره تلفن، کد پستی و کد پیگیری که رشته‌اند، نه عدد
+export const faDigits = (value) =>
+  String(value ?? "")
+    .replace(/\d/g, (d) => "۰۱۲۳۴۵۶۷۸۹"[d])
+    .replace(/[٠-٩]/g, (d) => "۰۱۲۳۴۵۶۷۸۹"["٠١٢٣٤٥٦٧٨٩".indexOf(d)]);
+
 const MONTH_NAMES = ["فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور", "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"];
 const ymFmt = new Intl.DateTimeFormat("en-US-u-ca-persian-nu-latn", { year: "numeric", month: "numeric", timeZone: "Asia/Tehran" });
 
