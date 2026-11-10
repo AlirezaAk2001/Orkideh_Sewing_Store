@@ -47,20 +47,24 @@ const tileLink = (key, label, onGo) => ({
   },
 });
 
-/* ───────── کاشی تیره: سفارش در مسیر (رهگیری با «نخ بخیه») ───────── */
+/* ───────── کاشی تیره: وضعیت سفارش (رهگیری با «نخ بخیه») ───────── */
 
-// مراحل هر سفارش از روی وضعیت واقعی‌اش. cur = مرحلهٔ فعلی؛ done = همهٔ مرحله‌ها تمام شده
+// مراحل سفارش (pipeline). هر مرحله آیکون مخصوص خودش را دارد و آیکون «مرحلهٔ فعلی» کنار عنوان کاشی هم می‌نشیند. آماده‌سازی و ارسال دو مرحلهٔ جدا هستند.
+// سفارش فقط سه وضعیت بعد از پرداخت دارد (جاری، تحویل شده، مرجوع شده)، پس سفارش جاری در «آماده‌سازی» می‌ایستد تا تحویل شود
+const STAGES = [
+  { label: "ثبت سفارش", icon: "clipboard" },
+  { label: "پرداخت", icon: "card" },
+  { label: "آماده‌سازی", icon: "box" },
+  { label: "ارسال", icon: "truck" },
+  { label: "تحویل به شما", icon: "postman" },
+];
+
+// cur = مرحلهٔ فعلی؛ done = همهٔ مرحله‌ها تمام شده
 function flowOf(order) {
-  const base = [
-    { label: "ثبت سفارش", icon: "pack" },
-    { label: "پرداخت", icon: "pack" },
-    { label: "آماده‌سازی و ارسال", icon: "truck" },
-    { label: "تحویل به شما", icon: "pack" },
-  ];
-  if (order.status === "pending") return { steps: base, cur: 1, done: false, nowIcon: "hourglass", nowText: "منتظر پرداخت" };
-  if (order.status === "processing") return { steps: base, cur: 2, done: false, nowIcon: "truck", nowText: "در جریان" };
-  if (order.status === "delivered") return { steps: base, cur: 3, done: true };
-  return { steps: [base[0], base[1], base[2], { label: "مرجوع شد", icon: "undo" }], cur: 3, done: false, nowIcon: "undo", nowText: "مرجوع شد" };
+  if (order.status === "pending") return { steps: STAGES, cur: 1, done: false, nowText: "منتظر پرداخت" };
+  if (order.status === "processing") return { steps: STAGES, cur: 2, done: false, nowText: "در جریان" };
+  if (order.status === "delivered") return { steps: STAGES, cur: 4, done: true };
+  return { steps: [...STAGES.slice(0, 4), { label: "مرجوع شد", icon: "undo" }], cur: 4, done: false, nowText: "مرجوع شد" };
 }
 
 function TrackTile({ order, onGo, onPay, paying }) {
@@ -71,9 +75,9 @@ function TrackTile({ order, onGo, onPay, paying }) {
         <div className="t-head">
           <div className="t-title">
             <span className="ib">
-              <Ic n="truck" />
+              <Ic n="clipboard" />
             </span>
-            سفارش در مسیر
+            وضعیت سفارش
           </div>
         </div>
         <div className="empty" style={{ color: "rgb(255 255 255 / 0.75)", padding: "34px 10px" }}>
@@ -91,12 +95,11 @@ function TrackTile({ order, onGo, onPay, paying }) {
     );
   }
 
-  const { steps, cur, done, nowIcon, nowText } = flowOf(order);
+  const { steps, cur, done, nowText } = flowOf(order);
   const n = steps.length;
   const items = order.OrderItems ?? [];
-  const qty = items.reduce((s, it) => s + it.quantity, 0);
+  const qty = items.reduce((sum, it) => sum + it.quantity, 0);
   const s = ST[order.status];
-  const title = order.status === "processing" ? "سفارش در مسیر" : order.status === "pending" ? "سفارش در انتظار پرداخت" : "آخرین سفارش";
   const state = (i) => (done || i < cur ? "done" : i === cur ? "now" : "later");
   const small = (i) => {
     if (i === 0) return dateFa(order.createdAt);
@@ -105,13 +108,13 @@ function TrackTile({ order, onGo, onPay, paying }) {
   };
 
   return (
-    <article className="tile t-track rise" style={{ "--i": 1 }} {...tileLink("orders", `${title}، رفتن به سفارش‌ها`, onGo)}>
+    <article className="tile t-track rise" style={{ "--i": 1 }} {...tileLink("orders", "وضعیت سفارش، رفتن به سفارش‌ها", onGo)}>
       <div className="t-head">
         <div className="t-title">
           <span className="ib">
-            <Ic n="truck" />
+            <Ic n={steps[cur].icon} />
           </span>
-          {title}
+          وضعیت سفارش
         </div>
         <span className="t-go">
           <Ic n="arrowL" />
@@ -127,28 +130,36 @@ function TrackTile({ order, onGo, onPay, paying }) {
           ثبت‌شده در <b>{dateFa(order.createdAt)}</b>
         </span>
       </div>
-      <div className={`steps ${arrived ? "on" : ""}`} style={{ "--p": (done ? n - 1 : cur) / (n - 1), "--n": n }}>
-        <div className="line" />
-        <div className="done" />
-        {!done && (
-          <div className="needle">
-            <svg viewBox="0 0 46 46" fill="none" aria-hidden="true">
-              <path d="M41 5 11 35" stroke="#fff" strokeWidth="2.8" strokeLinecap="round" />
-              <ellipse cx="38.6" cy="7.4" rx="1.7" ry="3.6" transform="rotate(45 38.6 7.4)" fill="#3a1141" stroke="#fff" strokeWidth="1.6" />
-              <path d="M38 8c7 12-8 17-3 33" stroke="#fda4af" strokeWidth="2.2" strokeLinecap="round" />
-            </svg>
-          </div>
-        )}
+      <div className={`steps ${arrived ? "on" : ""}`} style={{ "--n": n, "--cur": cur }}>
         <ol>
           {steps.map((st, i) => {
             const k = state(i);
+            // در سفارش تحویل‌شده آخرین نقطه همان پستچی را نشان می‌دهد، نه تیک
+            const icon = k === "done" && !(done && i === n - 1) ? "check" : st.icon;
             return (
-              <li key={st.label} className={k === "later" ? "future" : ""} style={{ "--k": i }}>
+              <li key={st.label} className={k === "later" ? "future" : ""} style={{ "--k": i }} aria-current={k === "now" ? "step" : undefined}>
                 <span className={`dot ${k === "now" ? "now" : k === "later" ? "later" : ""}`}>
-                  <Ic n={k === "done" ? "check" : k === "now" ? nowIcon : st.icon} />
+                  <Ic n={icon} />
                 </span>
-                <b>{st.label}</b>
-                <small>{small(i)}</small>
+                {i < n - 1 && (
+                  <span className={`cn ${i < cur ? "d" : ""}`} aria-hidden="true">
+                    <i />
+                    {i < cur && <b />}
+                  </span>
+                )}
+                {k === "now" && !done && (
+                  <span className="needle" aria-hidden="true">
+                    <svg viewBox="0 0 46 46" fill="none">
+                      <path d="M41 5 11 35" stroke="#fff" strokeWidth="2.8" strokeLinecap="round" />
+                      <ellipse cx="38.6" cy="7.4" rx="1.7" ry="3.6" transform="rotate(45 38.6 7.4)" fill="#3a1141" stroke="#fff" strokeWidth="1.6" />
+                      <path d="M38 8c7 12-8 17-3 33" stroke="#fda4af" strokeWidth="2.2" strokeLinecap="round" />
+                    </svg>
+                  </span>
+                )}
+                <div className="tx">
+                  <b>{st.label}</b>
+                  <small>{small(i)}</small>
+                </div>
               </li>
             );
           })}

@@ -53,7 +53,7 @@ function FilterSeg({ value, counts, onChange }) {
   );
 }
 
-// نوار کوچک مراحل سفارش جاری (تزئینی): ثبت، پرداخت، آماده‌سازی انجام شده و ارسال در حال انجام است
+// نوار کوچک مراحل سفارش جاری (تزئینی)، هم‌جا با کاشی «وضعیت سفارش» نمای کلی: ثبت و پرداخت انجام شده، آماده‌سازی در جریان، ارسال و تحویل مانده است
 function MiniTracker() {
   return (
     <div className="mini" aria-hidden="true">
@@ -61,9 +61,9 @@ function MiniTracker() {
       <u className="d" />
       <i className="d" />
       <u className="d" />
-      <i className="d" />
-      <u className="d" />
       <i className="n" />
+      <u />
+      <i />
       <u />
       <i />
     </div>

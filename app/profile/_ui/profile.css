@@ -232,26 +232,40 @@
 .pf .trk-code svg { width: 15px; height: 15px; }
 .pf .trk-eta b { color: #fff; }
 .pf .t-track .chip { --c: #f9a8d4; background: rgb(255 255 255 / 0.1); box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.2); color: #fff; }
-.pf .steps { position: relative; margin: 34px 0 6px; }
-.pf .steps .line { position: absolute; top: 19px; inset-inline: calc(50% / var(--n, 5)); height: 4px; border-radius: 4px; background: repeating-linear-gradient(90deg, rgb(255 255 255 / 0.28) 0 9px, transparent 9px 17px); }
-.pf .steps .done { position: absolute; top: 19px; inset-inline-start: calc(50% / var(--n, 5)); height: 4px; width: 0; border-radius: 4px; background: repeating-linear-gradient(90deg, #fda4af 0 9px, transparent 9px 17px); transition: width 1.6s 0.5s cubic-bezier(0.5, 0, 0.2, 1); filter: drop-shadow(0 0 8px rgb(251 113 133 / 0.8)); }
-.pf .steps.on .done { width: calc((100% - 100% / var(--n, 5)) * var(--p)); }
-.pf .needle { position: absolute; z-index: 3; top: -3px; inset-inline-start: calc(50% / var(--n, 5) + (100% - 100% / var(--n, 5)) * var(--p)); translate: -40px 2px; width: 58px; height: 58px; opacity: 0; transition: opacity 0.4s 1.9s; pointer-events: none; }
+/* مراحل سفارش (pipeline): هر مرحله یک نقطه با آیکون خودش است و بین هر دو نقطه یک رشتهٔ بخیه (.cn) هست که دقیقاً به اندازهٔ همان فاصله بریده و به تعداد صحیح خط‌چین تقسیم می‌شود
+   (mask با تکرار round)، پس خط‌چین‌ها همیشه کامل و قرینه‌اند و وسط یک خط‌چین قطع نمی‌شوند. رنگ صورتی همان خط‌چین‌های خاکستری را با همان ماسک از سمت شروع پر می‌کند، نه یک خط جدا که روی آن‌ها بیفتد */
+.pf .steps { --dot: 42px; --gap: 8px; --tile: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='4'%3E%3Crect x='4.5' width='9' height='4' rx='2'/%3E%3C/svg%3E"); position: relative; margin: 34px 0 6px; }
+.pf .steps ol { position: relative; display: grid; grid-template-columns: repeat(var(--n, 5), minmax(0, 1fr)); margin: 0; padding: 0; list-style: none; text-align: center; }
+.pf .steps li { position: relative; display: flex; flex-direction: column; align-items: center; }
+.pf .cn { position: absolute; top: calc(var(--dot) / 2 - 2px); left: calc(var(--dot) / 2 + var(--gap) - 50%); width: calc(100% - var(--dot) - 2 * var(--gap)); height: 4px; }
+.pf .cn i, .pf .cn b { position: absolute; inset: 0; -webkit-mask: var(--tile) 0 0 / 18px 4px round no-repeat; mask: var(--tile) 0 0 / 18px 4px round no-repeat; }
+.pf .cn i { background: rgb(255 255 255 / 0.28); }
+.pf .cn b { background: #fda4af; clip-path: inset(0 0 0 100%); transition: clip-path 0.45s cubic-bezier(0.5, 0, 0.2, 1) calc(var(--k) * 0.3s + 0.35s); }
+.pf .steps.on .cn b { clip-path: inset(0); }
+.pf .cn.d { filter: drop-shadow(0 0 6px rgb(251 113 133 / 0.6)); }
+.pf .needle { position: absolute; z-index: 3; top: calc(var(--dot) / 2 - 22px); right: calc(50% + var(--dot) / 2 + 19px); width: 58px; height: 58px; opacity: 0; transition: opacity 0.4s calc(var(--cur, 2) * 0.3s + 0.9s); pointer-events: none; }
 .pf .steps.on .needle { opacity: 1; }
 .pf .needle svg { width: 100%; height: 100%; overflow: visible; animation: pf-stitch 1.1s ease-in-out infinite; transform-origin: 70% 30%; }
 @keyframes pf-stitch { 0%, 100% { transform: translate(0, 0) rotate(-6deg); } 50% { transform: translate(-3px, 6px) rotate(6deg); } }
-.pf .steps ol { position: relative; display: grid; grid-template-columns: repeat(var(--n, 5), 1fr); text-align: center; }
-.pf .steps li { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-.pf .dot { position: relative; display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%; color: #fff; background: linear-gradient(150deg, #fb7185, #db2777); box-shadow: 0 8px 18px -6px rgb(244 63 94 / 0.8), inset 0 1px 0 rgb(255 255 255 / 0.4); transform: scale(0); transition: transform 0.55s var(--spring); transition-delay: calc(var(--k) * 0.3s + 0.2s); }
+.pf .dot { position: relative; display: grid; place-items: center; width: var(--dot); height: var(--dot); border-radius: 50%; color: #fff; background: linear-gradient(150deg, #fb7185, #db2777); box-shadow: 0 8px 18px -6px rgb(244 63 94 / 0.8), inset 0 1px 0 rgb(255 255 255 / 0.4); transform: scale(0); transition: transform 0.55s var(--spring); transition-delay: calc(var(--k) * 0.3s + 0.2s); }
 .pf .steps.on .dot { transform: scale(1); }
 .pf .dot svg { width: 20px; height: 20px; stroke-width: 2.4; }
 .pf .dot.now { background: #fff; color: #be185d; box-shadow: 0 0 0 5px rgb(255 255 255 / 0.18), 0 10px 22px -6px rgb(0 0 0 / 0.5); }
 .pf .dot.now::after { content: ""; position: absolute; inset: -5px; border-radius: 50%; border: 2px solid rgb(255 255 255 / 0.6); animation: pf-ring 2s ease-out infinite; }
 @keyframes pf-ring { 0% { transform: scale(0.9); opacity: 0.9; } 100% { transform: scale(1.6); opacity: 0; } }
 .pf .dot.later { background: rgb(255 255 255 / 0.06); color: rgb(255 255 255 / 0.4); box-shadow: inset 0 0 0 2px rgb(255 255 255 / 0.18); border: 0; }
-.pf .steps b { margin-top: 8px; font-size: 13px; font-weight: 700; }
-.pf .steps small { font-size: 11.5px; color: rgb(255 255 255 / 0.6); }
-.pf .steps li.future b { color: rgb(255 255 255 / 0.55); }
+.pf .steps .tx { display: grid; justify-items: center; gap: 2px; margin-top: 12px; padding-inline: 2px; }
+.pf .steps .tx b { font-size: 13px; font-weight: 700; line-height: 1.5; text-wrap: balance; }
+.pf .steps .tx small { font-size: 11.5px; color: rgb(255 255 255 / 0.6); }
+.pf .steps li.future .tx b { color: rgb(255 255 255 / 0.55); }
+/* جهت‌دار بودن آیکون کامیون: صفحه راست‌به‌چپ است و مراحل به چپ می‌روند، پس کامیون هم رو به چپ می‌رود (lucide آن را رو به راست می‌کشد) */
+.pf svg.lucide-truck { scale: -1 1; }
+/* پستچی: سر و بدنش توپُر است و بقیهٔ خط‌ها نازک؛ در نقطهٔ مرحله و کنار عنوان کاشی چند پیکسل بزرگ‌تر از آیکون‌های دیگر می‌شود تا شکل آدم گم نشود */
+.pf .dot svg.postman { width: 25px; height: 25px; stroke-width: 1.8; }
+.pf .t-title .ib svg.postman { width: 25px; height: 25px; }
+/* روی گوشی پنج مرحله باید در یک ردیف جا شوند: نقطه‌ها کوچک‌تر و برچسب‌ها ریزتر، خط‌چین‌ها همان‌طور کامل. سوزن تزئینی هم برداشته می‌شود چون روی نقطهٔ مرحلهٔ بعد می‌افتاد (نقطهٔ فعلی حلقهٔ چشمک‌زن خودش را دارد) */
+@container app (max-width: 640px) { .pf .steps { --dot: 34px; --gap: 5px; } .pf .dot svg { width: 17px; height: 17px; } .pf .dot svg.postman { width: 21px; height: 21px; } .pf .needle { display: none; } .pf .steps .tx { margin-top: 9px; } .pf .steps .tx b { font-size: 11.5px; } .pf .steps .tx small { font-size: 10.5px; } }
+@container app (max-width: 380px) { .pf .steps { --gap: 4px; } .pf .steps .tx b { font-size: 11px; } }
 .pf .trk-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; margin-top: 26px; padding-top: 20px; border-top: 1px dashed rgb(255 255 255 / 0.18); }
 .pf .trk-items { display: flex; align-items: center; gap: 14px; }
 .pf .stack { display: flex; }
@@ -617,7 +631,7 @@ html.pf-vt::view-transition-old(pf-header), html.pf-vt::view-transition-new(pf-h
 /* ═════════ کاهش حرکت: همه‌چیز بی‌حرکت و در حالت نهایی ═════════ */
 @media (prefers-reduced-motion: reduce) {
   .pf *, .pf *::before, .pf *::after { animation-duration: 0.01ms !important; animation-delay: 0s !important; animation-iteration-count: 1 !important; transition-duration: 0s !important; transition-delay: 0s !important; scroll-behavior: auto !important; }
-  .pf .steps .done { width: calc((100% - 100% / var(--n, 5)) * var(--p)); }
+  .pf .cn b { clip-path: inset(0); }
   .pf .dot { transform: scale(1); }
   .pf .needle { opacity: 1; }
   .pf .chart .ln { stroke-dashoffset: 0; }
