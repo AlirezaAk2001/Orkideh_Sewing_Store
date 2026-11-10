@@ -428,6 +428,10 @@ function CartTile({ items, count, onGo }) {
             <Ic n="cart" />
           </span>
           سبد خرید
+          {/* تعداد کالاها مثل چیپ علاقه‌مندی‌ها، کنار عنوان؛ با سبد خالی هم «۰ کالا» دیده می‌شود */}
+          <span className="chip" style={{ "--c": "var(--ink-3)" }}>
+            {fa(count)} کالا
+          </span>
         </div>
         <span className="t-go">
           <Ic n="arrowL" />
