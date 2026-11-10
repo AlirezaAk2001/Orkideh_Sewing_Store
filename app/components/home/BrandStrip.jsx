@@ -11,7 +11,7 @@ const allParams = parseListParams({});
 const FADE = 40; // عرض محوشدگی لبه‌ها وقتی ردیف بیشتر از جا دارد (px)
 
 const ARROW_CLASS =
-  "absolute top-1/2 z-10 hidden h-9 w-9 -translate-y-1/2 cursor-pointer place-items-center rounded-full bg-white text-gray-700 shadow-md ring-1 ring-gray-200 transition duration-200 hover:bg-brand-600 hover:text-white hover:ring-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 md:grid";
+  "btn-flat absolute top-1/2 z-10 hidden h-9 w-9 -translate-y-1/2 cursor-pointer place-items-center rounded-full bg-white text-gray-700 shadow-md ring-1 ring-gray-200 transition duration-200 hover:bg-brand-600 hover:text-white hover:ring-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 md:grid";
 
 // برندهای موجود در فروشگاه با نام فارسی و تعداد محصول؛ هر برند لینک فهرست محصولاتی است که نامشان آن برند را دارد (?q=برند).
 // برندها را صفحهٔ سروری از نام محصول‌ها درمی‌آورد (lib/brands.js)، پس برند تازه با اولین محصولش اینجا می‌آید.

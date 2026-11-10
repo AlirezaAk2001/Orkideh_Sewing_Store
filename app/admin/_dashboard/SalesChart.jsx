@@ -132,7 +132,7 @@ function SummaryStrip({ stats, daily, layers = null, onToggle }) {
     { id: "avg", label: "میانگین هر روز", value: stats.avg, icon: TrendingUp },
     { id: "best", label: `بهترین روز${best ? `: ${dayShort(best.date)}` : ""}`, value: stats.max, icon: Crown },
   ];
-  const card = "flex w-full min-w-0 items-center gap-3 rounded-xl bg-gradient-to-l from-gray-50 to-white px-3 py-2.5 text-start";
+  const card = "btn-flat flex w-full min-w-0 items-center gap-3 rounded-xl bg-gradient-to-l from-gray-50 to-white px-3 py-2.5 text-start";
   const badge = "grid h-9 w-9 shrink-0 place-items-center rounded-xl ring-1 transition";
   return (
     <ul className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-3" aria-label="خلاصهٔ فروش دوره">

@@ -61,7 +61,7 @@ function Tick({ value, className = "", children }) {
 // گام‌شمار تعداد: «+» سمت راست، «−» سمت چپ (صفحه راست‌به‌چپ است)
 function QuantityStepper({ value, max, disabled, onChange }) {
   const btn =
-    "grid h-9 w-9 cursor-pointer place-items-center text-gray-600 transition-colors hover:bg-pink-50 hover:text-pink-600 disabled:cursor-not-allowed disabled:text-gray-300 disabled:hover:bg-transparent";
+    "btn-flat grid h-9 w-9 cursor-pointer place-items-center text-gray-600 transition-colors hover:bg-pink-50 hover:text-pink-600 disabled:cursor-not-allowed disabled:text-gray-300 disabled:hover:bg-transparent";
   return (
     <div className="inline-flex items-center overflow-hidden rounded-lg border border-gray-200 bg-white" role="group" aria-label="تعداد">
       <button

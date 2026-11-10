@@ -1198,6 +1198,30 @@ html.sb-dragging * {
   }
 }
 
+/* بلندشدن دکمه‌ها با hover: همهٔ دکمه‌های سایت به‌جز تب‌ها هنگام هاور دو پیکسل بالا می‌آیند؛ همان حرکت دکمهٔ «جزئیات سفارش» پروفایل (translateY(-2px) با گذار ۰٫۲ ثانیه).
+   هر <button> و لینکِ .btn (پروفایل) خودکار آن را دارد و لینکی که ظاهر دکمه دارد کلاس btn-lift می‌گیرد. حرکت با ویژگی مستقل translate است، نه transform، تا با scale فشردن (active:scale-*) و
+   transformهای خود دکمه قاطی نشود. کنار گذاشته می‌شوند: تب‌ها (که حرکت سه‌بعدی خودشان را دارند: .seg-tab، .tab-3d، چیپ‌های دسته .chip-3d، تب‌های ARIA، فیلتر سفارش‌های
+   پروفایل .fseg و داک پروفایل .nb)، کلید، گزینه و رادیو، دکمه‌هایی که افکت هاور خودشان را دارند (قلم و قلب پروفایل، کاشی افزودن آدرس، گزینهٔ آواتار، سطل زبالهٔ سبد،
+   نقطه‌ها و پیکان اسلایدر عکس، جستجوی هدر)، دکمهٔ متنی و آیکونی MUI، شمارندهٔ تعداد پروفایل و هر چیزی که کلاس btn-flat بگیرد (دکمهٔ تمام‌سطح، دکمهٔ متنیِ بی‌زمینه،
+   دکمهٔ داخل فیلد یا داخل کادر بریده‌شونده، دکمه‌ای که با translate Tailwind وسط‌چین شده). دکمهٔ غیرفعال بالا نمی‌آید. گذار این‌جا جایگزین گذار دکمه می‌شود (Tailwind، MUI
+   و کلاس‌های پروفایل translate را در گذار خود ندارند)؛ چون :is() ویژگی‌دهی بالاترین گزینه‌اش (a.btn) را می‌گیرد، این قاعده از انتخابگرهای تا دو کلاس (مثل .pf .btn) هم قوی‌تر است.
+   روی صفحهٔ لمسی hover نداریم و با «کاهش حرکت» دکمه از جایش تکان نمی‌خورد. */
+:is(button, a.btn, .btn-lift):not(
+    .btn-flat, .icon-action, .seg-tab, .tab-3d, .chip-3d, [role="tab"], [role="switch"], [role="option"], [role="radio"], .nb, .pen, .hb, .newa, .pk-tile, .fseg button, .step button,
+    .delete-btn, .img-slider-dot, .img-slider-arrow, .xs-rest, .xs-btn, .xs-x, .hs-trigger, .sp-close, .sp-clear, .sp-recent, .MuiButton-text, .MuiIconButton-root
+  ) {
+  transition: translate 0.2s, transform 0.2s, scale 0.15s, color 0.2s, background-color 0.2s, border-color 0.2s, box-shadow 0.3s, opacity 0.2s;
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  :is(button, a.btn, .btn-lift):not(
+      .btn-flat, .icon-action, .seg-tab, .tab-3d, .chip-3d, [role="tab"], [role="switch"], [role="option"], [role="radio"], .nb, .pen, .hb, .newa, .pk-tile, .fseg button, .step button,
+      .delete-btn, .img-slider-dot, .img-slider-arrow, .xs-rest, .xs-btn, .xs-x, .hs-trigger, .sp-close, .sp-clear, .sp-recent, .MuiButton-text, .MuiIconButton-root,
+      :disabled, [aria-disabled="true"]
+    ):hover {
+    translate: 0 -2px;
+  }
+}
+
 /* تب‌های قطعه‌ای ادمین (.seg ظرف، .seg-tab هر تب): قرص سفید تب فعال شبه‌عنصر ::before خود تب است و پشت نوشته‌اش می‌نشیند (z-index منفی در ظرفِ isolation؛
    نوشتهٔ همهٔ تب‌ها همیشه بالای قرص است). با هاور روی تب فعال، قرص همراه تب بالا می‌آید چون بخشی از همان عنصر است. لغزش قرص بین تب‌ها را useSegmentSlide.js
    (app/admin/_ui) با Web Animations روی همین شبه‌عنصر می‌دهد. خط رنگی زیر تب فعال (.seg-underline) بعد از رسیدن قرص باز می‌شود. */

@@ -127,7 +127,7 @@ export function PasswordInput({ invalid = false, className = "", meter = false, 
         onMouseDown={(e) => e.preventDefault()} // فوکوس در فیلد می‌ماند و راهنما نمی‌پرد
         aria-label={shown ? "پنهان کردن رمز" : "نمایش رمز"}
         aria-pressed={shown}
-        className="absolute right-1.5 top-1/2 grid h-8 w-8 -translate-y-1/2 cursor-pointer place-items-center rounded-lg text-gray-400 transition hover:bg-gray-100 hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+        className="btn-flat absolute right-1.5 top-1/2 grid h-8 w-8 -translate-y-1/2 cursor-pointer place-items-center rounded-lg text-gray-400 transition hover:bg-gray-100 hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
       >
         {shown ? <EyeOff className="h-5 w-5" aria-hidden="true" /> : <Eye className="h-5 w-5" aria-hidden="true" />}
       </button>

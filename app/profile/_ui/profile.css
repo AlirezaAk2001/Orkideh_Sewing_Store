@@ -137,13 +137,12 @@
 .pf .btn-light { background: rgb(255 255 255 / 0.14); color: #fff; box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.22); }
 .pf .btn-light:hover { background: rgb(255 255 255 / 0.24); }
 .pf .btn-white { background: #fff; color: var(--plum); box-shadow: 0 12px 24px -12px rgb(0 0 0 / 0.5); }
-.pf .btn-white:hover { transform: translateY(-2px); }
 .pf .btn-soft-red { background: rgb(244 63 94 / 0.09); color: #e11d48; }
 .pf .btn-soft-red:hover { background: rgb(244 63 94 / 0.16); }
 .pf .btn:disabled { cursor: not-allowed; background: #e9e1ec; color: #a89bb0; box-shadow: none; }
 .pf .btn.sm { height: 36px; padding-inline: 14px; border-radius: 12px; font-size: 13px; }
-.pf .ib-btn { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 12px; color: var(--ink-2); background: rgb(255 255 255 / 0.7); box-shadow: 0 0 0 1px var(--line); transition: color 0.2s, background 0.2s, transform 0.3s var(--spring); }
-.pf .ib-btn:hover { color: var(--brand-700); background: #fff; transform: translateY(-2px); }
+.pf .ib-btn { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 12px; color: var(--ink-2); background: rgb(255 255 255 / 0.7); box-shadow: 0 0 0 1px var(--line); transition: color 0.2s, background 0.2s; }
+.pf .ib-btn:hover { color: var(--brand-700); background: #fff; }
 .pf .ib-btn.red:hover { color: #e11d48; }
 .pf .ib-btn svg { width: 17px; height: 17px; }
 

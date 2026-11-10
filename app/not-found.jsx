@@ -163,7 +163,7 @@ export default function NotFound() {
         <motion.div variants={itemVariants}>
           <Link
             href="/"
-            className="inline-flex items-center gap-1 bg-pink-600 text-white px-8 py-3 rounded-lg hover:bg-pink-700 shadow-lg"
+            className="btn-lift inline-flex items-center gap-1 bg-pink-600 text-white px-8 py-3 rounded-lg hover:bg-pink-700 shadow-lg"
           >
             <Icon path={mdiStoreOutline} size={1} />
             <span>بازگشت به فروشگاه</span>
