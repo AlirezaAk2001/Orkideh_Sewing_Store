@@ -194,8 +194,9 @@ function TrackTile({ order, onGo, onPay, paying }) {
 // می‌چرخد و دُمِ کم‌رنگ و کشیده پشتش می‌ماند. هر دور از ابتدای اولین قطعه (قطعهٔ اولِ فهرست کارت‌ها، مثلاً «جاری») شروع می‌شود و دُم از پشتِ آن به انتهای حلقه نمی‌پیچد (فاصلهٔ ۱۰۰۰ در dash). فقط روی خود قطعه‌ها دیده می‌شود (ماسک از همان قطعه‌ها). وقتی قطعه‌ای هاور شده فقط ماسکِ همان قطعه می‌ماند و خط فقط از ابتدا تا انتهای همان
 // قطعه می‌گذرد (مدت گذر به اندازهٔ طول قطعه، بعد مکث و دوباره). واحد همه‌چیز درصد محیط حلقه است (r = ۱۵٫۹۱۵۵ یعنی محیط ۱۰۰)؛ گردی انتهای قطعه ۲٫۶ واحد بیرون می‌زند، پس خط کمی زودتر
 // شروع می‌شود و تا بیرون‌رفتن کامل دُمش دیرتر تمام می‌شود
-const SWEEP_LAP = 2.5; // ثانیه برای یک دور کامل
-const SWEEP_REST = 0.52; // سهم گذر از هر چرخه (بقیه مکث)
+const SWEEP_LAP = 3.2; // ثانیه برای یک دور کامل؛ سرعت همیشه و همه‌جا همین است (۱۰۰ درصد محیط در این مدت)، با هاور و بدون هاور، از ابتدا تا انتها
+const SWEEP_MOVE = 0.6; // سهم حرکت از هر چرخه (بقیه مکث)؛ باید با درصدهای pf-sw-move در profile.css یکی باشد
+const SWEEP_MIN_CYCLE = 2.2; // کمترین طول چرخه (ثانیه)
 const SWEEP_TAIL = 15; // درصد محیط: طول دُم؛ سر خط این‌قدر جلوتر می‌رود تا دُم هم کامل از انتهای مسیر (یا قطعه) بیرون برود
 
 function DonutTile({ orders, onGo }) {
@@ -219,9 +220,13 @@ function DonutTile({ orders, onGo }) {
   const focus = segs.find((s) => s.k === hot);
   // خط نور: بدون هاور دور کل حلقه؛ با هاور فقط روی قطعهٔ هاورشده (اگر وضعیتی سفارش ندارد، قطعه‌ای نیست و خط هم نمی‌آید)
   const idleStart = (segs[0]?.from ?? 0) + 1; // دور از کمی داخل ابتدای اولین قطعه شروع می‌شود تا هسته‌ٔ خط از ابتدای مسیر بریده نشود
-  const sweepVars = focus
-    ? { "--s": focus.from - 2, "--e": focus.to + 2 + SWEEP_TAIL, "--d": `${Math.max(1.8, Math.max(0.7, (focus.dash + 4 + SWEEP_TAIL) * (SWEEP_LAP / 100)) / SWEEP_REST).toFixed(2)}s`, "--w": "0s" }
-    : { "--s": idleStart, "--e": 100 + SWEEP_TAIL, "--d": `${(((100 + SWEEP_TAIL - idleStart) * (SWEEP_LAP / 100)) / SWEEP_REST).toFixed(2)}s`, "--w": "1.8s" };
+  // سرعت ثابت است: مسافتی که سر خط می‌رود (درصد محیط) × (SWEEP_LAP / ۱۰۰) = زمان حرکت. قطعهٔ کوتاه به‌جای گذر کندتر مسافت اضافه می‌گیرد (بیرون از قطعه ماسک می‌شود و دیده نمی‌شود)، تا چرخه از SWEEP_MIN_CYCLE کوتاه‌تر نشود
+  const cycle = (travel) => `${((travel * (SWEEP_LAP / 100)) / SWEEP_MOVE).toFixed(3)}s`;
+  const sweepVars = (() => {
+    if (!focus) return { "--s": idleStart, "--e": 100 + SWEEP_TAIL, "--d": cycle(100 + SWEEP_TAIL - idleStart), "--w": "1.8s" };
+    const travel = Math.max(focus.dash + 4 + SWEEP_TAIL, (SWEEP_MIN_CYCLE * SWEEP_MOVE * 100) / SWEEP_LAP);
+    return { "--s": focus.from - 2, "--e": focus.from - 2 + travel, "--d": cycle(travel), "--w": "0s" };
+  })();
   const showSweep = arrived && segs.length > 0 && (!hot || focus);
   const dashes = ({ dash }) => (arrived ? `${dash.toFixed(2)} ${(100 - dash).toFixed(2)}` : "0 100");
 
