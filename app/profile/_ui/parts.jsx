@@ -103,12 +103,11 @@ export function MapArt({ seed = 0 }) {
   );
 }
 
-// قاب نقشه با حلقهٔ پالس و سنجاق شناور وسط آن
+// قاب نقشه با سنجاق شناور وسط آن؛ حلقهٔ پالسِ دور سنجاق خودِ .pin::before است (profile.css)
 export function MapBox({ seed, children }) {
   return (
     <div className="map">
       <MapArt seed={seed} />
-      <span className="rp" />
       <span className="pin">
         <Ic n="pin" />
       </span>

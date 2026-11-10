@@ -348,9 +348,11 @@
 .pf .pin { position: absolute; left: 50%; top: 46%; translate: -50% -100%; color: var(--brand-600); filter: drop-shadow(0 8px 8px rgb(190 24 93 / 0.4)); animation: pf-bob 2.6s ease-in-out infinite; }
 .pf .pin svg { position: static; width: 36px; height: 36px; fill: currentColor; stroke: #fff; stroke-width: 1.6; }
 .pf .pin::after { content: ""; position: absolute; left: 50%; bottom: -6px; translate: -50% 0; width: 16px; height: 6px; border-radius: 50%; background: rgb(190 24 93 / 0.35); animation: pf-shadow 2.6s ease-in-out infinite; }
+/* پالس: حلقه‌ای دور سرِ سنجاق که با هر رفت‌وبرگشت (۲٫۶ثانیه، هم‌ساعتِ pf-bob و pf-shadow) بیرون می‌رود و محو می‌شود. فرزندِ خودِ سنجاق است، پس همیشه هم‌مرکزِ آن می‌ماند؛ z-index منفی زیر آیکون می‌گذاردش. مرکز سر در آیکون ۳۶px (viewBox ۲۴): (۱۸، ۱۵) */
+.pf .pin::before { content: ""; position: absolute; z-index: -1; left: 50%; top: 15px; width: 52px; height: 52px; margin: -26px 0 0 -26px; box-sizing: border-box; border-radius: 50%; border: 2px solid var(--brand-500); opacity: 0; pointer-events: none; animation: pf-map-ring 2.6s ease-out infinite; }
+@keyframes pf-map-ring { 0% { transform: scale(0.6); opacity: 0; } 6% { opacity: 0.7; } 70%, 100% { transform: scale(1.9); opacity: 0; } }
 @keyframes pf-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
 @keyframes pf-shadow { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(0.6); opacity: 0.5; } }
-.pf .map .rp { position: absolute; left: 50%; top: 46%; width: 14px; height: 14px; margin: -7px; border-radius: 50%; border: 2px solid var(--brand-500); animation: pf-ring 2.4s ease-out infinite; }
 /* فلش همان جای فلش کاشی‌های دیگر: ۲۲px از گوشه (لبهٔ پدینگ کاشی) و وسط ارتفاع آیکون ۳۴px عنوان (۲۲ + ۱) */
 .pf .t-addr .t-go { position: absolute; top: 23px; inset-inline-end: 22px; z-index: 2; }
 .pf .addr-body { padding: 16px 18px 18px; }
