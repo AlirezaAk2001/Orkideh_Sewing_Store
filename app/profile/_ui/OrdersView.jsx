@@ -148,7 +148,7 @@ function OrderCard({ order, index, open, leaving, busy, onToggle, onPay, onAskDe
         </button>
       </div>
       {/* جزئیات: فقط چیزهایی که روی کارت نیست. فهرست کالاها فقط وقتی می‌آید که بیشتر از یک کالا یا تعداد بیشتر از ۱ باشد؛ برای یک کالای تک، نامش (لینک‌دار) بالای آدرس می‌نشیند.
-          بعد آدرس و کد پستی، شمارهٔ تماس، شیوهٔ ارسال، زمان ثبت، (تحویل‌شده/مرجوعی) تاریخ تحویل یا مرجوعی و (پرداخت‌شده) کد پیگیری با دکمهٔ کپی؛ و ریز مبلغ وقتی سفارش هزینهٔ ارسال دارد */}
+          بعد آدرس، کد پستی (جدا)، شمارهٔ تماس، شیوهٔ ارسال (اگر ثبت شده)، زمان ثبت، (تحویل‌شده/مرجوعی) تاریخ تحویل یا مرجوعی، (پرداخت‌شده) کد پیگیری با دکمهٔ کپی یا «ثبت نشده»؛ و ریز مبلغ برای همه */}
       <div className="detail" id={detailId}>
         <div>
           <div className="dbody">
@@ -179,23 +179,22 @@ function OrderCard({ order, index, open, leaving, busy, onToggle, onPay, onAskDe
                 </DInfo>
               )}
               <DInfo icon="pin" label="آدرس تحویل" wide>
-                {order.Address ? (
-                  <>
-                    {faDigits(order.Address.address)}
-                    <small>|</small>
-                    <small>کد پستی: {faDigits(order.Address.postalCode)}</small>
-                  </>
-                ) : (
-                  "آدرسی ثبت نشده است"
-                )}
+                {order.Address ? faDigits(order.Address.address) : "آدرسی ثبت نشده است"}
               </DInfo>
+              {/* کد پستی بخش جدا دارد (نه داخل متن آدرس)؛ کنار شمارهٔ تماس می‌نشیند */}
+              {order.Address && (
+                <DInfo icon="mail" label="کد پستی">
+                  <bdi dir="ltr">{faDigits(order.Address.postalCode) || "—"}</bdi>
+                </DInfo>
+              )}
               <DInfo icon="phone" label="شمارهٔ تماس">
                 <bdi dir="ltr">{faDigits(order.phoneNumber) || "—"}</bdi>
               </DInfo>
               {hasShipping && (
                 <DInfo icon="truck" label="شیوهٔ ارسال">
                   {order.shippingMethod}
-                  <small> · {costLabel(order.shippingCost, fa)}</small>
+                  <span>|</span>
+                  <span>{costLabel(order.shippingCost, fa)}</span>
                 </DInfo>
               )}
               <DInfo icon="cal" label="زمان ثبت سفارش">
@@ -206,31 +205,37 @@ function OrderCard({ order, index, open, leaving, busy, onToggle, onPay, onAskDe
                   {dateTimeFa(order.updatedAt)}
                 </DInfo>
               )}
-              {order.status !== "pending" && order.paymentTrackId && (
+              {/* سفارش پرداخت‌شده‌ای که کدی ندارد (داده‌ٔ قدیمی، نمونه یا تغییر دستی وضعیت توسط مدیر) «ثبت نشده» می‌نویسد، نه اینکه ردیف بی‌صدا نیاید */}
+              {order.status !== "pending" && (
                 <DInfo icon="receipt" label="کد پیگیری پرداخت">
-                  <bdi dir="ltr">{faDigits(order.paymentTrackId)}</bdi>
-                  <button type="button" className="ib-btn xs" onClick={() => copyTrack(order.paymentTrackId)} aria-label="کپی کد پیگیری پرداخت">
-                    <Ic n="copy" />
-                  </button>
+                  {order.paymentTrackId ? (
+                    <>
+                      <bdi dir="ltr">{faDigits(order.paymentTrackId)}</bdi>
+                      <button type="button" className="ib-btn xs" onClick={() => copyTrack(order.paymentTrackId)} aria-label="کپی کد پیگیری پرداخت">
+                        <Ic n="copy" />
+                      </button>
+                    </>
+                  ) : (
+                    <span className="na">ثبت نشده</span>
+                  )}
                 </DInfo>
               )}
             </dl>
-            {hasShipping && (
-              <div className="dsum">
-                <div>
-                  <span>جمع کالاها</span>
-                  <b>{toman(goodsTotal)}</b>
-                </div>
-                <div>
-                  <span>هزینهٔ ارسال</span>
-                  <b className={order.shippingCost > 0 ? undefined : "free"}>{costLabel(order.shippingCost, fa)}</b>
-                </div>
-                <div className="tot">
-                  <span>{order.status === "pending" ? "مبلغ قابل پرداخت" : "مبلغ پرداخت‌شده"}</span>
-                  <b>{toman(order.totalPrice)}</b>
-                </div>
+            {/* ریز مبلغ برای همهٔ سفارش‌ها؛ سفارش قدیمی که هزینهٔ ارسالش ثبت نشده در ردیف ارسال «ثبت نشده» می‌گیرد (مبلغ کل آن همان جمع کالاهاست) */}
+            <div className="dsum">
+              <div>
+                <span>جمع کالاها</span>
+                <b>{toman(goodsTotal)}</b>
               </div>
-            )}
+              <div>
+                <span>هزینهٔ ارسال</span>
+                {hasShipping ? <b className={order.shippingCost > 0 ? undefined : "free"}>{costLabel(order.shippingCost, fa)}</b> : <b className="na">ثبت نشده</b>}
+              </div>
+              <div className="tot">
+                <span>{order.status === "pending" ? "مبلغ قابل پرداخت" : "مبلغ پرداخت‌شده"}</span>
+                <b>{toman(order.totalPrice)}</b>
+              </div>
+            </div>
           </div>
         </div>
       </div>

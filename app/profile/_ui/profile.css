@@ -485,6 +485,9 @@
 .pf .dsum > div { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 13px; color: var(--ink-2); }
 .pf .dsum b { font-weight: 700; color: var(--ink); }
 .pf .dsum .free { color: #15803d; }
+/* «ثبت نشده»: مقداری که برای سفارش قدیمی وجود ندارد، کم‌رنگ و سبک */
+.pf .na { font-weight: 500; color: var(--ink-3); }
+.pf .dsum b.na { font-weight: 500; }
 .pf .dsum .tot { margin-top: 3px; padding-top: 10px; border-top: 1px dashed var(--line); font-size: 14px; font-weight: 700; color: var(--ink); }
 .pf .dsum .tot b { font-size: 16px; font-weight: 800; }
 @container app (max-width: 640px) { .pf .dinfo { grid-template-columns: minmax(0, 1fr); } .pf .dbody { margin-inline: 18px; } }
