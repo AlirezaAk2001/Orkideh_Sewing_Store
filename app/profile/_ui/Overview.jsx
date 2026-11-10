@@ -468,8 +468,12 @@ function CartTile({ items, count, onGo }) {
 function AddrTile({ addresses, onGo }) {
   const last = addresses[addresses.length - 1];
   return (
-    <article className="tile t-addr rise" style={{ "--i": 5 }} {...tileLink("addresses", "آدرس‌ها", onGo)}>
+    <article className="tile t-addr rise" style={{ "--i": 5 }} {...tileLink("addresses", "آدرس من، رفتن به آدرس‌های من", onGo)}>
       <MapBox seed={Math.max(0, addresses.length - 1)} />
+      {/* فلش گوشهٔ کاشی مثل کاشی‌های دیگر؛ این کاشی سرتاسر نقشه است و سرتیتر ندارد، پس فلش روی نقشه و سر جای همان فلش‌ها می‌نشیند (.t-addr .t-go در profile.css) */}
+      <span className="t-go">
+        <Ic n="arrowL" />
+      </span>
       <div className="addr-body">
         <div className="t-title" style={{ justifyContent: "space-between" }}>
           <span>آدرس من</span>

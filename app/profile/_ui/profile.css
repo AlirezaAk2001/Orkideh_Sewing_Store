@@ -351,6 +351,8 @@
 @keyframes pf-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
 @keyframes pf-shadow { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(0.6); opacity: 0.5; } }
 .pf .map .rp { position: absolute; left: 50%; top: 46%; width: 14px; height: 14px; margin: -7px; border-radius: 50%; border: 2px solid var(--brand-500); animation: pf-ring 2.4s ease-out infinite; }
+/* فلش همان جای فلش کاشی‌های دیگر: ۲۲px از گوشه (لبهٔ پدینگ کاشی) و وسط ارتفاع آیکون ۳۴px عنوان (۲۲ + ۱) */
+.pf .t-addr .t-go { position: absolute; top: 23px; inset-inline-end: 22px; z-index: 2; }
 .pf .addr-body { padding: 16px 18px 18px; }
 .pf .addr-body .t-title { margin-bottom: 6px; }
 .pf .addr-body p { font-size: 13px; color: var(--ink-2); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
