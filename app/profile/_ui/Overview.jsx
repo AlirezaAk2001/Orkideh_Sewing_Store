@@ -56,7 +56,7 @@ const STAGES = [
   { label: "پرداخت", icon: "card" },
   { label: "آماده‌سازی", icon: "box" },
   { label: "ارسال", icon: "truck" },
-  { label: "تحویل به شما", icon: "postman" },
+  { label: "تحویل به شما", icon: "handover" },
 ];
 
 // cur = مرحلهٔ فعلی؛ done = همهٔ مرحله‌ها تمام شده

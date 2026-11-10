@@ -260,11 +260,12 @@
 .pf .steps li.future .tx b { color: rgb(255 255 255 / 0.55); }
 /* جهت‌دار بودن آیکون کامیون: صفحه راست‌به‌چپ است و مراحل به چپ می‌روند، پس کامیون هم رو به چپ می‌رود (lucide آن را رو به راست می‌کشد) */
 .pf svg.lucide-truck { scale: -1 1; }
-/* پستچی: سر و بدنش توپُر است و بقیهٔ خط‌ها نازک؛ در نقطهٔ مرحله و کنار عنوان کاشی چند پیکسل بزرگ‌تر از آیکون‌های دیگر می‌شود تا شکل آدم گم نشود */
-.pf .dot svg.postman { width: 25px; height: 25px; stroke-width: 1.8; }
-.pf .t-title .ib svg.postman { width: 25px; height: 25px; }
+/* آیکون تحویل (جعبه و دست): همان منطق کامیون، دست بسته را به سمت چپ تحویل می‌دهد (در طرح اصلی به راست بود). دو تکهٔ توپُر دارد و خطش باید نازک بماند؛ در نقطهٔ مرحله و کنار عنوان کاشی چند پیکسل بزرگ‌تر از آیکون‌های دیگر کشیده می‌شود تا جزئیاتش باز بماند */
+.pf svg.handover { scale: -1 1; }
+.pf .dot svg.handover { width: 26px; height: 26px; stroke-width: 1.4; }
+.pf .t-title .ib svg.handover { width: 25px; height: 25px; stroke-width: 1.4; }
 /* روی گوشی پنج مرحله باید در یک ردیف جا شوند: نقطه‌ها کوچک‌تر و برچسب‌ها ریزتر، خط‌چین‌ها همان‌طور کامل. سوزن تزئینی هم برداشته می‌شود چون روی نقطهٔ مرحلهٔ بعد می‌افتاد (نقطهٔ فعلی حلقهٔ چشمک‌زن خودش را دارد) */
-@container app (max-width: 640px) { .pf .steps { --dot: 34px; --gap: 5px; } .pf .dot svg { width: 17px; height: 17px; } .pf .dot svg.postman { width: 21px; height: 21px; } .pf .needle { display: none; } .pf .steps .tx { margin-top: 9px; } .pf .steps .tx b { font-size: 11.5px; } .pf .steps .tx small { font-size: 10.5px; } }
+@container app (max-width: 640px) { .pf .steps { --dot: 34px; --gap: 5px; } .pf .dot svg { width: 17px; height: 17px; } .pf .dot svg.handover { width: 21px; height: 21px; } .pf .needle { display: none; } .pf .steps .tx { margin-top: 9px; } .pf .steps .tx b { font-size: 11.5px; } .pf .steps .tx small { font-size: 10.5px; } }
 @container app (max-width: 380px) { .pf .steps { --gap: 4px; } .pf .steps .tx b { font-size: 11px; } }
 .pf .trk-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; margin-top: 26px; padding-top: 20px; border-top: 1px dashed rgb(255 255 255 / 0.18); }
 .pf .trk-items { display: flex; align-items: center; gap: 14px; }

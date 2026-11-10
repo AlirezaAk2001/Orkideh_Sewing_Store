@@ -48,22 +48,14 @@ import {
   ZoomOut,
 } from "lucide-react";
 
-// پستچی در حال تحویل بسته (lucide آیکون پستچی ندارد): آدمِ کلاه‌دار رو به چپ با بسته‌ای مکعبی در دست. رو به چپ است چون جریان مراحل در صفحهٔ راست‌به‌چپ به چپ می‌رود.
-// سر و بدن توپُر و بسته خطی کشیده شده تا شکل آدم در ۲۰ تا ۲۵ پیکسل هم فوری خوانده شود (نسخهٔ کاملاً خطی در این اندازه فقط یک لکه بود)؛ اندازه و ضخامت خطش در profile.css (svg.postman) تنظیم می‌شود
-function Postman({ className = "" }) {
+// «تحویل به شما»: جعبه‌ای (قاب خطی با برچسب توپُر بالا) که دستی توپُر با انگشت اشاره آن را تحویل می‌دهد؛ lucide چنین آیکونی ندارد. شکلش را مالک از میان چند طرح انتخاب کرد.
+// خط‌ها نازک و دو تکهٔ توپُر (برچسب و دست) همان هویت آیکون‌اند؛ اندازه و ضخامت خطش در profile.css (svg.handover) تنظیم می‌شود
+function Handover({ className = "" }) {
   return (
-    <svg className={`postman ${className}`.trim()} viewBox="0 0 24 24" aria-hidden="true">
-      <g transform="translate(12 12) scale(1.12) translate(-10.7 -11.3)">
-        <circle cx="15" cy="5" r="2.4" fill="currentColor" />
-        <path d="M12 4.2c.5-2.2 1.6-3 3-3s2.5.8 3 3" />
-        <path d="M12 4.2H9.4" />
-        <path d="M13 9.8h4.2a1.2 1.2 0 0 1 1.2 1.2V16h-6.6v-5a1.2 1.2 0 0 1 1.2-1.2Z" fill="currentColor" />
-        <path d="M13.6 16v5M17.2 16l.4 5" />
-        <path d="M3 10.4 6.4 8.8l3.4 1.6v4.6L6.4 16.6 3 15Z" />
-        <path d="M6.4 8.8v7.8" />
-        <path d="M3 10.4 6.4 12l3.4-1.6" />
-        <path d="M12.4 12 9.8 12.6" />
-      </g>
+    <svg className={`handover ${className}`.trim()} viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M17.6 21H19.9a2 2 0 0 0 2-2V4.3a2 2 0 0 0-2-2H3.9L11.25 12.5 7.9 16.3 3 13v6a2 2 0 0 0 2 2H8.2" />
+      <path d="M10.1 2.3h4.9v4.5a.8.8 0 0 1-.8.8h-3.3a.8.8 0 0 1-.8-.8z" fill="currentColor" stroke="none" />
+      <path d="M9.4 17.7 13.2 14.5Q14.2 13.8 15.5 14.3L19.2 16Q20.6 16.8 19.7 17.8Q19.3 18.2 18.7 17.9L16.5 17.6 16.2 21.6Q16.1 22.6 15.1 22.6H11.4Q10.3 22.6 10.1 21.6Z" fill="currentColor" stroke="none" />
     </svg>
   );
 }
@@ -111,7 +103,7 @@ const ICONS = {
   loader: LoaderCircle,
   clipboard: ClipboardCheck,
   card: CreditCard,
-  postman: Postman,
+  handover: Handover,
   imageUp: ImageUp,
   sparkles: Sparkles,
   trash2: Trash2,
