@@ -122,8 +122,9 @@ function TrackTile({ order, onGo, onPay, paying }) {
       </div>
       <div className="trk-meta">
         <span className="trk-id">سفارش شمارهٔ {fa(order.userOrderNumber)}</span>
-        <span className={`chip ${order.status === "processing" ? "live" : ""}`}>
-          <i />
+        <span className="chip">
+          {/* نقطهٔ چیپِ «جاری» همان نقطهٔ تپندهٔ لجند کارت آمار سفارش‌ها و داشبورد ادمین است (beat-dot در globals.css)؛ وضعیت‌های دیگر نقطهٔ ساکن دارند */}
+          <i className={order.status === "processing" ? "beat-dot" : undefined} />
           {s.label}
         </span>
         <span className="trk-eta">
