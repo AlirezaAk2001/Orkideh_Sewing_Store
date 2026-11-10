@@ -6,10 +6,9 @@ import { Scissors, Spool } from "lucide-react";
 import Avatar from "@/app/components/Avatar";
 import { useCountUp } from "@/app/admin/_ui/useCountUp";
 import { compactText } from "@/app/admin/_dashboard/format";
-import { scrollBehavior } from "@/lib/motion";
 import { Ic } from "./icons";
 import { dateFa, dayFull, fa, greeting, spendingByMonth, toman } from "./format";
-import { MapBox, Pcard, ST, ST_KEYS, Stack, Thumb, countByStatus } from "./parts";
+import { MapBox, ST, ST_KEYS, Stack, Thumb, countByStatus } from "./parts";
 
 // شمارش تا مقدار با همان آهنگ طرح (۱٫۳ ثانیه)؛ با «کاهش حرکت» فوری
 function Count({ to, delay = 250 }) {
@@ -387,29 +386,37 @@ function SpendTile({ orders }) {
   const change = previous > 0 && total > 0 ? Math.round(((total - previous) / previous) * 100) : null;
   return (
     <article className="tile t-spend rise" style={{ "--i": 3 }}>
-      <div className="t-head">
-        <div className="t-title">
-          <span className="ib">
-            <Ic n="receipt" />
-          </span>
-          سفارش‌های ۶ ماه اخیر
+      {/* کاشی تمام‌عرض و دو ستونه: عنوان و مبلغ سمت راست، نمودار سمت چپ (روی گوشی زیر هم می‌آیند) */}
+      <div className="sp-info">
+        <div className="t-head">
+          <div className="t-title">
+            <span className="ib">
+              <Ic n="receipt" />
+            </span>
+            سفارش‌های ۶ ماه اخیر
+          </div>
+        </div>
+        <div className="sp-now">
+          <div className={total === 0 ? "spend-row none" : undefined}>
+            <span className="big">
+              <Count to={total} delay={700} />
+              <small>تومان</small>
+            </span>
+            {/* «خرید» (نه «سفارش»): فقط سفارش‌های جاری و تحویل‌شده حساب می‌شوند؛ ممکن است سفارشِ منتظر پرداخت یا مرجوعی داشته باشد */}
+            {total === 0 && <span className="nobuy">در ۶ ماه اخیر هیچ خریدی نداشته‌اید</span>}
+            {change != null && change !== 0 && (
+              <span className={`delta ${change < 0 ? "down" : ""}`} title="نسبت به شش ماه قبل از آن">
+                <Ic n="trend" />
+                {fa(Math.abs(change))}٪
+              </span>
+            )}
+          </div>
+          {change != null && change !== 0 && <p className="sp-cap">نسبت به شش ماه قبل از آن</p>}
         </div>
       </div>
-      <div className={total === 0 ? "spend-row none" : undefined}>
-        <span className="big">
-          <Count to={total} delay={700} />
-          <small>تومان</small>
-        </span>
-        {/* «خرید» (نه «سفارش»): فقط سفارش‌های جاری و تحویل‌شده حساب می‌شوند؛ ممکن است سفارشِ منتظر پرداخت یا مرجوعی داشته باشد */}
-        {total === 0 && <span className="nobuy">در ۶ ماه اخیر هیچ خریدی نداشته‌اید</span>}
-        {change != null && change !== 0 && (
-          <span className={`delta ${change < 0 ? "down" : ""}`} title="نسبت به شش ماه قبل از آن">
-            <Ic n="trend" />
-            {fa(Math.abs(change))}٪
-          </span>
-        )}
+      <div className="sp-chart">
+        <SpendChart months={months} />
       </div>
-      <SpendChart months={months} />
     </article>
   );
 }
@@ -421,7 +428,7 @@ function CartTile({ items, count, onGo }) {
   const top = [...items].sort((a, b) => b.price - a.price).slice(0, 3).reverse();
   const sum = items.reduce((s, it) => s + it.price * it.quantity, 0);
   return (
-    <article className="tile t-cart rise" style={{ "--i": 4 }} {...tileLink("cart", "سبد خرید", onGo)}>
+    <article className="tile t-cart rise" style={{ "--i": 5 }} {...tileLink("cart", "سبد خرید", onGo)}>
       <div className="t-head">
         <div className="t-title">
           <span className="ib">
@@ -472,7 +479,7 @@ function CartTile({ items, count, onGo }) {
 function AddrTile({ addresses, onGo }) {
   const last = addresses[addresses.length - 1];
   return (
-    <article className="tile t-addr rise" style={{ "--i": 5 }} {...tileLink("addresses", "آدرس من، رفتن به آدرس‌های من", onGo)}>
+    <article className="tile t-addr rise" style={{ "--i": 6 }} {...tileLink("addresses", "آدرس من، رفتن به آدرس‌های من", onGo)}>
       <MapBox seed={Math.max(0, addresses.length - 1)} />
       {/* فلش گوشهٔ کاشی مثل کاشی‌های دیگر؛ این کاشی سرتاسر نقشه است و سرتیتر ندارد، پس فلش روی نقشه و سر جای همان فلش‌ها می‌نشیند (.t-addr .t-go در profile.css) */}
       <span className="t-go">
@@ -493,12 +500,15 @@ function AddrTile({ addresses, onGo }) {
   );
 }
 
-function FavTile({ favorites, leavingId, onUnfav, onAdd }) {
-  const rail = useRef(null);
-  // جهت اسکرول در راست‌به‌چپ: «قبلی» به سمت شروع (راست) و «بعدی» به سمت چپ می‌رود
-  const slide = (d) => rail.current?.scrollBy({ left: d * 480, behavior: scrollBehavior() });
+// مثل کاشی سبد خرید: بادبزنی از تصویر کالاها (با قلب وسط)، نام آخرین کالای لیست و دکمهٔ رفتن به بخش علاقه‌مندی‌ها؛
+// حذف از علاقه‌مندی‌ها و افزودن به سبد در همان بخش انجام می‌شود (کارت‌های FavoritesView)
+function FavTile({ favorites, onGo }) {
+  // کالاهای تازه‌تر آخر لیست می‌آیند؛ سه‌تای آخر بادبزن می‌شوند و آخرین کالا جلو و وسط است
+  const shown = favorites.slice(-3);
+  const latest = favorites[favorites.length - 1];
+  const rest = favorites.length - 1;
   return (
-    <article className="tile t-fav rise" style={{ "--i": 6 }}>
+    <article className="tile t-fav rise" style={{ "--i": 4 }} {...tileLink("favorites", "علاقه‌مندی‌ها", onGo)}>
       <div className="t-head">
         <div className="t-title">
           <span className="ib">
@@ -509,25 +519,30 @@ function FavTile({ favorites, leavingId, onUnfav, onAdd }) {
             {fa(favorites.length)} کالا
           </span>
         </div>
-        {favorites.length > 0 && (
-          <div className="rail-ctl">
-            <button type="button" className="ib-btn" onClick={() => slide(1)} aria-label="قبلی">
-              <Ic n="chevR" />
-            </button>
-            <button type="button" className="ib-btn" onClick={() => slide(-1)} aria-label="بعدی">
-              <Ic n="chevL" />
-            </button>
-          </div>
-        )}
+        <span className="t-go">
+          <Ic n="arrowL" />
+        </span>
       </div>
-      {favorites.length ? (
-        <div className="rail" ref={rail}>
-          {favorites.map((item, i) => (
-            <Pcard key={item.id} item={item} index={i} leaving={leavingId === item.id} onUnfav={onUnfav} onAdd={onAdd} />
-          ))}
-        </div>
+      {latest ? (
+        <>
+          <div className="fan fav" data-n={shown.length}>
+            {shown.map((it) => (
+              <Thumb key={it.id} src={it.image} alt="" width={112} height={92} />
+            ))}
+            <span className="fan-heart" aria-hidden="true">
+              <Ic n="heart" />
+            </span>
+          </div>
+          <div className="fav-row">
+            <div className="fav-name">{latest.name}</div>
+            <div className="lbl">{rest > 0 ? `و ${fa(rest)} مورد دیگر` : latest.price ? `${fa(latest.price)} تومان` : "قیمت نامشخص"}</div>
+          </div>
+          <button type="button" className="btn btn-ghost" style={{ width: "100%" }} onClick={(e) => onGo("favorites", e.currentTarget.closest(".tile"))}>
+            مشاهدهٔ علاقه‌مندی‌ها <Ic n="arrowL" />
+          </button>
+        </>
       ) : (
-        <div className="empty" style={{ padding: "26px 20px" }}>
+        <div className="empty">
           <div className="em-ic">
             <Ic n="heart" />
           </div>
@@ -579,7 +594,7 @@ function Lead({ orders, cartCount }) {
 }
 
 // نمای کلی: سلام، جملهٔ خلاصه و کاشی‌های بنتو. هر کاشی داده‌ٔ زنده نشان می‌دهد و با کلیک به بخش خودش می‌رود؛ بنابراین «دسترسی سریع» جدا لازم نیست
-export default function Overview({ user, orders, cartItems, cartCount, favorites, addresses, payingId, leavingFav, onGo, onPay, onUnfav, onAdd }) {
+export default function Overview({ user, orders, cartItems, cartCount, favorites, addresses, payingId, onGo, onPay }) {
   const first = user?.name?.trim().split(/\s+/)[0] || "کاربر";
   const focus = orders && (orders.find((o) => o.status === "processing") ?? orders.find((o) => o.status === "pending") ?? orders[0] ?? null);
   const loading = orders == null;
@@ -657,7 +672,7 @@ export default function Overview({ user, orders, cartItems, cartCount, favorites
           <>
             <div className="tile skel t-track" style={{ minHeight: 340 }} aria-hidden="true" />
             <div className="tile skel t-donut" style={{ minHeight: 340 }} aria-hidden="true" />
-            <div className="tile skel t-spend" style={{ minHeight: 300 }} aria-hidden="true" />
+            <div className="tile skel t-spend" style={{ minHeight: 236 }} aria-hidden="true" />
           </>
         ) : (
           <>
@@ -666,9 +681,10 @@ export default function Overview({ user, orders, cartItems, cartCount, favorites
             <SpendTile orders={orders} />
           </>
         )}
+        {/* ردیف آخر: علاقه‌مندی‌ها، سبد خرید و آدرس (آمار سفارش‌ها همه بالاست) */}
+        <FavTile favorites={favorites} onGo={onGo} />
         <CartTile items={cartItems} count={cartCount} onGo={onGo} />
         <AddrTile addresses={addresses} onGo={onGo} />
-        <FavTile favorites={favorites} leavingId={leavingFav} onUnfav={onUnfav} onAdd={onAdd} />
       </div>
     </>
   );

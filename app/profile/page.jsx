@@ -161,11 +161,8 @@ function ProfileView() {
         favorites={favorites}
         addresses={addresses}
         payingId={payingId}
-        leavingFav={leavingFav}
         onGo={go}
         onPay={payOrder}
-        onUnfav={setAskFav}
-        onAdd={addCart}
       />
     ),
     orders: <OrdersView orders={orders} payingId={payingId} deletingId={deletingId} onPay={payOrder} onDelete={deleteOrder} />,

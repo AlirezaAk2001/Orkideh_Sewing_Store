@@ -116,7 +116,7 @@ export function MapBox({ seed, children }) {
   );
 }
 
-// کارت محصول (نوار علاقه‌مندی‌های نمای کلی و بخش علاقه‌مندی‌ها): قلب برای برداشتن، درصد تخفیف و دکمهٔ افزودن به سبد.
+// کارت محصول (بخش علاقه‌مندی‌ها): قلب برای برداشتن، درصد تخفیف و دکمهٔ افزودن به سبد.
 // slug ندارد = لینک ندارد؛ oldPrice و discount فقط برای کالای تخفیف‌دار می‌آیند
 export function Pcard({ item, index = 0, leaving = false, onUnfav, onAdd }) {
   const href = item.slug ? `/products/${item.slug}` : null;
