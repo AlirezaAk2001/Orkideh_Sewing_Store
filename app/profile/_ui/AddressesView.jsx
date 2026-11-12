@@ -138,7 +138,7 @@ export default function AddressesView() {
 
       <div className="agrid">
         {addresses.map((a, i) => (
-          <article className="tile acard" style={{ "--i": i }} key={a.id}>
+          <article className={`tile acard${addresses.length === 1 ? " solo" : ""}`} style={{ "--i": i }} key={a.id}>
             <MapBox seed={i} />
             <div className="abody">
               <h3>
@@ -159,16 +159,18 @@ export default function AddressesView() {
             </div>
           </article>
         ))}
-        {/* بدون هیچ آدرس، کاشی دعوت تمام عرض می‌شود */}
-        <button type="button" className="newa rise" style={{ "--i": addresses.length, gridColumn: addresses.length === 0 ? "1 / -1" : undefined }} onClick={() => openForm()}>
-          <span>
-            <span className="pl">
-              <Ic n="plus" />
+        {/* کاشی دعوت فقط وقتی آدرسی نیست (تمام عرض، تا صفحه خالی نماند؛ مثلاً وقتی از سبد خرید برای ثبت آدرس می‌آیند). با آدرس ثبت‌شده، دکمهٔ «آدرس جدید» بالای صفحه کافی است */}
+        {addresses.length === 0 && (
+          <button type="button" className="newa rise" style={{ "--i": 0, gridColumn: "1 / -1" }} onClick={() => openForm()}>
+            <span>
+              <span className="pl">
+                <Ic n="plus" />
+              </span>
+              <b>افزودن آدرس تازه</b>
+              <small>برای ارسال سریع‌تر سفارش‌ها</small>
             </span>
-            <b>افزودن آدرس تازه</b>
-            <small>برای ارسال سریع‌تر سفارش‌ها</small>
-          </span>
-        </button>
+          </button>
+        )}
       </div>
     </>
   );
