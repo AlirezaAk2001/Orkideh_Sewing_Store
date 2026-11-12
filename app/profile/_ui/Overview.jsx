@@ -7,19 +7,21 @@ import Avatar from "@/app/components/Avatar";
 import { useCountUp } from "@/app/admin/_ui/useCountUp";
 import { compactText } from "@/app/admin/_dashboard/format";
 import { Ic } from "./icons";
+import { useTileReveal } from "./useTileReveal";
 import { dateFa, dayFull, fa, greeting, spendingByMonth, toman } from "./format";
 import { MapBox, ST, ST_KEYS, Stack, Thumb, countByStatus } from "./parts";
 
-// شمارش تا مقدار با همان آهنگ طرح (۱٫۳ ثانیه)؛ با «کاهش حرکت» فوری
-function Count({ to, delay = 250 }) {
-  const v = useCountUp(to, { duration: 1300, delay });
+// شمارش تا مقدار با همان آهنگ طرح (۱٫۳ ثانیه)؛ با «کاهش حرکت» فوری. run=false: هنوز شروع نکن (کاشی هنوز به صفحه نرسیده)
+function Count({ to, delay = 250, run = true }) {
+  const v = useCountUp(to, { duration: 1300, delay, run });
   return <>{fa(Math.round(v))}</>;
 }
 
-// دو فریم بعد از نمایش true می‌شود؛ ترنزیشن‌های ورود (نخ بخیه، حلقه، نمودار) از حالت اولیه شروع شوند
-function useArrived() {
+// دو فریم بعد از نمایش true می‌شود؛ ترنزیشن‌های ورود (نخ بخیه، حلقه، نمودار) از حالت اولیه شروع شوند. enabled: تا کاشی به صفحه نرسیده (useTileReveal) شروع نمی‌شود
+function useArrived(enabled = true) {
   const [on, setOn] = useState(false);
   useEffect(() => {
+    if (!enabled) return undefined;
     let b;
     const a = requestAnimationFrame(() => {
       b = requestAnimationFrame(() => setOn(true));
@@ -28,9 +30,12 @@ function useArrived() {
       cancelAnimationFrame(a);
       cancelAnimationFrame(b);
     };
-  }, []);
+  }, [enabled]);
   return on;
 }
+
+// ویژگی‌های ورود با اسکرول برای <article> یک کاشی: ref، نشانهٔ data-in بعد از دیده‌شدن، و --i (جای کاشی در ردیف) × --e (۱ فقط برای کاشی‌های لحظهٔ بارگذاری) برای تأخیر پله‌ای
+const revealProps = (ref, rv, i) => ({ ref, "data-in": rv.shown ? "" : undefined, style: { "--i": i, "--e": rv.early ? 1 : 0 } });
 
 // کاشی قابل‌کلیک: کل کاشی به بخشش می‌رود (با morph)؛ دکمه‌ها و لینک‌های داخلش کار خودشان را می‌کنند.
 // anchor (اختیاری): شناسهٔ کارتی در بخش مقصد که صفحه تا آن می‌رود و دورش پالس می‌زند (go در page.jsx)
@@ -68,10 +73,11 @@ function flowOf(order) {
 }
 
 function TrackTile({ order, onGo, onPay, paying }) {
-  const arrived = useArrived();
+  const [revealRef, rv] = useTileReveal();
+  const arrived = useArrived(rv.shown);
   if (!order) {
     return (
-      <article className="tile t-track rise" style={{ "--i": 1 }}>
+      <article className="tile t-track reveal" {...revealProps(revealRef, rv, 1)}>
         <div className="t-head">
           <div className="t-title">
             <span className="ib">
@@ -110,7 +116,7 @@ function TrackTile({ order, onGo, onPay, paying }) {
   };
 
   return (
-    <article className="tile t-track rise" style={{ "--i": 1 }} {...tileLink("orders", "وضعیت سفارش، رفتن به سفارش‌ها", onGo, anchor)}>
+    <article className="tile t-track reveal" {...revealProps(revealRef, rv, 1)} {...tileLink("orders", "وضعیت سفارش، رفتن به سفارش‌ها", onGo, anchor)}>
       <div className="t-head">
         <div className="t-title">
           <span className="ib">
@@ -203,7 +209,8 @@ const SWEEP_MIN_CYCLE = 2.2; // کمترین طول چرخه (ثانیه)
 const SWEEP_TAIL = 15; // درصد محیط: طول دُم؛ سر خط این‌قدر جلوتر می‌رود تا دُم هم کامل از انتهای مسیر (یا قطعه) بیرون برود
 
 function DonutTile({ orders, onGo }) {
-  const arrived = useArrived();
+  const [revealRef, rv] = useTileReveal();
+  const arrived = useArrived(rv.shown);
   const [hot, setHot] = useState(null);
   const maskId = `pf-donut-${useId().replace(/[^a-zA-Z0-9]/g, "")}`;
   const counts = countByStatus(orders);
@@ -234,7 +241,7 @@ function DonutTile({ orders, onGo }) {
   const dashes = ({ dash }) => (arrived ? `${dash.toFixed(2)} ${(100 - dash).toFixed(2)}` : "0 100");
 
   return (
-    <article className="tile t-donut rise" style={{ "--i": 2 }} {...tileLink("orders", "آمار سفارش‌ها", onGo)}>
+    <article className="tile t-donut reveal" {...revealProps(revealRef, rv, 2)} {...tileLink("orders", "آمار سفارش‌ها", onGo)}>
       <div className="t-head">
         <div className="t-title">
           <span className="ib">
@@ -281,7 +288,7 @@ function DonutTile({ orders, onGo }) {
           </svg>
           <div className="mid">
             <b>
-              <Count to={total} delay={500} />
+              <Count to={total} delay={500} run={rv.shown} />
             </b>
             <span>سفارش</span>
           </div>
@@ -304,9 +311,9 @@ function DonutTile({ orders, onGo }) {
 
 /* ───────── نمودار سفارش‌های ۶ ماه اخیر (دست‌ساز، بدون کتابخانه) ───────── */
 
-function SpendChart({ months }) {
+function SpendChart({ months, shown }) {
   const ref = useRef(null);
-  const arrived = useArrived();
+  const arrived = useArrived(shown);
   const [w, setW] = useState(0);
   const [hover, setHover] = useState(null);
   const h = 150;
@@ -384,11 +391,12 @@ function SpendChart({ months }) {
 }
 
 function SpendTile({ orders }) {
+  const [revealRef, rv] = useTileReveal();
   const { months, total, previous } = spendingByMonth(orders);
   // تغییر نسبت به شش ماهِ پیش از آن؛ بدون سابقه یا وقتی در شش ماه اخیر هیچ خریدی نیست («۱۰۰٪ کاهش» کنار «۰ تومان» حرف تازه‌ای نمی‌زند)، نشان داده نمی‌شود
   const change = previous > 0 && total > 0 ? Math.round(((total - previous) / previous) * 100) : null;
   return (
-    <article className="tile t-spend rise" style={{ "--i": 3 }}>
+    <article className="tile t-spend reveal" {...revealProps(revealRef, rv, 3)}>
       {/* کاشی تمام‌عرض و دو ستونه: عنوان و مبلغ سمت راست، نمودار سمت چپ (روی گوشی زیر هم می‌آیند) */}
       <div className="sp-info">
         <div className="t-head">
@@ -402,7 +410,7 @@ function SpendTile({ orders }) {
         <div className="sp-now">
           <div className={total === 0 ? "spend-row none" : undefined}>
             <span className="big">
-              <Count to={total} delay={700} />
+              <Count to={total} delay={700} run={rv.shown} />
               <small>تومان</small>
             </span>
             {/* «خرید» (نه «سفارش»): فقط سفارش‌های جاری و تحویل‌شده حساب می‌شوند؛ ممکن است سفارشِ منتظر پرداخت یا مرجوعی داشته باشد */}
@@ -418,7 +426,7 @@ function SpendTile({ orders }) {
         </div>
       </div>
       <div className="sp-chart">
-        <SpendChart months={months} />
+        <SpendChart months={months} shown={rv.shown} />
       </div>
     </article>
   );
@@ -427,11 +435,12 @@ function SpendTile({ orders }) {
 /* ───────── سبد، آدرس و علاقه‌مندی‌ها ───────── */
 
 function CartTile({ items, count, onGo }) {
+  const [revealRef, rv] = useTileReveal();
   // گران‌ترین کالا وسط بادبزن است (آخرین تصویر روی بقیه می‌افتد)
   const top = [...items].sort((a, b) => b.price - a.price).slice(0, 3).reverse();
   const sum = items.reduce((s, it) => s + it.price * it.quantity, 0);
   return (
-    <article className="tile t-cart rise" style={{ "--i": 5 }} {...tileLink("cart", "سبد خرید", onGo)}>
+    <article className="tile t-cart reveal" {...revealProps(revealRef, rv, 5)} {...tileLink("cart", "سبد خرید", onGo)}>
       <div className="t-head">
         <div className="t-title">
           <span className="ib">
@@ -458,7 +467,7 @@ function CartTile({ items, count, onGo }) {
             <div>
               <div className="lbl">{fa(count)} کالا در سبد</div>
               <div className="big">
-                <Count to={sum} delay={600} />
+                <Count to={sum} delay={600} run={rv.shown} />
                 <small>تومان</small>
               </div>
             </div>
@@ -480,9 +489,10 @@ function CartTile({ items, count, onGo }) {
 }
 
 function AddrTile({ addresses, onGo }) {
+  const [revealRef, rv] = useTileReveal();
   const last = addresses[addresses.length - 1];
   return (
-    <article className="tile t-addr rise" style={{ "--i": 6 }} {...tileLink("addresses", "آدرس من، رفتن به آدرس‌های من", onGo)}>
+    <article className="tile t-addr reveal" {...revealProps(revealRef, rv, 6)} {...tileLink("addresses", "آدرس من، رفتن به آدرس‌های من", onGo)}>
       <MapBox seed={Math.max(0, addresses.length - 1)} />
       {/* فلش گوشهٔ کاشی مثل کاشی‌های دیگر؛ این کاشی سرتاسر نقشه است و سرتیتر ندارد، پس فلش روی نقشه و سر جای همان فلش‌ها می‌نشیند (.t-addr .t-go در profile.css) */}
       <span className="t-go">
@@ -506,12 +516,13 @@ function AddrTile({ addresses, onGo }) {
 // مثل کاشی سبد خرید: بادبزنی از تصویر کالاها (با قلب وسط)، نام آخرین کالای لیست و دکمهٔ رفتن به بخش علاقه‌مندی‌ها؛
 // حذف از علاقه‌مندی‌ها و افزودن به سبد در همان بخش انجام می‌شود (کارت‌های FavoritesView)
 function FavTile({ favorites, onGo }) {
+  const [revealRef, rv] = useTileReveal();
   // کالاهای تازه‌تر آخر لیست می‌آیند؛ سه‌تای آخر بادبزن می‌شوند و آخرین کالا جلو و وسط است
   const shown = favorites.slice(-3);
   const latest = favorites[favorites.length - 1];
   const rest = favorites.length - 1;
   return (
-    <article className="tile t-fav rise" style={{ "--i": 4 }} {...tileLink("favorites", "علاقه‌مندی‌ها", onGo)}>
+    <article className="tile t-fav reveal" {...revealProps(revealRef, rv, 4)} {...tileLink("favorites", "علاقه‌مندی‌ها", onGo)}>
       <div className="t-head">
         <div className="t-title">
           <span className="ib">

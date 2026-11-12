@@ -123,6 +123,10 @@
 
 /* ═════════ shared pieces ═════════ */
 .pf .rise { animation: pf-rise 0.8s var(--ease) both; animation-delay: calc(var(--i, 0) * 75ms); }
+/* کاشی‌های نمای کلی با اسکرول وارد می‌شوند (useTileReveal): تا data-in نیامده ناپیدا، بعد همان ورود .rise. تأخیر پله‌ای فقط برای کاشی‌های لحظهٔ بارگذاری (--e: ۱) است.
+   حالت ناپیدا فقط وقتی جاوااسکریپت فعال است و کاربر «کاهش حرکت» نخواسته، وگرنه همه‌چیز از اول دیده می‌شود */
+@media (scripting: enabled) and (prefers-reduced-motion: no-preference) { .pf .reveal:not([data-in]) { opacity: 0; transform: translateY(20px) scale(0.985); filter: blur(8px); } }
+.pf .reveal[data-in] { animation: pf-rise 0.8s var(--ease) both; animation-delay: calc(var(--i, 0) * 75ms * var(--e, 0)); }
 @keyframes pf-rise { from { opacity: 0; transform: translateY(20px) scale(0.985); filter: blur(8px); } to { opacity: 1; transform: none; filter: none; } }
 @keyframes pf-pop { 0% { transform: scale(0.4); } 55% { transform: scale(1.35); } 100% { transform: scale(1); } }
 @keyframes pf-spin { to { transform: rotate(360deg); } }
