@@ -450,7 +450,7 @@
 .pf .oc-mid { display: flex; align-items: center; gap: 16px; min-width: 0; flex-wrap: wrap; }
 .pf .oc-mid .stack img { width: 46px; height: 46px; border-radius: 14px; box-shadow: 0 0 0 3px #fff, 0 8px 14px -8px rgb(60 20 70 / 0.5); }
 .pf .oc-total { text-align: left; }
-.pf .oc-total small { display: block; font-size: 12px; color: var(--ink-3); }
+.pf .oc-qty { margin-bottom: 6px; }
 .pf .oc-total b { font-size: 17px; font-weight: 800; }
 .pf .oc-acts { display: flex; align-items: center; gap: 8px; padding: 0 24px 16px 20px; flex-wrap: wrap; }
 .pf .oc-acts .sp { margin-inline-start: auto; }

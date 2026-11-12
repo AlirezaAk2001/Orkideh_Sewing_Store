@@ -111,7 +111,12 @@ function OrderCard({ order, index, open, leaving, busy, onToggle, onPay, onAskDe
           </span>
         </div>
         <div className="oc-total">
-          <small>{fa(qty)} کالا</small>
+          {/* تعداد کالاها همان چیپ خاکستری کاشی‌های سبد و علاقه‌مندی‌های نمای کلی است */}
+          <div className="oc-qty">
+            <span className="chip" style={{ "--c": "var(--ink-3)" }}>
+              {fa(qty)} کالا
+            </span>
+          </div>
           <b>{toman(order.totalPrice)}</b>
         </div>
       </div>
