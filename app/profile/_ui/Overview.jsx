@@ -604,7 +604,8 @@ export default function Overview({ user, orders, cartItems, cartCount, favorites
 
   return (
     <>
-      {/* سربرگ: کارت صورتی پنل قبلی با قرقره و قیچی کم‌رنگ، نوار بخیهٔ متحرک پایین، آواتار (حلقهٔ چرخان + پالس + نام کامل در تولتیپ)، سلام و مشخصات حساب */}
+      {/* سربرگ: کارت صورتی پنل قبلی با قرقره و قیچی کم‌رنگ، نوار بخیهٔ متحرک پایین، آواتار (حلقهٔ چرخان + پالس + نام کامل در تولتیپ)، سلام و مشخصات حساب.
+          دکمهٔ «ادامهٔ خرید» اینجا نیست: با اسکرول همراه کارت می‌رفت؛ جایش «فروشگاه» در دوک چسبان کنار صفحه است (روی گوشی هدر سایت با لوگو راه فروشگاه است) */}
       <section className="hero auth-panel rise" style={{ "--i": 0 }} aria-labelledby="profile-title">
         <Spool className="pointer-events-none absolute -left-6 -top-8 h-44 w-44 -rotate-12 text-white/10" strokeWidth={1.25} aria-hidden="true" />
         <Scissors className="pointer-events-none absolute -bottom-10 left-1/3 hidden h-32 w-32 rotate-12 text-white/[0.07] md:block" strokeWidth={1.25} aria-hidden="true" />
@@ -664,10 +665,6 @@ export default function Overview({ user, orders, cartItems, cartCount, favorites
               )}
             </div>
           </div>
-          <Link href="/products" className="btn btn-white">
-            <Ic n="store" />
-            ادامهٔ خرید
-          </Link>
         </div>
       </section>
       <div className="bento">

@@ -198,8 +198,9 @@ function ProfileView() {
     <div className="pf" dir="rtl" data-tab={tab} onPointerMove={spotlight}>
       <ProfileBackdrop />
 
+      <Dock tab={tab} counts={counts} onNav={go} onLogout={() => setLogoutOpen(true)} />
+
       <div className="app">
-        <Dock tab={tab} counts={counts} onNav={go} onLogout={() => setLogoutOpen(true)} />
         <div className="main" id="profile-content">
           {views[tab]}
         </div>
