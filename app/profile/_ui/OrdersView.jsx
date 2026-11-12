@@ -25,12 +25,13 @@ const RANK = Object.fromEntries(FILTERS.slice(1).map(([k], i) => [k, i]));
 
 // فیلتر با قرص سفید لغزان: همان تب‌های قطعه‌ای پنل ادمین (.seg / .seg-tab در globals.css). قرص سفیدِ تب فعال شبه‌عنصر خود تب است و با هاور همراهش بالا می‌آید،
 // لغزشش بین تب‌ها را useSegmentSlide می‌دهد، و حرکت سه‌بعدی تب‌ها (بلندشدن، کج‌شدن، لبهٔ ضخامت با ButtonDepth) را خودکار دارد
+// تب وضعیتی که سفارشی ندارد (مثلاً «ناتمام» با شمارندهٔ ۰) نمایش داده نمی‌شود؛ «همه» همیشه هست
 function FilterSeg({ value, counts, onChange }) {
   const ref = useSegmentSlide(value);
 
   return (
     <div className="fseg seg" ref={ref}>
-      {FILTERS.map(([k, label]) => (
+      {FILTERS.filter(([k]) => k === "all" || counts[k] > 0).map(([k, label]) => (
         <button key={k} type="button" className="seg-tab" aria-pressed={value === k} data-on={value === k ? "" : undefined} onClick={() => onChange(k)}>
           {label}
           <em>{fa(counts[k])}</em>
@@ -260,6 +261,8 @@ export default function OrdersView({ orders, payingId, deletingId, onPay, onDele
   const loading = orders == null;
   const all = orders ?? [];
   const counts = { all: all.length, ...countByStatus(all) };
+  // تبی که خالی شد (مثلاً آخرین سفارش ناتمام حذف شد) از نوار برداشته می‌شود؛ پس به «همه» برمی‌گردیم تا فهرست خالیِ بدون تب فعال نماند
+  if (!loading && filter !== "all" && !counts[filter]) setFilter("all");
   const list = filter === "all" ? [...all].sort((a, b) => (RANK[a.status] ?? FILTERS.length) - (RANK[b.status] ?? FILTERS.length)) : all.filter((o) => o.status === filter);
 
   const toggle = (id) =>
