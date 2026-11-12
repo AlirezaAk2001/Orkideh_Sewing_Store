@@ -118,7 +118,16 @@ export default function CartView({ onGo }) {
         body: JSON.stringify({ phoneNumber: num, shippingMethod: ship.selected }),
       });
       const orderData = await orderRes.json();
-      if (!orderRes.ok) throw new Error(orderData.error || "خطا در ثبت سفارش");
+      if (!orderRes.ok) {
+        // بدون آدرس سفارشی ساخته نمی‌شود: به‌جای فقط یک پیام، کاربر را مستقیم به بخش آدرس‌ها می‌بریم تا ثبتش کند (سبد دست‌نخورده می‌ماند و سروری که پاسخ داده خودش مرجع است، نه فهرست آدرس‌های هنوز بارگذاری‌نشدهٔ مرورگر)
+        if (orderData.code === "ADDRESS_REQUIRED") {
+          toast(orderData.error || "لطفاً ابتدا آدرس خود را ثبت کنید", { icon: "⚠️" });
+          setPaying(false);
+          onGo("addresses");
+          return;
+        }
+        throw new Error(orderData.error || "خطا در ثبت سفارش");
+      }
 
       // مبلغ و آدرس برگشت از درگاه را سرور تعیین می‌کند؛ فقط شناسهٔ سفارش را می‌فرستیم
       const payRes = await fetch("/api/payment", {

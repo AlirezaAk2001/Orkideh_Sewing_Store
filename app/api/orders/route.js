@@ -74,7 +74,7 @@ export async function POST(req) {
     });
     if (!address) {
       return NextResponse.json(
-        { error: "لطفاً ابتدا آدرس خود را ثبت کنید", redirectTo: "/profile?tab=addresses" },
+        { error: "لطفاً ابتدا آدرس خود را ثبت کنید", code: "ADDRESS_REQUIRED", redirectTo: "/profile?tab=addresses" },
         { status: 400 }
       );
     }
