@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { Check, Eye, EyeOff, Loader2 } from "lucide-react";
 import { evaluatePassword } from "@/lib/passwordStrength";
 
-// فیلدهای فرم‌های ورود: برچسب بالای فیلد (مثال‌های placeholder همیشه دیده می‌شوند)، حلقهٔ فوکوس به رنگ برند و پیام خطا زیر فیلد
+// فیلدهای فرم‌های ورود: برچسب شناور داخل باکس (مثال‌های placeholder بعد از کلیک دیده می‌شوند)، حلقهٔ فوکوس به رنگ برند و پیام خطا زیر فیلد
 const INPUT =
   "h-11 w-full rounded-xl border bg-white px-3.5 text-sm text-gray-900 shadow-sm transition placeholder:text-gray-400 focus:outline-none focus:ring-4 disabled:bg-gray-50";
 const OK = "border-gray-300 focus:border-brand-500 focus:ring-brand-100";
@@ -127,7 +127,7 @@ export function PasswordInput({ invalid = false, className = "", meter = false, 
         onMouseDown={(e) => e.preventDefault()} // فوکوس در فیلد می‌ماند و راهنما نمی‌پرد
         aria-label={shown ? "پنهان کردن رمز" : "نمایش رمز"}
         aria-pressed={shown}
-        className="btn-flat absolute right-1.5 top-1/2 grid h-8 w-8 -translate-y-1/2 cursor-pointer place-items-center rounded-lg text-gray-400 transition hover:bg-gray-100 hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+        className="ff-eye btn-flat absolute right-1.5 top-1/2 grid h-8 w-8 -translate-y-1/2 cursor-pointer place-items-center rounded-lg text-gray-400 transition hover:bg-gray-100 hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
       >
         {shown ? <EyeOff className="h-5 w-5" aria-hidden="true" /> : <Eye className="h-5 w-5" aria-hidden="true" />}
       </button>
@@ -136,15 +136,19 @@ export function PasswordInput({ invalid = false, className = "", meter = false, 
   );
 }
 
-// برچسب + فیلد + پیام (خطا یا راهنما)؛ shake فیلد را هنگام خطا می‌لرزاند؛ index ترتیب ظاهر شدن تدریجی فیلدهاست.
+// فیلد + برچسب شناور + پیام (خطا یا راهنما)؛ shake فیلد را هنگام خطا می‌لرزاند؛ index ترتیب ظاهر شدن تدریجی فیلدهاست.
+// برچسب داخل باکس است و با فوکوس یا پر بودن روی لبهٔ باکس می‌رود (استایل در globals.css، کلاس‌های ff و ff-label)؛ باید بعد از فیلد بیاید و فیلد باید placeholder داشته باشد (برای تشخیص «پر بودن»).
 // فیلدی که فوکوس دارد بالاتر از همسایه‌ها می‌نشیند تا راهنمای بازشونده‌اش زیر فیلد بعدی نرود
 export function Field({ id, label, error, hint, shake = false, index = 0, className = "", children }) {
   return (
     <div className={`auth-rise relative focus-within:z-20 ${className}`} style={{ "--i": index }}>
-      <label htmlFor={id} className="mb-1.5 block text-sm font-medium text-gray-700">
-        {label}
-      </label>
-      <motion.div animate={shake ? SHAKE : {}}>{children}</motion.div>
+      <motion.div animate={shake ? SHAKE : {}} className="ff">
+        {children}
+        {/* mousedown را می‌گیریم تا کلیک روی عنوانِ فیلدِ فوکوس‌دار آن را بلور نکند (جزئیات در FL، app/profile/_ui/parts.jsx) */}
+        <label htmlFor={id} className="ff-label" onMouseDown={(e) => e.preventDefault()}>
+          {label}
+        </label>
+      </motion.div>
       {error ? (
         <p role="alert" className="auth-message mt-1.5 text-xs leading-5 text-red-600">
           {error}

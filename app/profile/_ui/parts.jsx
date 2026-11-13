@@ -37,6 +37,16 @@ export function ViewHead({ icon, title, sub, children }) {
   );
 }
 
+// عنوان شناور داخل باکس (کلاس fl در profile.css). mousedown را می‌گیریم تا فوکوس از فیلد نرود: وگرنه کلیک روی عنوانِ فیلدی که همین حالا فوکوس دارد آن را بلور می‌کرد،
+// عنوان به حالت استراحت برمی‌گشت و mouseup روی عنصر دیگری می‌افتاد، پس کلیک (و فوکوس دوباره) هرگز به فیلد نمی‌رسید
+export function FL({ htmlFor, children }) {
+  return (
+    <label htmlFor={htmlFor} onMouseDown={(e) => e.preventDefault()}>
+      {children}
+    </label>
+  );
+}
+
 export function Empty({ icon, title, text, children }) {
   return (
     <div className="tile empty rise" style={{ "--i": 1 }}>

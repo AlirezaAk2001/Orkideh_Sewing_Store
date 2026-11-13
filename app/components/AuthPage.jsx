@@ -431,9 +431,9 @@ export default function AuthPage() {
                 })}
               </div>
 
-              <form key={isLogin ? "login" : "register"} onSubmit={handleSubmit} noValidate className="space-y-3.5">
+              <form key={isLogin ? "login" : "register"} onSubmit={handleSubmit} noValidate className="space-y-5">
                 {!isLogin && (
-                  <div className="grid items-start gap-x-4 gap-y-3.5 sm:grid-cols-2">
+                  <div className="grid items-start gap-x-4 gap-y-5 sm:grid-cols-2">
                     <Field index={0} id="auth-fullName" label="نام و نام خانوادگی" error={nameError} shake={shakeFields.firstName || shakeFields.lastName}>
                       <TextInput
                         id="auth-fullName"
@@ -539,7 +539,7 @@ export default function AuthPage() {
                   </div>
                 ) : (
                   <div>
-                    <div className="grid items-start gap-x-4 gap-y-3.5 sm:grid-cols-2">
+                    <div className="grid items-start gap-x-4 gap-y-5 sm:grid-cols-2">
                       <Field index={3} id="auth-password" label="رمز عبور" shake={shakeFields.password}>
                         <PasswordInput
                           id="auth-password"
@@ -622,7 +622,7 @@ export default function AuthPage() {
                 title="تأیید ایمیل"
                 text={`کد تأیید به ایمیل ${tempAuth?.email || formData.email} ارسال شده است. لطفاً آن را بررسی کنید.`}
               />
-              <form onSubmit={handleVerifyCode} className="space-y-4">
+              <form onSubmit={handleVerifyCode} className="space-y-5">
                 <Field id="auth-code" label="کد تأیید">
                   <TextInput
                     id="auth-code"

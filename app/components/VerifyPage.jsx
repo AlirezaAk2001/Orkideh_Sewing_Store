@@ -193,7 +193,7 @@ export default function VerifyPage({ tempAuth }) {
           }
         />
 
-        <form onSubmit={handleVerifyCode} noValidate className="space-y-4">
+        <form onSubmit={handleVerifyCode} noValidate className="space-y-5">
           <Field id="verify-code" label="کد تأیید (۶ رقم)" error={showError ? codeError : ""} shake={shakeCode}>
             <TextInput
               id="verify-code"

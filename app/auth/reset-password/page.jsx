@@ -150,7 +150,7 @@ function ResetPasswordContent() {
           }
         />
 
-        <form onSubmit={handleSubmit} noValidate className="space-y-4">
+        <form onSubmit={handleSubmit} noValidate className="space-y-5">
           <Field index={0} id="reset-new" label="رمز عبور جدید" error={errors.newPassword} hint="حداقل ۸ کاراکتر شامل حرف انگلیسی، عدد و یک نماد مانند @">
             <PasswordInput
               id="reset-new"

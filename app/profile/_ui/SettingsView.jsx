@@ -9,7 +9,7 @@ import { evaluatePassword, STRENGTH_LABELS } from "@/lib/passwordStrength";
 import AvatarPicker from "./AvatarPicker";
 import { Ic } from "./icons";
 import { dateFa, fa } from "./format";
-import { ViewHead } from "./parts";
+import { FL, ViewHead } from "./parts";
 
 const usernameRegex = /^[a-zA-Z0-9_]+$/;
 const CHECK_DELAY = 600;
@@ -105,11 +105,12 @@ function UsernameCard() {
       </h3>
       <p className="sd">نام کاربری باید یکتا باشد؛ فقط حروف انگلیسی، عدد و _ مجاز است.</p>
       <form onSubmit={save} noValidate>
-        <div className="field">
-          <label htmlFor="un">نام کاربری</label>
+        {/* برچسب شناور: عنوان داخل باکس است و با فوکوس یا پر بودن روی لبه می‌رود؛ مثال (placeholder) بعد از کلیک دیده می‌شود. برچسب باید بعد از input بیاید (profile.css، کلاس fl) */}
+        <div className="field fl">
           <div className={`inp ${tone}`}>
             <Ic n="user" />
-            <input id="un" value={value} onChange={(e) => onChange(e.target.value)} style={ltr} autoComplete="off" spellCheck={false} />
+            <input id="un" value={value} onChange={(e) => onChange(e.target.value)} placeholder="aaa_123" style={ltr} autoComplete="off" spellCheck={false} />
+            <FL htmlFor="un">نام کاربری</FL>
           </div>
           <div className={`hint ${tone}`}>{msg}</div>
         </div>
@@ -171,30 +172,31 @@ function PasswordCard() {
       </h3>
       <p className="sd">برای امنیت بیشتر از رمزی قوی و منحصربه‌فرد استفاده کنید.</p>
       <form onSubmit={save} noValidate>
-        <div className="form">
-          <div className="field">
-            <label htmlFor="pw0">رمز عبور فعلی</label>
+        <div className="form flf">
+          <div className="field fl">
             <div className="inp">
               <Ic n="lock" />
-              <input id="pw0" type="password" value={cur} onChange={(e) => setCur(e.target.value)} style={ltr} autoComplete="current-password" />
+              {/* بدون مثال: placeholder=" " فقط برای اینکه :placeholder-shown «پر بودن» را تشخیص بدهد */}
+              <input id="pw0" type="password" value={cur} onChange={(e) => setCur(e.target.value)} placeholder=" " style={ltr} autoComplete="current-password" />
+              <FL htmlFor="pw0">رمز عبور فعلی</FL>
             </div>
           </div>
           <div className="row2">
-            <div className="field">
-              <label htmlFor="pw1">رمز عبور جدید</label>
+            <div className="field fl">
               <div className="inp">
                 <Ic n="lock" />
-                <input id="pw1" type={type} value={pw} onChange={(e) => setPw(e.target.value)} style={ltr} autoComplete="new-password" />
+                <input id="pw1" type={type} value={pw} onChange={(e) => setPw(e.target.value)} placeholder="A@123456" style={ltr} autoComplete="new-password" />
                 <button type="button" className="ib-btn" style={{ width: 30, height: 30, boxShadow: "none" }} onClick={() => setShow((v) => !v)} aria-label={show ? "پنهان کردن رمز" : "نمایش رمز"}>
                   <Ic n={show ? "eyeOff" : "eye"} />
                 </button>
+                <FL htmlFor="pw1">رمز عبور جدید</FL>
               </div>
             </div>
-            <div className="field">
-              <label htmlFor="pw2">تکرار رمز جدید</label>
+            <div className="field fl">
               <div className={`inp ${again ? (same ? "ok" : "bad") : ""}`}>
                 <Ic n="lock" />
-                <input id="pw2" type={type} value={again} onChange={(e) => setAgain(e.target.value)} style={ltr} autoComplete="new-password" />
+                <input id="pw2" type={type} value={again} onChange={(e) => setAgain(e.target.value)} placeholder="A@123456" style={ltr} autoComplete="new-password" />
+                <FL htmlFor="pw2">تکرار رمز جدید</FL>
               </div>
             </div>
           </div>

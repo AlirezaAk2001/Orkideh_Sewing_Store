@@ -9,7 +9,7 @@ import { useShipping } from "@/lib/useShipping";
 import ConfirmDialog from "./ConfirmDialog";
 import { Ic } from "./icons";
 import { fa, toEn, toman } from "./format";
-import { Empty, Thumb, Tick, ViewHead } from "./parts";
+import { Empty, FL, Thumb, Tick, ViewHead } from "./parts";
 
 const auth = () => ({ Authorization: `Bearer ${localStorage.getItem("token")}` });
 
@@ -248,11 +248,12 @@ export default function CartView({ onGo }) {
                 <small>تومان</small>
               </b>
             </div>
-            <div className="field">
-              <label htmlFor="phone">شمارهٔ تماس</label>
+            {/* برچسب شناور (کلاس fl در profile.css؛ رنگ‌های برشِ کارت تیره زیر .sum تعریف شده): عنوان داخل باکس و با فوکوس یا پر بودن روی لبه */}
+            <div className="field fl">
               <div className={`inp ${phone ? (phoneOk ? "ok" : "bad") : ""}`}>
                 <Ic n="phone" />
                 <input id="phone" type="tel" inputMode="tel" placeholder="09123456789" maxLength={11} autoComplete="off" value={phone} onChange={(e) => setPhone(e.target.value)} />
+                <FL htmlFor="phone">شمارهٔ تماس</FL>
               </div>
               <div className={`hint ${phone ? (phoneOk ? "ok" : "bad") : ""}`}>
                 {!phone ? "برای هماهنگی ارسال، شمارهٔ همراه را وارد کنید" : phoneOk ? "شمارهٔ معتبر است" : "شماره با ۰۹ شروع می‌شود و ۱۱ رقم است"}

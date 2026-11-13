@@ -568,8 +568,6 @@
 /* فرم آدرس: ردیف دوستونه (عنوان + کد پستی، پلاک + واحد)، لیست عنوان، برچسب با دکمهٔ «پر کردن از نقشه» */
 .pf .frow { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; align-items: start; }
 @container app (max-width: 640px) { .pf .frow { grid-template-columns: 1fr; } }
-.pf .inp select { flex: 1; min-width: 0; appearance: none; border: 0; outline: 0; background: transparent; color: inherit; font: inherit; font-size: 14px; padding-block: 12px; padding-inline-end: 22px; cursor: pointer; }
-.pf .inp.sel .chev { position: absolute; inset-inline-end: 14px; width: 16px; height: 16px; pointer-events: none; }
 .pf .linkbtn { font-size: 12.5px; font-weight: 800; color: var(--brand-700); text-decoration: underline; text-underline-offset: 3px; }
 /* انتخاب موقعیت روی نقشه (MapPicker): سنجاق ثابت وسط، نوار جستجو و GPS بالا. با کشیدن، سنجاق کمی بالا می‌آید و سایهٔ زیرش کوچک می‌شود */
 .pf .mp { position: relative; height: 300px; border-radius: 18px; overflow: hidden; isolation: isolate; background: linear-gradient(180deg, #fbeaf2, #f6e3ef); box-shadow: inset 0 0 0 1.5px rgb(80 30 90 / 0.12); }
@@ -635,13 +633,19 @@
 .pf .fa-inner { padding: 4px 4px 4px; }
 /* برچسب شناور (فرم آدرس): عنوان هر باکس داخل خود باکس است؛ با کلیک (فوکوس) یا پر بودن، کوچک می‌شود و روی لبهٔ بالای باکس می‌نشیند (لبه پشت آن بریده می‌شود)
    و مثال (placeholder) تازه آن‌وقت دیده می‌شود. «پر بودن» برای input/textarea همان :placeholder-shown است (همه placeholder دارند)، برای select کلاس has.
-   جایگاه‌ها منطقی‌اند (inset-inline-start) تا در راست‌به‌چپ درست بنشینند. نیم‌پایین پس‌زمینهٔ برچسب هم‌رنگ باکس است (--ibg) و نیم‌بالا شفاف، پس فقط لبهٔ باکس بریده دیده می‌شود */
+   جایگاه‌ها منطقی‌اند (inset-inline-start) تا در راست‌به‌چپ درست بنشینند.
+   پس‌زمینهٔ برچسب دو نیمه و کاملاً مات است: نیم‌بالا هم‌رنگ سطح پشت باکس (--cut) و نیم‌پایین هم‌رنگ داخل باکس (--cut-in). به‌این‌ترتیب هم لبهٔ باکس و هم سایهٔ فوکوس (۵px بیرون لبه) پشت برچسب بریده می‌شوند و سایه روی متن عنوان نمی‌افتد.
+   رنگ‌ها از پیکسل‌های واقعی صفحه نمونه‌برداری شده‌اند (سطح کارت‌های روشن ≈ rgb(254 249 253)، کارت تیرهٔ سبد خرید ≈ rgb(45 13 52)، داخل باکس ≈ سفید)؛ اگر رنگ زمینهٔ کارت‌ها عوض شد این‌ها را هم عوض کنید */
 .pf .form.flf { gap: 20px; }
-.pf .flf .frow { gap: 20px 14px; }
-.pf .fl .inp { --ibg: rgb(255 255 255 / 0.85); }
-.pf .fl .inp:focus-within { --ibg: #fff; }
+.pf .flf .frow, .pf .flf .row2 { gap: 20px 14px; }
+.pf .fl { --cut: rgb(254 249 253); }
+.pf .fl .inp { --cut-in: rgb(255 254 255); }
+.pf .fl .inp:focus-within { --cut-in: #fff; }
+/* فوکوس: سایهٔ نرم فقط «زیر» باکس (آفست پایین + spread منفی)، نه حلقهٔ دورتادور. بالای باکس هیچ سایه‌ای نمی‌افتد، پس عنوانِ روی لبه نه سایه روی متنش می‌گیرد و نه از بریدگیِ سایه قاب روشنی دورش پیدا می‌شود */
+.pf .fl .inp:focus-within:not(.ok, .bad) { box-shadow: inset 0 0 0 2px var(--brand-500), 0 12px 22px -12px color-mix(in oklab, var(--brand-500) 55%, transparent); }
 .pf .fl .inp label { position: absolute; z-index: 1; inset-inline-start: 44px; top: 24px; translate: 0 -50%; max-width: calc(100% - 58px); padding-inline: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 14px; font-weight: 500; line-height: 1.5; color: var(--ink-3); pointer-events: none; transition: top 0.22s var(--ease), inset-inline-start 0.22s var(--ease), font-size 0.22s var(--ease), color 0.2s; }
-.pf .fl .inp:focus-within label, .pf .fl .inp.has label, .pf .fl .inp :where(input:not(:placeholder-shown), textarea:not(:placeholder-shown)) ~ label { top: 0; inset-inline-start: 12px; max-width: calc(100% - 24px); padding-inline: 5px; font-size: 12px; font-weight: 800; color: var(--ink-2); background: linear-gradient(to bottom, transparent 50%, var(--ibg) 50%); pointer-events: auto; /* برچسبِ بالا رفته هم با کلیک فیلد را فوکوس می‌کند (در حالت استراحت شفاف است تا کلیک به select/input برسد) */ }
+.pf .fl .inp:where(.sel) label { inset-inline-start: 54px; max-width: calc(100% - 68px); } /* حالت استراحت: بعد از نشان آیکون ۳۰px */
+.pf .fl .inp:focus-within label, .pf .fl .inp.has label, .pf .fl .inp :where(input:not(:placeholder-shown), textarea:not(:placeholder-shown)) ~ label { top: 0; inset-inline-start: 12px; max-width: calc(100% - 24px); padding-inline: 5px; font-size: 12px; font-weight: 800; color: var(--ink-2); background: linear-gradient(to bottom, var(--cut) 50%, var(--cut-in) 50%); pointer-events: auto; /* برچسبِ بالا رفته هم با کلیک فیلد را فوکوس می‌کند (در حالت استراحت شفاف است تا کلیک به select/input برسد) */ }
 .pf .fl .inp:focus-within label { color: var(--brand-600); }
 .pf .fl .inp.bad label { color: #dc2626; }
 .pf .fl .inp input::placeholder, .pf .fl .inp textarea::placeholder { color: var(--ink-3); opacity: 0; transition: opacity 0.2s; }
@@ -649,9 +653,30 @@
 /* باکس چندخطی (آدرس): آیکون کنار خط اولِ متن می‌نشیند، نه وسط باکس، تا با عنوان، مثال و خط اول یک تراز باشد. مرکز خط اول = ۱۲px بالشتک + نصف قد خط (۲۳٫۸px) ≈ ۲۴px = ۱۴px فاصله + ۱۰px نصف آیکون */
 .pf .fl .inp.ta { align-items: flex-start; }
 .pf .fl .inp.ta svg.i { margin-top: 14px; }
-.pf .fl .inp select option { color: CanvasText; }
-.pf .fl .inp.sel:not(.has) select { color: transparent; }
-.pf .fl .inp.sel:not(.has):focus-within select { color: inherit; }
+/* ═════════ سلکت‌باکس اختصاصی (Select.jsx): باکس = یک دکمهٔ تمام‌عرض؛ فلش با باز شدن می‌چرخد؛ منوی کشویی کارت شیشه‌ای با آیکون هر گزینه ═════════ */
+.pf .sel-field { position: relative; }
+.pf .fl .inp.sel { cursor: pointer; }
+.pf .sel-btn { flex: 1; align-self: stretch; min-width: 0; display: flex; align-items: center; gap: 10px; margin-inline: -14px; padding-inline: 14px; border: 0; outline: 0; background: transparent; color: inherit; font: inherit; font-size: 14px; text-align: start; border-radius: inherit; }
+.pf .sel-ic { display: grid; place-items: center; flex: none; width: 30px; height: 30px; border-radius: 10px; background: linear-gradient(145deg, var(--brand-50), var(--brand-100)); box-shadow: inset 0 0 0 1px rgb(224 50 140 / 0.12); transition: background 0.2s; }
+.pf .inp .sel-ic svg { width: 18px; height: 18px; color: var(--brand-600); }
+.pf .sel-txt { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pf .fl .inp.sel:not(.has) .sel-txt { opacity: 0; transition: opacity 0.2s; }
+.pf .fl .inp.sel:not(.has):focus-within .sel-txt { opacity: 1; color: var(--ink-3); }
+.pf .inp.sel .chev { flex: none; width: 18px; height: 18px; transition: rotate 0.35s var(--spring), color 0.25s; }
+.pf .inp.sel.open .chev { rotate: 180deg; color: var(--brand-600); }
+.pf .sel-pop { position: absolute; z-index: 40; inset-inline: 0; top: calc(100% + 8px); margin: 0; padding: 6px; list-style: none; border-radius: 18px; background: rgb(255 255 255 / 0.97); backdrop-filter: blur(16px) saturate(1.4); box-shadow: 0 0 0 1px var(--line), 0 26px 46px -20px rgb(110 20 90 / 0.4), 0 8px 18px -10px rgb(110 20 90 / 0.18); transform-origin: top center; animation: pf-drop 0.26s var(--ease) both; }
+@keyframes pf-drop { from { opacity: 0; transform: translateY(-8px) scale(0.96); } to { opacity: 1; transform: none; } }
+.pf .sel-opt { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 13px; font-size: 14px; color: var(--ink); cursor: pointer; transition: background 0.15s, color 0.15s; }
+.pf .sel-opt + .sel-opt { margin-top: 2px; }
+.pf .sel-opt .sel-ic { background: #f6f1f8; box-shadow: none; }
+.pf .sel-opt .sel-ic svg { color: var(--ink-3); transition: color 0.15s; }
+.pf .sel-opt[data-active] { background: var(--brand-50); }
+.pf .sel-opt[data-active] .sel-ic { background: linear-gradient(145deg, #fff, var(--brand-100)); }
+.pf .sel-opt[data-active] .sel-ic svg { color: var(--brand-600); }
+.pf .sel-opt[aria-selected="true"] { font-weight: 800; color: var(--brand-700); }
+.pf .sel-opt[aria-selected="true"] .sel-ic { background: linear-gradient(145deg, var(--brand-50), var(--brand-100)); box-shadow: inset 0 0 0 1px rgb(224 50 140 / 0.12); }
+.pf .sel-opt[aria-selected="true"] .sel-ic svg { color: var(--brand-600); }
+.pf .sel-opt .tick { flex: none; width: 18px; height: 18px; color: var(--brand-600); }
 
 /* cart */
 .pf .cgrid { display: grid; grid-template-columns: minmax(0, 1fr) 372px; gap: 18px; align-items: start; }
@@ -693,6 +718,15 @@
 .pf .sum .inp svg { color: rgb(255 255 255 / 0.55); }
 .pf .sum .field label { color: rgb(255 255 255 / 0.8); }
 .pf .sum .hint { color: rgb(255 255 255 / 0.6); }
+/* برچسب شناور روی کارت تیره (باکس‌های fl): رنگ‌های برش همان سطح تیرهٔ کارت و داخل باکس شفاف‌سفید ۸٪/۱۴٪ روی آن است؛ رنگ برچسب‌ها روشن */
+.pf .sum .fl { --cut: rgb(45 13 52); }
+.pf .sum .fl .inp { --cut-in: rgb(61 32 68); }
+.pf .sum .fl .inp:focus-within { --cut-in: rgb(74 47 80); }
+.pf .sum .fl .inp:focus-within:not(.ok, .bad) { box-shadow: inset 0 0 0 2px #f9a8d4, 0 12px 22px -12px rgb(249 168 212 / 0.5); }
+.pf .sum .fl .inp label { color: rgb(255 255 255 / 0.55); }
+.pf .sum .fl .inp:focus-within label, .pf .sum .fl .inp input:not(:placeholder-shown) ~ label { color: rgb(255 255 255 / 0.8); }
+.pf .sum .fl .inp:focus-within label[for] { color: #f9a8d4; }
+.pf .sum .fl .inp.bad label[for] { color: #fca5a5; }
 /* شیوهٔ ارسال در خلاصهٔ سبد: کارت‌های رادیویی روی زمینهٔ تیره؛ گزینهٔ انتخاب‌شده حلقهٔ صورتی و نقطهٔ پر می‌گیرد. نقطهٔ رادیو دکمهٔ واقعی (input) است که شفاف روی کل کارت افتاده، پس صفحه‌کلید و صفحه‌خوان کار می‌کنند */
 .pf .ship { min-width: 0; margin: 8px 0 6px; padding: 0; border: 0; display: grid; gap: 8px; }
 .pf .ship legend { padding: 0; margin-bottom: 8px; font-size: 13px; font-weight: 700; color: rgb(255 255 255 / 0.8); }

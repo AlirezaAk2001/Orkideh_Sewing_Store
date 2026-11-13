@@ -2542,3 +2542,72 @@ html.sb-dragging * {
     transform: scale(1.06);
   }
 }
+
+/* برچسب شناور فیلدهای ورود/ثبت‌نام/فراموشی رمز/تأیید (Field در components/auth/AuthUI.jsx): عنوان داخل باکس است؛ با کلیک (فوکوس) یا پر بودن کوچک می‌شود و روی لبهٔ بالای باکس می‌نشیند
+   و مثال (placeholder) تازه بعد از کلیک دیده می‌شود. «پر بودن» همان input:not(:placeholder-shown) است (همهٔ فیلدها placeholder دارند)؛ :has چون فیلد رمز input را داخل یک ظرف دارد.
+   زمینهٔ کارت‌ها سفید است، پس پس‌زمینهٔ برچسب سفید مات می‌شود و هم لبهٔ باکس و هم حلقهٔ فوکوس (ring-4 بیرون لبه) را پشت برچسب می‌برد؛ سایه روی نوشتهٔ عنوان نمی‌افتد.
+   جایگاه‌ها منطقی‌اند (inset-inline-start) تا در راست‌به‌چپ درست بنشینند؛ فیلد رمز دکمهٔ چشم (.ff-eye) سمت راست دارد، پس برچسبِ حالت استراحت از زیر چشم کنار می‌رود. */
+.ff {
+  position: relative;
+}
+.ff-label {
+  position: absolute;
+  z-index: 1;
+  inset-inline-start: 15px;
+  top: 22px;
+  translate: 0 -50%;
+  max-width: calc(100% - 30px);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--color-gray-500);
+  pointer-events: none;
+  transition: top 0.22s cubic-bezier(0.22, 1, 0.36, 1), inset-inline-start 0.22s cubic-bezier(0.22, 1, 0.36, 1), font-size 0.22s cubic-bezier(0.22, 1, 0.36, 1), color 0.2s;
+}
+.ff:has(.ff-eye) .ff-label {
+  inset-inline-start: 47px;
+  max-width: calc(100% - 62px);
+}
+.ff:focus-within .ff-label,
+.ff:has(input:not(:placeholder-shown)) .ff-label,
+.ff:has(input:-webkit-autofill) .ff-label {
+  top: 0;
+  inset-inline-start: 11px;
+  max-width: calc(100% - 22px);
+  padding-inline: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-gray-700);
+  background: #fff;
+  pointer-events: auto; /* برچسبِ بالا رفته هم با کلیک فیلد را فوکوس می‌کند؛ در حالت استراحت شفاف است تا کلیک به خود فیلد برسد */
+}
+.ff:focus-within .ff-label {
+  color: var(--color-brand-600);
+}
+.ff:has(input[aria-invalid="true"]) .ff-label {
+  color: var(--color-red-600);
+}
+.ff input::placeholder {
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.ff input:focus::placeholder {
+  opacity: 1;
+}
+/* فوکوس: سایهٔ نرم فقط «زیر» باکس به‌جای حلقهٔ ring-4 دورتادور (که بالای باکس روی عنوانِ شناور می‌افتاد و بریدگی‌اش قاب روشنی دور عنوان می‌ساخت)؛ یک خط داخلی هم لبه را ۲px می‌کند.
+   بدون این‌ها هم ring-4 کلاس‌های TextInput می‌ماند؛ این قاعده (بدون لایه) روی آن‌ها برنده است. وضعیت نامعتبر قرمز می‌ماند. */
+.ff input:focus {
+  box-shadow: inset 0 0 0 1px var(--color-brand-500), 0 12px 22px -12px color-mix(in oklab, var(--color-brand-500) 55%, transparent);
+}
+.ff input[aria-invalid="true"]:focus {
+  box-shadow: inset 0 0 0 1px var(--color-red-500), 0 12px 22px -12px color-mix(in oklab, var(--color-red-500) 55%, transparent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .ff-label,
+  .ff input::placeholder {
+    transition: none;
+  }
+}

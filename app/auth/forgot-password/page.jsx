@@ -62,7 +62,7 @@ export default function ForgotPasswordPage() {
           text="لطفاً ایمیل خود را وارد کنید. لینک تأییدیه رمز عبور به ایمیل شما ارسال خواهد شد."
         />
 
-        <form onSubmit={handleSubmit} noValidate className="space-y-4">
+        <form onSubmit={handleSubmit} noValidate className="space-y-5">
           <Field id="forgot-email" label="ایمیل">
             <TextInput
               id="forgot-email"

@@ -9,7 +9,8 @@ import { scrollBehavior } from "@/lib/motion";
 import { PenIcon, TrashCan } from "@/app/components/ActionIcons";
 import { Ic } from "./icons";
 import { fa, toEn } from "./format";
-import { MapBox, ViewHead } from "./parts";
+import { FL, MapBox, ViewHead } from "./parts";
+import Select from "./Select";
 import { MAP_KEY, reverseGeocode } from "./mapClient";
 
 // SDK نقشه (حدود ۱٫۹ مگابایت) فقط در مرورگر و فقط بعد از اولین بازشدن فرم بار می‌شود
@@ -27,6 +28,12 @@ const MapPicker = dynamic(() => import("./MapPicker"), {
 const MIN_TEXT = 5;
 const PRESETS = ["خانه", "محل کار"];
 const OTHER = "دیگر";
+// گزینه‌های سلکت‌باکس عنوان (Select.jsx)؛ «دیگر…» کادر عنوان دلخواه را باز می‌کند
+const TITLE_OPTIONS = [
+  { value: "خانه", label: "خانه", icon: "home" },
+  { value: "محل کار", label: "محل کار", icon: "briefcase" },
+  { value: OTHER, label: "دیگر…", icon: "pin" },
+];
 const TEHRAN = { lat: 35.6892, lng: 51.389, zoom: 12 };
 
 // نوع عنوان در لیست: «خانه»، «محل کار»، «دیگر» (متن دلخواه) یا خالی (آدرس قدیمی بی‌عنوان)
@@ -261,26 +268,7 @@ export default function AddressesView() {
 
                 {/* برچسب هر باکس داخل خود باکس است (کلاس fl در profile.css): با فوکوس یا پر بودن روی لبهٔ باکس می‌رود و مثال placeholder آن‌وقت دیده می‌شود. برچسب باید بعد از input/textarea بیاید (انتخابگر هم‌نیای ~) و برای select کلاس has نشانهٔ «انتخاب شده» است */}
                 <div className="frow">
-                  <div className="field fl">
-                    <div className={`inp sel ${kind ? "has" : ""}`}>
-                      <Ic n={kind === OTHER ? "pin" : titleIcon(kind)} />
-                      <select id="a-title" value={kind} onChange={(e) => setKind(e.target.value)}>
-                        {kind === "" && (
-                          <option value="" disabled>
-                            انتخاب کنید
-                          </option>
-                        )}
-                        {PRESETS.map((p) => (
-                          <option key={p} value={p}>
-                            {p}
-                          </option>
-                        ))}
-                        <option value={OTHER}>دیگر…</option>
-                      </select>
-                      <Ic n="chevD" className="chev" />
-                      <label htmlFor="a-title">عنوان آدرس</label>
-                    </div>
-                  </div>
+                  <Select id="a-title" label="عنوان آدرس" value={kind} onChange={setKind} options={TITLE_OPTIONS} />
                   <div className="field fl">
                     <div className={`inp ${postal ? (postalOk ? "ok" : "bad") : ""}`}>
                       <Ic n="mail" />
@@ -290,11 +278,11 @@ export default function AddressesView() {
                         maxLength={10}
                         value={postal}
                         onChange={(e) => setPostal(e.target.value)}
-                        placeholder="۱۰ رقم، بدون خط تیره"
+                        placeholder={"‏۱۰ رقم، بدون خط تیره" /* ‏ = RLM: باکس چپ‌به‌راست است و بدون آن «۱۰» آخر جمله می‌افتاد */}
                         style={{ direction: "ltr", textAlign: "right" }}
                         autoComplete="off"
                       />
-                      <label htmlFor="a-pc">کد پستی</label>
+                      <FL htmlFor="a-pc">کد پستی</FL>
                     </div>
                     <div className={`hint ${postal ? (postalOk ? "ok" : "bad") : ""}`}>{postal && !postalOk ? "کد پستی باید ۱۰ رقم باشد" : ""}</div>
                   </div>
@@ -305,7 +293,7 @@ export default function AddressesView() {
                     <div className="inp">
                       <Ic n="pencil" />
                       <input id="a-title-custom" maxLength={40} value={custom} onChange={(e) => setCustom(e.target.value)} placeholder="مثلاً خانهٔ مادربزرگ" autoComplete="off" />
-                      <label htmlFor="a-title-custom">عنوان دلخواه</label>
+                      <FL htmlFor="a-title-custom">عنوان دلخواه</FL>
                     </div>
                   </div>
                 )}
@@ -314,7 +302,7 @@ export default function AddressesView() {
                   <div className="inp ta">
                     <Ic n="pin" />
                     <textarea id="a-text" ref={textRef} rows={2} value={text} onChange={(e) => setValue(e.target.value, true)} placeholder="استان، شهر، خیابان، کوچه و …" />
-                    <label htmlFor="a-text">آدرس</label>
+                    <FL htmlFor="a-text">آدرس</FL>
                   </div>
                   {geoText && text.trim() !== geoText && (
                     <div className="hint">
@@ -330,14 +318,14 @@ export default function AddressesView() {
                     <div className="inp">
                       <Ic n="plate" />
                       <input id="a-plate" maxLength={20} value={plate} onChange={(e) => setPlate(e.target.value)} placeholder="مثلاً ۱۲" autoComplete="off" />
-                      <label htmlFor="a-plate">پلاک</label>
+                      <FL htmlFor="a-plate">پلاک</FL>
                     </div>
                   </div>
                   <div className="field fl">
                     <div className="inp">
                       <Ic n="door" />
                       <input id="a-unit" maxLength={20} value={unit} onChange={(e) => setUnit(e.target.value)} placeholder="مثلاً ۳ (اگر دارد)" autoComplete="off" />
-                      <label htmlFor="a-unit">واحد</label>
+                      <FL htmlFor="a-unit">واحد</FL>
                     </div>
                   </div>
                 </div>
