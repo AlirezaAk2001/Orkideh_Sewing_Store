@@ -646,6 +646,9 @@
 .pf .fl .inp.bad label { color: #dc2626; }
 .pf .fl .inp input::placeholder, .pf .fl .inp textarea::placeholder { color: var(--ink-3); opacity: 0; transition: opacity 0.2s; }
 .pf .fl .inp input:focus::placeholder, .pf .fl .inp textarea:focus::placeholder { opacity: 1; }
+/* باکس چندخطی (آدرس): آیکون کنار خط اولِ متن می‌نشیند، نه وسط باکس، تا با عنوان، مثال و خط اول یک تراز باشد. مرکز خط اول = ۱۲px بالشتک + نصف قد خط (۲۳٫۸px) ≈ ۲۴px = ۱۴px فاصله + ۱۰px نصف آیکون */
+.pf .fl .inp.ta { align-items: flex-start; }
+.pf .fl .inp.ta svg.i { margin-top: 14px; }
 .pf .fl .inp select option { color: CanvasText; }
 .pf .fl .inp.sel:not(.has) select { color: transparent; }
 .pf .fl .inp.sel:not(.has):focus-within select { color: inherit; }

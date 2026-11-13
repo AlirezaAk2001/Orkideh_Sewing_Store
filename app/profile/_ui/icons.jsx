@@ -6,7 +6,6 @@ import {
   Copy,
   CreditCard,
   DoorOpen,
-  Hash,
   LocateFixed,
   Search,
   ChevronDown,
@@ -68,6 +67,18 @@ function Handover({ className = "" }) {
   );
 }
 
+// «پلاک»: تابلوی شمارهٔ ساختمان با دو رقم؛ lucide آیکون شمارهٔ پلاک ندارد (Hash نشانهٔ #، و House با آیکون عنوان «خانه» اشتباه می‌شد).
+// رقم‌ها با همان خط نازک آیکون‌ها کشیده شده‌اند و در اندازهٔ ۲۰ پیکسل پنل خوانا می‌مانند
+function Plate({ className = "" }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
+      <rect x="2.5" y="4.5" width="19" height="15" rx="3.5" />
+      <path d="M7.9 10.2 9.9 8.8V15.6" />
+      <path d="M11.9 10.3C12.2 8.2 15.9 8.2 15.9 10.5 15.9 12.6 12.1 13.6 11.8 15.6H16.1" />
+    </svg>
+  );
+}
+
 // آیکون‌های پنل با همان نام کوتاهی که طرح استفاده می‌کند. ظاهرشان (اندازه، ضخامت خط، گوشه‌ها) از .pf svg.i در profile.css می‌آید
 const ICONS = {
   dash: LayoutDashboard,
@@ -124,7 +135,7 @@ const ICONS = {
   zoomOut: ZoomOut,
   search: Search,
   locate: LocateFixed,
-  hash: Hash,
+  plate: Plate,
   door: DoorOpen,
 };
 

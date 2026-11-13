@@ -311,7 +311,7 @@ export default function AddressesView() {
                 )}
 
                 <div className="field fl">
-                  <div className="inp">
+                  <div className="inp ta">
                     <Ic n="pin" />
                     <textarea id="a-text" ref={textRef} rows={2} value={text} onChange={(e) => setValue(e.target.value, true)} placeholder="استان، شهر، خیابان، کوچه و …" />
                     <label htmlFor="a-text">آدرس</label>
@@ -328,7 +328,7 @@ export default function AddressesView() {
                 <div className="frow">
                   <div className="field fl">
                     <div className="inp">
-                      <Ic n="hash" />
+                      <Ic n="plate" />
                       <input id="a-plate" maxLength={20} value={plate} onChange={(e) => setPlate(e.target.value)} placeholder="مثلاً ۱۲" autoComplete="off" />
                       <label htmlFor="a-plate">پلاک</label>
                     </div>
@@ -374,7 +374,7 @@ export default function AddressesView() {
                   </span>
                   {a.plate && (
                     <span className="pc plain">
-                      <Ic n="hash" />
+                      <Ic n="plate" />
                       پلاک {toPersianDigits(a.plate)}
                     </span>
                   )}
