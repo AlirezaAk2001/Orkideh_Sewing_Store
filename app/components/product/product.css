@@ -163,3 +163,78 @@ a.pd-chip:hover { color: var(--b700); border-color: var(--b200); background: var
 .pd-phone small { display: block; font-size: 11.5px; line-height: 1.3; color: var(--ink3); }
 .pd-phone b { display: block; direction: ltr; text-align: right; font-size: 14px; font-weight: 700; line-height: 1.3; }
 @media (max-width: 639px) { .pd-phones { grid-template-columns: 1fr; } }
+.pd-sum small { font-size: 12.5px; }
+
+/* ═════════ ورود نرم بخش‌ها هنگام اسکرول (Reveal.jsx) ═════════
+   بخش تا وقتی به آن نرسیده‌ایم ناپیدا می‌ماند و با رسیدن (صفت data-in) یک بار نرم بالا می‌آید؛ کاشی‌های داخلش (.pd-st) پله‌ای با --i می‌آیند.
+   فقط وقتی جاوااسکریپت روشن است و «کاهش حرکت» نیست؛ وگرنه همه‌چیز از اول دیده می‌شود (مثل .pf .reveal پروفایل). */
+.pd-anchor { scroll-margin-top: 160px; }
+@media (scripting: enabled) and (prefers-reduced-motion: no-preference) {
+  .pd-reveal { transition: opacity 0.7s var(--ease), translate 0.7s var(--ease); }
+  .pd-reveal:not([data-in]) { opacity: 0; translate: 0 26px; }
+  .pd-reveal:not([data-in]) .pd-st { opacity: 0; }
+  .pd-reveal[data-in] .pd-st { animation: pd-rise 0.6s var(--ease) backwards; animation-delay: calc(var(--i, 0) * 70ms + 120ms); }
+}
+
+/* ═════════ نوار چسبان بخش‌ها (SectionNav.jsx) ═════════
+   زیر هدر چسبان می‌ماند (top را خود کامپوننت از ارتفاع هدر می‌گذارد). سمت راست تب‌ها با خط لغزان، سمت چپ خرید فشرده که وقتی دکمهٔ اصلی خرید از دید رفت می‌آید */
+.pd-snav { position: sticky; z-index: 30; display: flex; align-items: center; gap: 8px; height: 58px; margin: 30px 0 22px; padding: 0 8px; border-radius: 22px; background: rgb(255 255 255 / 0.88); backdrop-filter: blur(16px) saturate(1.5);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.9), 0 0 0 1px var(--line), 0 18px 34px -22px rgb(110 20 90 / 0.5); }
+.pd-tabs { position: relative; display: flex; height: 100%; min-width: 0; overflow-x: auto; scrollbar-width: none; }
+.pd-tabs::-webkit-scrollbar { display: none; }
+.pd-tabs a { position: relative; display: flex; align-items: center; gap: 7px; padding: 0 16px; font-size: 14px; font-weight: 600; color: var(--ink2); white-space: nowrap; transition: color 0.2s; }
+.pd-tabs a:hover, .pd-tabs a[aria-current="true"] { color: var(--b700); }
+.pd-tab-n { flex: none; min-width: 22px; padding: 0 6px; border-radius: 999px; background: var(--b100); box-shadow: 0 0 0 1px var(--b200); color: var(--b700); font-size: 12px; font-weight: 700; line-height: 20px; text-align: center; }
+.pd-ink { position: absolute; bottom: 7px; left: 0; width: 0; height: 3px; border-radius: 3px; background: linear-gradient(90deg, var(--b400), var(--b600)); pointer-events: none; }
+@media (prefers-reduced-motion: no-preference) { .pd-ink[data-ready] { transition: transform 0.45s var(--ease), width 0.45s var(--ease); } }
+.pd-mini { display: flex; align-items: center; gap: 12px; margin-inline-start: auto; padding-inline-start: 8px; opacity: 0; translate: 0 8px; pointer-events: none; transition: opacity 0.3s, translate 0.3s var(--ease); }
+.pd-mini.show { opacity: 1; translate: none; pointer-events: auto; }
+.pd-mini-img { position: relative; display: block; flex: none; width: 40px; height: 40px; overflow: hidden; border-radius: 12px; background: #f6eef3; }
+.pd-mini-name { max-width: 190px; overflow: hidden; font-size: 13px; font-weight: 700; line-height: 1.3; text-overflow: ellipsis; white-space: nowrap; }
+.pd-mini-price { display: block; font-size: 12.5px; font-weight: 700; color: var(--b600); }
+.pd-mini-btn { display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px; border-radius: 13px; color: #fff; font-size: 13.5px; font-weight: 700; white-space: nowrap; background: linear-gradient(135deg, var(--b500), var(--b700)); box-shadow: 0 12px 20px -12px rgb(214 20 120 / 0.8); }
+.pd-mini-btn--view { background: linear-gradient(135deg, #3a1442, var(--plum)); box-shadow: 0 12px 20px -14px rgb(42 11 48 / 0.8); }
+.pd-mini-btn--out { background: #9ca3af; box-shadow: none; }
+@media (max-width: 1023px) { .pd-mini-name { display: none; } }
+@media (max-width: 767px) { .pd-mini { display: none; } }
+@media (max-width: 639px) { .pd-snav { margin: 22px 0 18px; padding: 0 4px; background: rgb(255 255 255 / 0.96); } .pd-tabs a { padding: 0 9px; gap: 5px; font-size: 13px; } }
+
+/* ═════════ بخش‌ها: پنل سفید، تیتر با آیکون ═════════ */
+.pd-sections { display: flex; flex-direction: column; gap: 22px; }
+.pd-panel { padding: 26px; border-radius: 28px; background: #fff; box-shadow: var(--sh), 0 0 0 1px var(--line); }
+.pd-sec-h { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+.pd-sec-h h2 { font-size: 22px; font-weight: 800; line-height: 1.4; }
+.pd-sec-i { display: grid; flex: none; place-items: center; width: 42px; height: 42px; border-radius: 14px; background: var(--b50); color: var(--b600); }
+.pd-sec-i svg { width: 20px; height: 20px; }
+@media (max-width: 639px) { .pd-panel { padding: 20px; border-radius: 24px; } .pd-sec-h h2 { font-size: 20px; } }
+
+/* مشخصات: کاشی‌های دوستونه با آیکون؛ مقدار بلند (مثل جنس) تمام‌عرض */
+.pd-specs { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.pd-spec { display: flex; align-items: flex-start; gap: 14px; padding: 14px 16px; border-radius: 20px; background: linear-gradient(135deg, #fff, var(--b50)); border: 1px solid var(--b100); transition: translate 0.25s var(--ease), border-color 0.25s, box-shadow 0.3s; }
+.pd-spec:hover { translate: 0 -3px; border-color: var(--b300); box-shadow: 0 16px 26px -20px rgb(190 20 110 / 0.55); }
+.pd-spec--wide { grid-column: 1 / -1; }
+.pd-spec-i { display: grid; flex: none; place-items: center; width: 42px; height: 42px; border-radius: 14px; background: #fff; color: var(--b600); box-shadow: 0 6px 14px -8px rgb(190 20 110 / 0.5); }
+.pd-spec-i svg { width: 20px; height: 20px; }
+.pd-spec dt { font-size: 12.5px; line-height: 1.5; color: var(--ink3); }
+.pd-spec dd { margin: 0; font-size: 15px; font-weight: 600; line-height: 1.7; color: var(--ink); }
+@media (max-width: 639px) { .pd-specs { grid-template-columns: 1fr; } }
+
+/* ویژگی‌های بیشتر: آکاردئون نرم (ارتفاع با grid-template-rows از ۰ تا محتوا می‌رود؛ محتوا همیشه در HTML است و بسته‌بودن را inert نشان می‌دهد) */
+.pd-acc-h { margin: 0; }
+.pd-acc-btn { display: flex; align-items: center; gap: 12px; width: 100%; text-align: start; font-size: 20px; font-weight: 800; line-height: 1.4; }
+.pd-chev { display: grid; flex: none; place-items: center; width: 38px; height: 38px; margin-inline-start: auto; border-radius: 12px; background: var(--b50); color: var(--b600); transition: background 0.2s; }
+.pd-chev svg { width: 20px; height: 20px; }
+.pd-acc-btn:hover .pd-chev { background: var(--b100); }
+.pd-acc-body { display: grid; grid-template-rows: 0fr; }
+.pd-acc-body > div { overflow: hidden; }
+.pd-acc.open .pd-acc-body { grid-template-rows: 1fr; }
+@media (prefers-reduced-motion: no-preference) {
+  .pd-chev svg { transition: transform 0.35s var(--ease); }
+  .pd-acc-body { transition: grid-template-rows 0.45s var(--ease); }
+}
+.pd-acc.open .pd-chev svg { transform: rotate(180deg); }
+.pd-acc-row { display: flex; gap: 12px; margin-top: 14px; padding-top: 14px; border-top: 2px dashed rgb(80 30 90 / 0.12); }
+.pd-acc-row:first-child { margin-top: 18px; }
+.pd-acc-row b { flex: none; min-width: 92px; color: var(--b700); }
+.pd-acc-row p { color: var(--ink2); white-space: pre-line; }
+@media (max-width: 639px) { .pd-acc-btn { font-size: 18px; } .pd-acc-row { flex-direction: column; gap: 4px; } }

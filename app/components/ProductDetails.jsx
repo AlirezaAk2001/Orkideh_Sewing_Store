@@ -9,8 +9,10 @@ import ImageLightbox from "./ImageLightbox";
 import ImageSlider from "./ImageSlider";
 import ProductRail from "./home/ProductRail";
 import ProductBackdrop from "./product/ProductBackdrop";
+import Reveal from "./product/Reveal";
+import SectionNav from "./product/SectionNav";
 import QuantityStepper from "./QuantityStepper";
-import { Award, BadgePercent, BaggageClaim, ChevronDown, ChevronLeft, MessageSquare, PackageCheck, Phone, Star, Tag, Truck, ZoomIn } from "lucide-react";
+import { Award, BadgePercent, BaggageClaim, ChevronDown, ChevronLeft, Gauge, Info, Layers, MessageSquare, PackageCheck, Palette, Phone, Ruler, Sparkles, Star, Tag, Truck, Weight, Zap, ZoomIn } from "lucide-react";
 import { STORE } from "@/lib/contact";
 import { brandOf } from "@/lib/brands";
 import { useChangeKey } from "@/lib/motion";
@@ -36,6 +38,9 @@ import DialogActions from "@mui/material/DialogActions";
 import Button from "@mui/material/Button";
 
 const fa = (n) => Number(n).toLocaleString("fa-IR");
+
+// آیکون کاشی هر مشخصه (کلید = همان برچسبی که در specs می‌آید)؛ برچسب ناشناخته آیکون اطلاعات می‌گیرد
+const SPEC_ICONS = { جنس: Layers, ابعاد: Ruler, وزن: Weight, رنگ: Palette, ولتاژ: Zap, "توان مصرفی": Gauge };
 
 // امتیاز و تعداد نظر کنار عنوان؛ همان حساب نمایه‌های دیگر (میانگین نظرهای تأییدشده، مثل JSON-LD و کارت محصول).
 // لینک به بخش نظرها می‌رود؛ بدون نظر هم همان لینک دعوت به نوشتن اولین نظر است.
@@ -99,17 +104,18 @@ function StickyBuyBar({ visible, oldPrice, price, callHref, callLabel, children 
         visible ? "visible translate-y-0" : "invisible translate-y-full"
       }`}
     >
-      <div className="border-t border-gray-200 bg-white/95 px-4 pt-3 shadow-[0_-8px_24px_-12px_rgb(0_0_0/0.3)] backdrop-blur pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
-        <div className="mx-auto flex max-w-xl items-center gap-3" dir="rtl">
-          <div className="shrink-0 leading-tight">
-            {oldPrice && <div className="text-xs text-gray-400 line-through">{oldPrice}</div>}
-            <div className="whitespace-nowrap text-sm font-bold text-brand-600">{price} تومان</div>
+      {/* کارت شناور گرد و شیشه‌ای (نه نوار تمام‌عرض)، مثل زبان طراحی بقیهٔ صفحه */}
+      <div className="px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+        <div className="mx-auto flex max-w-xl items-center gap-3 rounded-[22px] bg-white/90 p-2.5 shadow-[0_24px_40px_-18px_rgb(60_10_70/0.55)] ring-1 ring-[rgb(80_30_90/0.09)] backdrop-blur-xl" dir="rtl">
+          <div className="shrink-0 pe-1 leading-tight">
+            {oldPrice && <div className="text-[11px] text-gray-400 line-through">{oldPrice}</div>}
+            <div className="whitespace-nowrap text-sm font-extrabold text-brand-600">{price} تومان</div>
           </div>
           {children}
           <a
             href={callHref}
             aria-label={callLabel}
-            className="btn-lift grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-gray-300 bg-white text-brand-600 transition hover:border-brand-200 hover:bg-brand-50 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+            className="btn-lift grid h-11 w-11 shrink-0 place-items-center rounded-[15px] bg-brand-50 text-brand-600 transition hover:bg-brand-100 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
           >
             <Phone className="h-5 w-5" aria-hidden="true" />
           </a>
@@ -383,6 +389,31 @@ export default function ProductDetails({ product, initialComments = [], related 
     </button>
   );
 
+  // دکمهٔ خرید فشردهٔ نوار بخش‌ها (دسکتاپ): همان وضعیت‌ها و همان کنترل‌کننده‌های دکمهٔ اصلی صفحه
+  const miniAction = isOutOfStock ? (
+    <button type="button" disabled className="pd-mini-btn pd-mini-btn--out">
+      ناموجود
+    </button>
+  ) : isInCart ? (
+    <button type="button" onClick={() => router.push(tabHref("cart"))} className="pd-mini-btn pd-mini-btn--view">
+      <BaggageClaim className="h-[18px] w-[18px]" aria-hidden="true" />
+      مشاهده سبد
+    </button>
+  ) : (
+    <button type="button" onClick={handleAddToCart} className="pd-mini-btn bar-sheen">
+      <AddShoppingCartIcon className="h-[18px] w-[18px]" />
+      افزودن به سبد
+    </button>
+  );
+
+  // تب‌های نوار بخش‌ها: فقط بخش‌هایی که در صفحه هستند
+  const navItems = [
+    specs.length > 0 && { id: "specs", label: "مشخصات" },
+    extras.length > 0 && { id: "more", label: "ویژگی‌های بیشتر" },
+    related.length > 0 && { id: "related", label: "محصولات مرتبط" },
+    { id: "comments", label: "نظرات", count: initialComments.length },
+  ].filter(Boolean);
+
   return (
     <div className="pd">
     {/* پس‌زمینهٔ صفحه (مش برند + ابزارهای خیاطی معلق)؛ استایل کل صفحه در product/product.css */}
@@ -594,38 +625,82 @@ export default function ProductDetails({ product, initialComments = [], related 
           </div>
         </div>
       </div>
-      <div className="mt-8 space-y-6">
-        {specs.length > 0 && (
-          <div className="bg-white p-4 rounded-xl shadow-md">
-            <h3 className="text-xl font-semibold text-gray-700 mb-2">مشخصات کلی</h3>
-            <ul className="space-y-1 text-gray-600 text-base" dir="rtl">
-              {specs.map(([label, value]) => (
-                <li key={label}><strong>{label}:</strong> {value}</li>
-              ))}
-            </ul>
+      {/* نوار بخش‌ها: اگر فقط «نظرات» باشد تبی برای جابه‌جایی نیست؛ خرید فشرده سمت چپش وقتی دکمهٔ اصلی خرید از دید رفته می‌آید (روی موبایل نوار خرید پایین صفحه است) */}
+      {navItems.length > 1 && (
+        <SectionNav items={navItems} showMini={barVisible}>
+          {photos[0] && (
+            <span className="pd-mini-img" aria-hidden="true">
+              <AppImage src={photos[0]} alt="" fill sizes="40px" className="object-cover" />
+            </span>
+          )}
+          <div className="min-w-0">
+            <div className="pd-mini-name">{product.name}</div>
+            <span className="pd-mini-price">{finalPriceText} تومان</span>
           </div>
+          {miniAction}
+        </SectionNav>
+      )}
+      <div className={`pd-sections ${navItems.length > 1 ? "" : "mt-8"}`}>
+        {specs.length > 0 && (
+          <Reveal as="section" id="specs" aria-labelledby="specs-h" className="pd-anchor pd-panel">
+            <div className="pd-sec-h">
+              <span className="pd-sec-i" aria-hidden="true">
+                <Info />
+              </span>
+              <h2 id="specs-h">مشخصات کلی</h2>
+            </div>
+            <dl className="pd-specs">
+              {specs.map(([label, value], index) => {
+                const SpecIcon = SPEC_ICONS[label] ?? Info;
+                return (
+                  <div key={label} className={`pd-spec pd-st ${String(value).length > 28 ? "pd-spec--wide" : ""}`} style={{ "--i": index }}>
+                    <span className="pd-spec-i" aria-hidden="true">
+                      <SpecIcon />
+                    </span>
+                    <div>
+                      <dt>{label}</dt>
+                      <dd>{value}</dd>
+                    </div>
+                  </div>
+                );
+              })}
+            </dl>
+          </Reveal>
         )}
         {extras.length > 0 && (
-          <div className="bg-white p-4 rounded-xl shadow-md">
-            <button
-              onClick={() => setIsExpanded(!isExpanded)}
-              className="btn-flat flex justify-between w-full text-gray-700 font-semibold hover:text-pink-500 cursor-pointer"
-            >
-              <span>مشاهده ویژگی‌های بیشتر</span>
-              <ChevronDown className={`w-5 h-5 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
-            </button>
-            {isExpanded && (
-              <div className="mt-2 text-gray-600 text-base space-y-2" dir="rtl">
+          <Reveal as="section" id="more" aria-label="ویژگی‌های بیشتر" className={`pd-anchor pd-panel pd-acc ${isExpanded ? "open" : ""}`}>
+            <h2 className="pd-acc-h">
+              <button
+                type="button"
+                onClick={() => setIsExpanded(!isExpanded)}
+                aria-expanded={isExpanded}
+                aria-controls="pd-acc-body"
+                className="pd-acc-btn btn-flat"
+              >
+                <span className="pd-sec-i" aria-hidden="true">
+                  <Sparkles />
+                </span>
+                مشاهده ویژگی‌های بیشتر
+                <span className="pd-chev" aria-hidden="true">
+                  <ChevronDown />
+                </span>
+              </button>
+            </h2>
+            <div className="pd-acc-body" id="pd-acc-body">
+              <div inert={!isExpanded}>
                 {extras.map(([label, value]) => (
-                  <p key={label}><strong>{label}:</strong> {value}</p>
+                  <div key={label} className="pd-acc-row">
+                    <b>{label}</b>
+                    <p>{value}</p>
+                  </div>
                 ))}
               </div>
-            )}
-          </div>
+            </div>
+          </Reveal>
         )}
         {related.length > 0 && (
           // ردیف برای لبه‌به‌لبه شدن -mx-4 دارد و پدینگ ۱۶ پیکسلی لازم دارد؛ این صفحه روی موبایل فقط ۸ پیکسل دارد، پس ۸ پیکسل دیگر از همین‌جا
-          <div className="px-2 sm:px-0">
+          <Reveal id="related" className="pd-anchor px-2 sm:px-0">
             <ProductRail
               id="related-products"
               title="محصولات مرتبط"
@@ -634,12 +709,12 @@ export default function ProductDetails({ product, initialComments = [], related 
               hint={product.Category?.name ? `همهٔ محصولات ${product.Category.name}` : undefined}
               products={related}
             />
-          </div>
+          </Reveal>
         )}
-        {/* تکیه‌گاه لینک امتیاز بالای صفحه: scroll-mt جای هدر ثابت را نگه می‌دارد */}
-        <section id="comments" tabIndex={-1} aria-label="نظرات کاربران" className="scroll-mt-24 outline-none">
+        {/* تکیه‌گاه لینک امتیاز بالای صفحه و تب «نظرات» نوار بخش‌ها: pd-anchor جای هدر و نوار چسبان را نگه می‌دارد */}
+        <Reveal as="section" id="comments" tabIndex={-1} aria-label="نظرات کاربران" className="pd-anchor outline-none">
           <ProductComments productId={product.id} initialComments={initialComments} />
-        </section>
+        </Reveal>
       </div>
 
       <StickyBuyBar
