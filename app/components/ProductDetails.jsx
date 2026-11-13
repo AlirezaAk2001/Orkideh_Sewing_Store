@@ -1,20 +1,26 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import "./product/product.css";
 import AppImage from "./AppImage";
 import ImageLightbox from "./ImageLightbox";
 import ImageSlider from "./ImageSlider";
 import ProductRail from "./home/ProductRail";
+import ProductBackdrop from "./product/ProductBackdrop";
 import QuantityStepper from "./QuantityStepper";
-import { ChevronDown, BaggageClaim, Headset, MessageSquare, PackageCheck, Phone, Star, Truck, ZoomIn } from "lucide-react";
+import { Award, BadgePercent, BaggageClaim, ChevronDown, ChevronLeft, MessageSquare, PackageCheck, Phone, Star, Tag, Truck, ZoomIn } from "lucide-react";
 import { STORE } from "@/lib/contact";
+import { brandOf } from "@/lib/brands";
+import { useChangeKey } from "@/lib/motion";
 import { productImages } from "@/lib/productImages";
 import { Tooltip } from 'react-tooltip';
 import { useCart, useFavorites, useAuth } from "@/lib/context";
 import { authUrl } from "@/lib/redirect";
 import { tabHref } from "@/app/profile/_ui/tabs";
 import { isSoldOut, maxPurchasable } from "@/lib/stock";
+import { LOW_STOCK_THRESHOLD } from "@/lib/statsMath";
 import { flyToCart } from "@/lib/flyToCart";
 import SellerBox from "./SellerBox";
 import ProductComments from "./ProductComments";
@@ -330,8 +336,24 @@ export default function ProductDetails({ product, initialComments = [], related 
   };
 
   const hasDiscount = product.discount > 0;
-  const finalPriceText = fa(hasDiscount ? product.price - (product.price * product.discount) / 100 : product.price);
+  // قیمت نهایی یک عدد (همان عددی که addToCart در سبد می‌گذارد، پس جمع ردیف با سبد یکی است)
+  const unitPrice = hasDiscount ? Math.round(product.price - (product.price * product.discount) / 100) : product.price;
+  const finalPriceText = fa(unitPrice);
+  const savings = Math.max(0, product.price - unitPrice) * quantity;
+  // با عوض‌شدن تعداد، عدد جمع ردیف یک بار می‌پرد (num-tick)؛ هنگام نمایش اولیه نه
+  const totalKey = useChangeKey(quantity);
   const categoryHref = product.Category?.slug ? `/categories/${encodeURIComponent(product.Category.slug)}` : null;
+  // جدول Product ستون برند ندارد؛ برند از نام محصول حدس زده می‌شود (lib/brands.js) و اگر حدس نخورد چیپ برند نیست
+  const brand = brandOf(product.name);
+  // چیپ موجودی: ناموجود، کم‌موجودی (۵ عدد یا کمتر، همان آستانهٔ داشبورد ادمین) با نبض نارنجی، وگرنه موجودی عادی؛ بدون موجودی ثبت‌شده چیزی نیست
+  const lowStock = !isOutOfStock && !isAccessories && stock != null && stock !== "" && Number(stock) <= LOW_STOCK_THRESHOLD;
+  const stockChip = isOutOfStock
+    ? { tone: "out", text: "ناموجود" }
+    : lowStock
+    ? { tone: "low", text: `فقط ${fa(stock)} عدد در انبار مانده` }
+    : inventoryText
+    ? { tone: "ok", text: isAccessories ? "موجود" : `موجودی: ${inventoryText}` }
+    : null;
   const callPhone = STORE.phones.find((phone) => phone.label.includes("همراه")) ?? STORE.phones[0];
 
   // دکمهٔ اصلی نوار چسبان با همان وضعیت‌ها و همان کنترل‌کننده‌های دکمهٔ اصلی صفحه
@@ -354,7 +376,7 @@ export default function ProductDetails({ product, initialComments = [], related 
       key="add"
       type="button"
       onClick={handleAddToCart}
-      className={`flex h-11 flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl bg-brand-600 text-sm font-medium text-white transition hover:bg-brand-700 active:scale-[0.98] ${popButtons ? "pop-in" : ""}`}
+      className={`bar-sheen flex h-11 flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl bg-brand-600 text-sm font-medium text-white transition hover:bg-brand-700 active:scale-[0.98] ${popButtons ? "pop-in" : ""}`}
     >
       <AddShoppingCartIcon className="h-5 w-5" />
       افزودن به سبد خرید
@@ -362,9 +384,25 @@ export default function ProductDetails({ product, initialComments = [], related 
   );
 
   return (
+    <div className="pd">
+    {/* پس‌زمینهٔ صفحه (مش برند + ابزارهای خیاطی معلق)؛ استایل کل صفحه در product/product.css */}
+    <ProductBackdrop />
     <div className="container mx-auto px-2 sm:px-4 md:px-6 py-2 sm:py-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-        <div ref={stageRef} className="relative overflow-hidden rounded-xl bg-white shadow-lg">
+      <nav className="pd-crumbs pd-rise" aria-label="مسیر صفحه">
+        <Link href="/">خانه</Link>
+        <ChevronLeft aria-hidden="true" />
+        <Link href="/products">محصولات</Link>
+        {categoryHref && (
+          <>
+            <ChevronLeft aria-hidden="true" />
+            <Link href={categoryHref}>{product.Category.name}</Link>
+          </>
+        )}
+        <ChevronLeft aria-hidden="true" />
+        <b aria-current="page">{product.name}</b>
+      </nav>
+      <div className="pd-hero">
+        <div ref={stageRef} className="pd-gal pd-rise" style={{ "--i": 1 }}>
           {photos.length > 0 ? (
             <>
               {/* تصویر کل کادر را پر می‌کند (object-cover، کادر ۴:۳ مثل بیشتر عکس‌های محصول)؛ اسلایدر مثل بنر صفحهٔ اصلی ولی بدون جابه‌جایی خودکار */}
@@ -372,7 +410,7 @@ export default function ProductDetails({ product, initialComments = [], related 
                 ref={sliderRef}
                 images={photos}
                 label={product.name}
-                className="relative aspect-[4/3] w-full bg-gray-100"
+                className="relative aspect-[4/3] w-full rounded-[22px] bg-gray-100"
                 onIndexChange={setActive}
                 renderSlide={(src, index, { load }) => (
                   <button
@@ -394,7 +432,7 @@ export default function ProductDetails({ product, initialComments = [], related 
                 )}
               />
               {many && (
-                <ul className="no-scrollbar mx-auto flex w-max max-w-full gap-2 overflow-x-auto p-3" aria-label="تصویرهای محصول">
+                <ul className="pd-thumbs no-scrollbar" aria-label="تصویرهای محصول">
                   {photos.map((src, index) => (
                     <li key={src} className="shrink-0">
                       <button
@@ -402,11 +440,9 @@ export default function ProductDetails({ product, initialComments = [], related 
                         onClick={() => showPhoto(index)}
                         aria-label={`نمایش تصویر ${fa(index + 1)} از ${fa(photos.length)}`}
                         aria-current={index === current ? "true" : undefined}
-                        className={`btn-flat relative block h-16 w-16 cursor-pointer overflow-hidden rounded-lg border bg-white transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 ${
-                          index === current ? "border-brand-600 ring-1 ring-brand-600" : "border-gray-200 opacity-75 hover:border-gray-300 hover:opacity-100"
-                        }`}
+                        className="pd-thumb btn-flat"
                       >
-                        <AppImage src={src} alt="" fill sizes="64px" className="object-cover" />
+                        <AppImage src={src} alt="" fill sizes="78px" className="object-cover" />
                       </button>
                     </li>
                   ))}
@@ -418,127 +454,144 @@ export default function ProductDetails({ product, initialComments = [], related 
             <div className="flex aspect-[4/3] w-full items-center justify-center bg-gray-200">بدون تصویر</div>
           )}
           {hasDiscount && (
-            <div className="discount-chip left-3 top-3">
+            // کارت گالری ۱۲ پیکسل پدینگ دارد؛ ۲۴ یعنی همان ۱۲ پیکسل فاصلهٔ قبلی از گوشهٔ خود عکس
+            <div className="discount-chip left-6 top-6">
               <span className="discount-chip__value">{fa(product.discount)}٪</span>
               <span className="discount-chip__label">تخفیف</span>
             </div>
           )}
         </div>
-        <div className="flex flex-col gap-4" dir="rtl">
-          <h1 className="text-2xl font-bold text-gray-800">{product.name}</h1>
-          <RatingSummary comments={initialComments} />
-          <div className="flex items-center gap-3 text-xl font-semibold">
-            {product.discount > 0 ? (
-              <>
-                <span className="line-through text-gray-400 text-lg">
-                  {product.price.toLocaleString("fa-IR")} تومان
+        <div className="pd-info" dir="rtl">
+          <div className="pd-chips pd-rise" style={{ "--i": 0 }}>
+            {product.Category?.name &&
+              (categoryHref ? (
+                <Link href={categoryHref} className="pd-chip">
+                  <Tag aria-hidden="true" />
+                  {product.Category.name}
+                </Link>
+              ) : (
+                <span className="pd-chip">
+                  <Tag aria-hidden="true" />
+                  {product.Category.name}
                 </span>
-                <span className="text-brand-600 text-2xl">
-                  {(product.price - (product.price * product.discount) / 100).toLocaleString("fa-IR")}{" "}
-                  تومان
-                </span>
-              </>
-            ) : (
-              <span className="text-brand-600 text-2xl">
-                {product.price.toLocaleString("fa-IR")} تومان
+              ))}
+            {brand && (
+              <Link href={`/products?q=${encodeURIComponent(brand.name)}`} className="pd-chip">
+                <Award aria-hidden="true" />
+                برند: {brand.name}
+              </Link>
+            )}
+            {stockChip && (
+              <span className={`pd-stock ${stockChip.tone === "ok" ? "pd-stock--ok" : stockChip.tone === "out" ? "pd-stock--out" : ""}`}>
+                <i aria-hidden="true" />
+                {stockChip.text}
               </span>
             )}
           </div>
+          <h1 className="pd-title pd-rise" style={{ "--i": 1 }}>{product.name}</h1>
+          <div className="pd-rise" style={{ "--i": 2 }}>
+            <RatingSummary comments={initialComments} />
+          </div>
+          <div className="pd-price pd-rise" style={{ "--i": 3 }}>
+            <div className="pd-prow">
+              <span className="pd-now">
+                <b>{finalPriceText}</b>
+                <small>تومان</small>
+              </span>
+              {hasDiscount && (
+                <span className="pd-old">
+                  <s>{fa(product.price)} تومان</s>
+                  <em className="pd-off">{fa(product.discount)}٪ تخفیف</em>
+                </span>
+              )}
+            </div>
+            {hasDiscount && savings > 0 && (
+              <p className="pd-save">
+                <BadgePercent aria-hidden="true" />
+                با این خرید {fa(savings)} تومان صرفه‌جویی می‌کنید
+              </p>
+            )}
+          </div>
           {!isOutOfStock && (
-            <div className="flex items-center gap-4">
-              <span className="text-gray-700 font-semibold">تعداد:</span>
+            <div className="pd-qrow pd-rise" style={{ "--i": 4 }}>
+              <span className="pd-lbl">تعداد:</span>
               <QuantityStepper value={quantity} max={maxQuantity} busy={qtyBusy} onChange={changeQuantity} />
+              <span className="pd-sum">
+                جمع:
+                <b key={totalKey} className={totalKey ? "num-tick" : undefined}>{fa(unitPrice * quantity)}</b>
+                <small>تومان</small>
+              </span>
             </div>
           )}
-          <div ref={actionsRef} className="flex gap-2">
-            {!isOutOfStock && (
-              <>
-                {isInCart ? (
-                  <div className={`flex gap-2 flex-1 ${popButtons ? "pop-in" : ""}`}>
-                    <button
-                      onClick={() => router.push(tabHref("cart"))}
-                      className="w-full flex items-center justify-center gap-1 py-3 rounded-lg bg-gray-900 text-white hover:bg-gray-800 transition cursor-pointer"
-                    >
-                      <BaggageClaim className="w-5 h-5" />
-                      مشاهده سبد خرید
-                    </button>
-
-                    <button
-                      onClick={handleRemoveFromCart}
-                      className="w-12 h-12 bg-gray-200 rounded-lg hover:bg-gray-300 flex items-center justify-center cursor-pointer"
-                      data-tooltip-id="remove-cart-tooltip"
-                      data-tooltip-content="حذف از سبد خرید"
-                    >
-                      <Icon path={mdiCartRemove} className="w-6 h-6 text-red-500" />
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    onClick={handleAddToCart}
-                    className={`flex items-center justify-center gap-1 flex-1 py-3 rounded-lg bg-brand-600 text-white hover:bg-brand-700 transition cursor-pointer ${popButtons ? "pop-in" : ""}`}
-                  >
-                    <AddShoppingCartIcon className="w-5 h-5" />
-                    افزودن به سبد خرید
+          <div ref={actionsRef} className="pd-cta pd-rise" style={{ "--i": 5 }}>
+            <div className="pd-cta-main">
+              {isOutOfStock ? (
+                <button type="button" disabled className="pd-btn pd-btn-out">
+                  ناموجود
+                </button>
+              ) : isInCart ? (
+                <>
+                  {/* pop-in روی خود دکمه‌هاست: با جابه‌جایی «افزودن» و «مشاهده سبد» دکمه‌های تازه ساخته می‌شوند و انیمیشن دوباره اجرا می‌شود */}
+                  <button type="button" onClick={() => router.push(tabHref("cart"))} className={`pd-btn pd-btn-view ${popButtons ? "pop-in" : ""}`}>
+                    <BaggageClaim className="h-5 w-5" aria-hidden="true" />
+                    مشاهده سبد خرید
                   </button>
-                )}
-              </>
-            )}
-            {isOutOfStock && (
-              <button disabled className="flex-1 bg-gray-400 text-white py-3 rounded-lg cursor-not-allowed">
-                ناموجود
-              </button>
-            )}
+                  <button
+                    type="button"
+                    onClick={handleRemoveFromCart}
+                    className={`pd-sq pd-sq-rm ${popButtons ? "pop-in" : ""}`}
+                    aria-label="حذف از سبد خرید"
+                    data-tooltip-id="remove-cart-tooltip"
+                    data-tooltip-content="حذف از سبد خرید"
+                  >
+                    <Icon path={mdiCartRemove} className="h-6 w-6" />
+                  </button>
+                </>
+              ) : (
+                // bar-sheen: برق هاور دکمه، همان برق دکمهٔ «رفتن به فروشگاه» (globals.css)
+                <button type="button" onClick={handleAddToCart} className={`pd-btn pd-btn-add bar-sheen ${popButtons ? "pop-in" : ""}`}>
+                  <AddShoppingCartIcon className="h-5 w-5" />
+                  افزودن به سبد خرید
+                </button>
+              )}
+            </div>
             <button
+              type="button"
               onClick={handleFavoriteToggle}
-              className="w-12 h-12 bg-gray-200 rounded-lg hover:bg-gray-300 flex items-center justify-center cursor-pointer"
+              className="pd-sq pd-sq-fav"
+              aria-pressed={isFavorite}
+              aria-label={isFavorite ? "حذف از علاقه‌مندی‌ها" : "افزودن به علاقه‌مندی‌ها"}
               data-tooltip-id="favorite-tooltip"
               data-tooltip-content={isFavorite ? "حذف از علاقه‌مندی‌ها" : "افزودن به علاقه‌مندی‌ها"}
             >
               {isFavorite ? (
-                <Icon path={mdiHeart} className={`w-5 h-5 text-red-500 ${heartPop ? "heart-pop" : ""}`} />
+                <>
+                  {heartPop && <span className="pd-ring" aria-hidden="true" />}
+                  <Icon path={mdiHeart} className={`h-6 w-6 ${heartPop ? "heart-pop" : ""}`} />
+                </>
               ) : (
-                <Icon path={mdiHeartPlusOutline} className="w-5 h-5 text-gray-600" />
+                <Icon path={mdiHeartPlusOutline} className="h-6 w-6" />
               )}
             </button>
           </div>
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-600">
-            <span className="flex items-center gap-1.5">
-              <Truck className="h-4 w-4 text-brand-600" aria-hidden="true" />
+          <ul className="pd-perks pd-rise" style={{ "--i": 6 }}>
+            <li className="pd-perk">
+              <span className="pd-perk-i" aria-hidden="true">
+                <Truck />
+              </span>
               ارسال به سراسر کشور
-            </span>
-            <span className="flex items-center gap-1.5">
-              <PackageCheck className="h-4 w-4 text-brand-600" aria-hidden="true" />
+            </li>
+            <li className="pd-perk">
+              <span className="pd-perk-i" aria-hidden="true">
+                <PackageCheck />
+              </span>
               ارسال رایگان در تهران
-            </span>
+            </li>
+          </ul>
+          {/* فروشنده و تماس در یک کارت */}
+          <div className="pd-rise" style={{ "--i": 7 }}>
+            <SellerBox sellerName={product.seller || "فروشگاه چرخ خیاطی ارکیده"} />
           </div>
-          {/* تماس: اگر کاربر سؤال یا نیاز به خرید تلفنی دارد؛ روی موبایل با لمس شماره‌گیر باز می‌شود */}
-          <div className="rounded-xl border border-brand-100 bg-brand-50/50 p-3">
-            <p className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-800">
-              <Headset className="h-4 w-4 text-brand-600" aria-hidden="true" />
-              برای مشاوره و خرید تلفنی تماس بگیرید
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {STORE.phones.map((phone) => (
-                <a
-                  key={phone.href}
-                  href={phone.href}
-                  className="btn-lift inline-flex min-h-10 items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 text-sm text-gray-700 transition hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
-                >
-                  <Phone className="h-4 w-4 text-brand-600" aria-hidden="true" />
-                  <span className="text-gray-500">{phone.label}</span>
-                  <span dir="ltr" className="font-medium">
-                    {phone.display}
-                  </span>
-                </a>
-              ))}
-            </div>
-          </div>
-          <SellerBox sellerName={product.seller || "فروشگاه چرخ خیاطی ارکیده"} />
-          {inventoryText && (
-            <div className="bg-gray-50 border rounded-lg p-4 text-base text-gray-700">
-              <strong>موجودی:</strong> {inventoryText}
-            </div>
-          )}
         </div>
       </div>
       <div className="mt-8 space-y-6">
@@ -671,6 +724,7 @@ export default function ProductDetails({ product, initialComments = [], related 
         max-width: 250px !important;
       }
     `}</style>
-  </div>
+    </div>
+    </div>
   );
 }

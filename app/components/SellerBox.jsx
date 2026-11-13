@@ -1,14 +1,41 @@
 // components/SellerBox.jsx
-import { Store } from "lucide-react";
+import { Headset, Phone, Store } from "lucide-react";
+import { STORE } from "@/lib/contact";
 
+// کارت فروشنده + تماس: نیمهٔ بالا نام فروشنده و نیمهٔ پایین دعوت به تماس (مشاوره و خرید تلفنی؛ روی موبایل با لمس شماره‌گیر باز می‌شود)،
+// با خط بخیه بین آن‌ها. استایل در app/components/product/product.css (.pd-deal)
 export default function SellerBox({ sellerName }) {
   return (
-    <div className="border rounded-xl p-2 sm:p-3 md:p-4 bg-gray-50" dir="rtl">
-      <div className="flex items-center gap-2 sm:gap-1 mb-1 sm:mb-2 text-gray-700">
-        <Store className="text-blue-500 w-4 sm:w-5 md:w-6 h-4 sm:h-5 md:h-6" />
-        <h3 className="text-base sm:text-lg md:text-xl font-semibold">فروشنده</h3>
+    <div className="pd-deal" dir="rtl">
+      <div className="pd-seller">
+        <span className="pd-seller-i" aria-hidden="true">
+          <Store />
+        </span>
+        <div>
+          <small>فروشنده</small>
+          <b>{sellerName}</b>
+        </div>
       </div>
-      <p className="text-sm sm:text-base md:text-lg text-gray-600">{sellerName}</p>
+      <div className="pd-stitch" aria-hidden="true" />
+      <div className="pd-call">
+        <p>
+          <Headset aria-hidden="true" />
+          برای مشاوره و خرید تلفنی تماس بگیرید
+        </p>
+        <div className="pd-phones">
+          {STORE.phones.map((phone) => (
+            <a key={phone.href} href={phone.href} className="pd-phone btn-lift focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500">
+              <span className="pd-phone-i" aria-hidden="true">
+                <Phone />
+              </span>
+              <span>
+                <small>{phone.label}</small>
+                <b dir="ltr">{phone.display}</b>
+              </span>
+            </a>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
