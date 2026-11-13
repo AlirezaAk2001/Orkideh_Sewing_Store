@@ -6,6 +6,7 @@ import AppImage from "./AppImage";
 import ImageLightbox from "./ImageLightbox";
 import ImageSlider from "./ImageSlider";
 import ProductRail from "./home/ProductRail";
+import QuantityStepper from "./QuantityStepper";
 import { ChevronDown, BaggageClaim, Headset, MessageSquare, PackageCheck, Phone, Star, Truck, ZoomIn } from "lucide-react";
 import { STORE } from "@/lib/contact";
 import { productImages } from "@/lib/productImages";
@@ -116,12 +117,14 @@ function StickyBuyBar({ visible, oldPrice, price, callHref, callLabel, children 
 export default function ProductDetails({ product, initialComments = [], related = [] }) {
   const router = useRouter();
   const { currentUser } = useAuth();
-  const { addToCart, cartItems = [], removeFromCart } = useCart();
+  const { addToCart, cartItems = [], removeFromCart, updateQuantity } = useCart();
   const { addToFavorites, removeFromFavorites, favorites = [] } = useFavorites();
   const [isExpanded, setIsExpanded] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [isInCart, setIsInCart] = useState(false);
   const [quantity, setQuantity] = useState(1);
+  // مثل سبد خرید پروفایل: تا ذخیرهٔ تعدادِ تازه روی سرور (یا تا پایان افزودن به سبد) دکمه‌های گام‌شمار قفل‌اند
+  const [qtyBusy, setQtyBusy] = useState(false);
   const [zoomOpen, setZoomOpen] = useState(false);
   // انیمیشن‌های بعد از کنش کاربر: دکمه‌هایی که جای هم را می‌گیرند (pop-in) و قلبی که تازه پر شده (heart-pop)؛ تا کاربر کاری نکرده صفر می‌مانند
   // تا هنگام نمایش اولیهٔ صفحه چیزی نپرد
@@ -227,17 +230,18 @@ export default function ProductDetails({ product, initialComments = [], related 
     ["مناسب برای", product.suitableFor],
   ].filter(([, value]) => hasValue(value));
 
-  const increaseQuantity = () => {
-    if (quantity >= maxQuantity) {
-      toast("تعداد درخواستی بیش از موجودی است!", { icon: "⚠️" });
+  // همان منطق گام‌شمار سبد (CartView): وقتی محصول در سبد است تعداد همان لحظه روی سبد (و سرور) اعمال می‌شود و در صورت خطا به تعداد قبلی برمی‌گردد (updateQuantity)؛
+  // وقتی هنوز در سبد نیست فقط تعدادِ افزودنی عوض می‌شود. سقف و کفِ تعداد را خود دکمه‌های گام‌شمار با غیرفعال شدن رعایت می‌کنند
+  const changeQuantity = async (next) => {
+    if (!isInCart) {
+      setQuantity(next);
       return;
     }
-    setQuantity(quantity + 1);
-  };
-
-  const decreaseQuantity = () => {
-    if (quantity > 1) {
-      setQuantity(quantity - 1);
+    setQtyBusy(true);
+    try {
+      await updateQuantity(product.id, next);
+    } finally {
+      setQtyBusy(false);
     }
   };
 
@@ -259,7 +263,7 @@ export default function ProductDetails({ product, initialComments = [], related 
       ? Math.round(product.price - (product.price * product.discount) / 100)
       : product.price;
 
-    addToCart({
+    const adding = addToCart({
       id: product.id,
       name: product.name,
       price: discountedPrice,
@@ -267,6 +271,9 @@ export default function ProductDetails({ product, initialComments = [], related 
       image: product.image,
       slug: product.slug,
     });
+    // تا پاسخ سرور نیامده گام‌شمار قفل می‌ماند تا درخواست تغییر تعداد پیش از خودِ افزودن به سرور نرسد
+    setQtyBusy(true);
+    adding.finally(() => setQtyBusy(false));
     // پیام موفقیت (یا خطا) را خود addToCart بعد از پاسخ سرور نشان می‌دهد
 
     // تصویر جاری گالری به آیکون سبد هدر می‌پرد (اگر تصویر از پنجره بیرون است، از خود دکمه، مثلاً دکمهٔ نوار چسبان)
@@ -440,27 +447,7 @@ export default function ProductDetails({ product, initialComments = [], related 
           {!isOutOfStock && (
             <div className="flex items-center gap-4">
               <span className="text-gray-700 font-semibold">تعداد:</span>
-              <div className="flex items-center gap-2 border rounded-xl px-3 py-1">
-                <button
-                  onClick={decreaseQuantity}
-                  className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center hover:bg-gray-300 transition cursor-pointer"
-                  disabled={quantity <= 1}
-                  data-tooltip-id="decrease-tooltip"
-                  data-tooltip-content="کاهش تعداد"
-                >
-                  <span className="mb-1">-</span>
-                </button>
-                <span className="text-lg font-medium">{quantity.toLocaleString('fa-IR')}</span>
-                <button
-                  onClick={increaseQuantity}
-                  className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center hover:bg-gray-300 transition cursor-pointer"
-                  disabled={quantity >= maxQuantity}
-                  data-tooltip-id="increase-tooltip"
-                  data-tooltip-content="افزایش تعداد"
-                >
-                  <span className="mb-1">+</span>
-                </button>
-              </div>
+              <QuantityStepper value={quantity} max={maxQuantity} busy={qtyBusy} onChange={changeQuantity} />
             </div>
           )}
           <div ref={actionsRef} className="flex gap-2">
@@ -613,8 +600,6 @@ export default function ProductDetails({ product, initialComments = [], related 
       </StickyBuyBar>
 
       {/* Tooltip Definitions - فقط برای ۵ مورد درخواستی */}
-      <Tooltip id="decrease-tooltip" />
-      <Tooltip id="increase-tooltip" />
       <Tooltip id="remove-cart-tooltip" />
       <Tooltip id="favorite-tooltip" />
 

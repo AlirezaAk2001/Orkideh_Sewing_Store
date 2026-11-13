@@ -1207,14 +1207,14 @@ html.sb-dragging * {
    و کلاس‌های پروفایل translate را در گذار خود ندارند)؛ چون :is() ویژگی‌دهی بالاترین گزینه‌اش (a.btn) را می‌گیرد، این قاعده از انتخابگرهای تا دو کلاس (مثل .pf .btn) هم قوی‌تر است.
    روی صفحهٔ لمسی hover نداریم و با «کاهش حرکت» دکمه از جایش تکان نمی‌خورد. */
 :is(button, a.btn, .btn-lift):not(
-    .btn-flat, .icon-action, .seg-tab, .tab-3d, .chip-3d, [role="tab"], [role="switch"], [role="option"], [role="radio"], .nb, .pen, .hb, .newa, .pk-tile, .fseg button, .step button,
+    .btn-flat, .icon-action, .seg-tab, .tab-3d, .chip-3d, [role="tab"], [role="switch"], [role="option"], [role="radio"], .nb, .pen, .hb, .newa, .pk-tile, .fseg button, .step button, .qty-step button,
     .delete-btn, .img-slider-dot, .img-slider-arrow, .xs-rest, .xs-btn, .xs-x, .hs-trigger, .sp-close, .sp-clear, .sp-recent, .MuiButton-text, .MuiIconButton-root
   ) {
   transition: translate 0.2s, transform 0.2s, scale 0.15s, color 0.2s, background-color 0.2s, border-color 0.2s, box-shadow 0.3s, opacity 0.2s;
 }
 @media (hover: hover) and (prefers-reduced-motion: no-preference) {
   :is(button, a.btn, .btn-lift):not(
-      .btn-flat, .icon-action, .seg-tab, .tab-3d, .chip-3d, [role="tab"], [role="switch"], [role="option"], [role="radio"], .nb, .pen, .hb, .newa, .pk-tile, .fseg button, .step button,
+      .btn-flat, .icon-action, .seg-tab, .tab-3d, .chip-3d, [role="tab"], [role="switch"], [role="option"], [role="radio"], .nb, .pen, .hb, .newa, .pk-tile, .fseg button, .step button, .qty-step button,
       .delete-btn, .img-slider-dot, .img-slider-arrow, .xs-rest, .xs-btn, .xs-x, .hs-trigger, .sp-close, .sp-clear, .sp-recent, .MuiButton-text, .MuiIconButton-root,
       :disabled, [aria-disabled="true"]
     ):hover {
@@ -2476,6 +2476,58 @@ html.sb-dragging * {
   .num-tick {
     animation: num-tick 0.22s ease-out both;
   }
+}
+
+/* گام‌شمار تعداد صفحهٔ محصول (app/components/QuantityStepper.jsx): همان ظاهر گام‌شمار سبد خرید پروفایل (.pf .step در app/profile/_ui/profile.css)،
+   فقط با رنگ‌های نهایی به‌جای متغیرهای .pf چون بیرون از پروفایل است: قاب بنفش کمرنگ ۴۰ پیکسلی با دکمه‌های ۳۴ پیکسلی که هنگام هاور سفید می‌شوند، فشرده می‌شوند
+   و غیرفعال که کم‌رنگ است. دکمه‌های آن از بلندشدن سراسری هاور (بالاتر) کنار گذاشته شده‌اند، مثل .step button */
+.qty-step {
+  display: inline-flex;
+  align-items: center;
+  height: 40px;
+  padding: 3px;
+  border-radius: 14px;
+  background: rgb(80 30 90 / 0.06);
+}
+.qty-step button {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+  color: #5f5068;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, transform 0.2s;
+}
+.qty-step button:hover:not(:disabled) {
+  background: #fff;
+  color: var(--color-brand-700);
+  box-shadow: 0 2px 6px rgb(80 20 90 / 0.15);
+}
+.qty-step button:active:not(:disabled) {
+  transform: scale(0.9);
+}
+.qty-step button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.qty-step button:focus-visible {
+  outline: 2px solid var(--color-brand-500);
+  outline-offset: 1px;
+}
+.qty-step button svg {
+  width: 15px;
+  height: 15px;
+  stroke-width: 2.4;
+}
+.qty-step > span {
+  min-width: 34px;
+  text-align: center;
+  font-weight: 800;
+  font-size: 15px;
+}
+.qty-step > span > span {
+  display: inline-block;
 }
 
 /* ───────── آواتار کاربر (app/components/Avatar.jsx) ─────────
