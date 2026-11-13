@@ -723,6 +723,12 @@
 .pf .sum .fl .inp { --cut-in: rgb(61 32 68); }
 .pf .sum .fl .inp:focus-within { --cut-in: rgb(74 47 80); }
 .pf .sum .fl .inp:focus-within:not(.ok, .bad) { box-shadow: inset 0 0 0 2px #f9a8d4, 0 12px 22px -12px rgb(249 168 212 / 0.5); }
+/* حالت‌های «درست» و «نادرست» روی کارت تیره: قاعدهٔ .pf .sum .inp بعد از .pf .inp.ok/.bad می‌آمد و رنگ سبز/قرمز لبه را می‌پوشاند (شمارهٔ معتبر سبز نمی‌شد). سبز و قرمز همان‌های کارت‌های روشن‌اند، متن راهنما و عنوان روشن‌تر تا روی زمینهٔ تیره بخوانند */
+.pf .sum .inp.ok { box-shadow: inset 0 0 0 2px #22c55e; }
+.pf .sum .inp.bad { box-shadow: inset 0 0 0 2px #ef4444; }
+.pf .sum .fl .inp.ok label[for] { color: #86efac; }
+.pf .sum .hint.ok { color: #86efac; }
+.pf .sum .hint.bad { color: #fca5a5; }
 .pf .sum .fl .inp label { color: rgb(255 255 255 / 0.55); }
 .pf .sum .fl .inp:focus-within label, .pf .sum .fl .inp input:not(:placeholder-shown) ~ label { color: rgb(255 255 255 / 0.8); }
 .pf .sum .fl .inp:focus-within label[for] { color: #f9a8d4; }
