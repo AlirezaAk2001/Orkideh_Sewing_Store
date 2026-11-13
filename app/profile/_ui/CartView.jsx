@@ -35,15 +35,16 @@ function CartItem({ item, index, leaving, qtyBusy, onQty, onAskRemove }) {
         <h3>{href ? <Link href={href}>{item.name}</Link> : item.name}</h3>
         <div className="u">قیمت واحد: {toman(item.price)}</div>
       </div>
+      {/* در صفحهٔ راست‌به‌چپ عنصر اولِ DOM سمت راست می‌نشیند؛ «−» اول است تا «+» سمت چپ و «−» سمت راست بیفتد (مثل گام‌شمار صفحهٔ محصول، QuantityStepper) */}
       <div className="step" role="group" aria-label="تعداد">
-        <button type="button" onClick={() => onQty(item, item.quantity + 1)} disabled={qtyBusy || item.quantity >= max} aria-label="افزایش تعداد" title={item.quantity >= max ? "بیشتر از موجودی نمی‌شود" : undefined}>
-          <Ic n="plus" />
+        <button type="button" onClick={() => onQty(item, item.quantity - 1)} disabled={qtyBusy || item.quantity <= 1} aria-label="کاهش تعداد">
+          <Ic n="minus" />
         </button>
         <span aria-live="polite">
           <Tick value={item.quantity}>{fa(item.quantity)}</Tick>
         </span>
-        <button type="button" onClick={() => onQty(item, item.quantity - 1)} disabled={qtyBusy || item.quantity <= 1} aria-label="کاهش تعداد">
-          <Ic n="minus" />
+        <button type="button" onClick={() => onQty(item, item.quantity + 1)} disabled={qtyBusy || item.quantity >= max} aria-label="افزایش تعداد" title={item.quantity >= max ? "بیشتر از موجودی نمی‌شود" : undefined}>
+          <Ic n="plus" />
         </button>
       </div>
       <div className="line-total">
