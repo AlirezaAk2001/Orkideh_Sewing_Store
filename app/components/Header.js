@@ -212,6 +212,7 @@ export default function Header() {
       <Tooltip id="logo-tooltip" place="bottom" />
       <Tooltip id="favorites-tooltip" place="bottom" />
       <Tooltip id="favorites-count-tooltip" place="right" />
+      <Tooltip id="card-favorite-tooltip" place="bottom" />
       <Tooltip id="login-tooltip" place="bottom" />
       <Tooltip id="profile-tooltip" place="bottom" />
       <Tooltip id="logout-tooltip" place="bottom" />

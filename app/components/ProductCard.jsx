@@ -3,6 +3,7 @@
 import Link from "next/link";
 import AppImage from "./AppImage";
 import ImageSlider from "./ImageSlider";
+import FavoriteButton from "./FavoriteButton";
 import { productImages } from "@/lib/productImages";
 import { useRouter } from "next/navigation";
 import { useCart, useAuth } from "@/lib/context";
@@ -99,8 +100,13 @@ export default function ProductCard({ product, priority = false }) {
             <span className="text-xs">بدون تصویر</span>
           </div>
         )}
+        {/* قلب علاقه‌مندی گوشهٔ بالا-چپ (z-20: بالاتر از لینک تمام‌کارت و اسلایدر)؛ سکهٔ تخفیف برای جا دادن به آن به گوشهٔ بالا-راست رفته است */}
+        <FavoriteButton
+          product={{ id: product.id, name: product.name, slug, image: product.image, price, discount, finalPrice }}
+          className="absolute left-2 top-2 z-20"
+        />
         {hasDiscount && (
-          <div className="discount-chip discount-chip--card left-2 top-2">
+          <div className="discount-chip discount-chip--card right-2 top-2">
             <span className="discount-chip__value">{discount.toLocaleString("fa-IR")}٪</span>
             <span className="discount-chip__label">تخفیف</span>
           </div>
