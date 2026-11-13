@@ -3,18 +3,43 @@
 import { useAuth } from "@/lib/context";
 import axios from "axios";
 import toast from "react-hot-toast";
-import StarRating from "./StarRating";
 import Avatar from "./Avatar";
+import { BadgeCheck, Star, Store } from "lucide-react";
 import moment from 'moment-jalaali';
 
-export default function CommentsItem({ comment, onDelete }) {
+// فرمت تاریخ و زمان فارسی
+function formatDateTime(dateStr) {
+  if (!dateStr) return "";
+  const date = moment(dateStr);
+  const formatted = date.format('HH:mm:ss - jYYYY/jMM/jDD');
+
+  // تبدیل اعداد انگلیسی به فارسی
+  return formatted.replace(/\d/g, (digit) => {
+    return String.fromCharCode(parseInt(digit) + 1776);
+  });
+}
+
+// ستاره‌های فقط‌نمایشی (کوچک‌تر از StarRating فرم)
+function Stars({ rating }) {
+  return (
+    <span className="pd-stars" role="img" aria-label={`امتیاز ${Number(rating).toLocaleString("fa-IR")} از ۵`}>
+      {[1, 2, 3, 4, 5].map((n) => (
+        <Star key={n} className={n <= rating ? "on" : undefined} aria-hidden="true" />
+      ))}
+    </span>
+  );
+}
+
+// کارت یک نظر + پاسخ فروشگاه (اگر ادمین پاسخ داده باشد)؛ ظرف <li> فهرست نظرهای ProductComments است. استایل: .pd-cm در product/product.css
+// verifiedBuyer را سرور می‌گذارد (lib/comments.js): فقط برای نویسنده‌ای که سفارش تحویل‌شدهٔ همین محصول را دارد
+export default function CommentsItem({ comment, onDelete, index = 0 }) {
   const { currentUser } = useAuth();
   const isAdmin = currentUser?.is_admin;
 
   const handleDelete = async () => {
     if (!isAdmin) return;
 
-    const result = await toast.promise(
+    await toast.promise(
       new Promise(async (resolve, reject) => {
         try {
           await axios.delete(`/api/admin/products/${comment.productId}/comments`, {
@@ -38,49 +63,53 @@ export default function CommentsItem({ comment, onDelete }) {
     );
   };
 
-  function formatDateTime(dateStr) {
-    if (!dateStr) return "";
-    const date = moment(dateStr);
-    const formatted = date.format('HH:mm:ss - jYYYY/jMM/jDD');
-
-    // تبدیل اعداد انگلیسی به فارسی
-    return formatted.replace(/\d/g, (digit) => {
-      return String.fromCharCode(parseInt(digit) + 1776);
-    });
-  }
-
   const userName = comment.User?.name || "کاربر ناشناس";
+  const replyName = comment.User?.name || comment.User?.username || "کاربر";
+  const replyAt = comment.adminReplyAt || comment.updatedAt;
 
   return (
-    <div className="border rounded-xl p-2 sm:p-3 md:p-4 mb-2 sm:mb-3" dir="rtl">
-      <div className="flex justify-between items-center">
-        <div className="flex items-center gap-2 sm:gap-3">
-          {/* آواتار کاربر (حرف اول، طرح آماده یا عکسی که خودش در تنظیمات پنل انتخاب کرده) */}
-          <Avatar value={comment.User?.avatar} name={comment.User?.name} className="[--s:32px] sm:[--s:40px]" />
-
-          <div>
-            <strong className="text-sm sm:text-base md:text-lg">{userName}</strong>
-            <div className="mt-1 sm:mt-2">
-              <StarRating rating={comment.rating} />
-            </div>
-          </div>
+    <li className="pd-cm pd-st" style={{ "--i": Math.min(index, 6) }}>
+      <div className="pd-cm-side">
+        {/* آواتار کاربر (حرف اول، طرح آماده یا عکسی که خودش در تنظیمات پنل انتخاب کرده)؛ اندازه از .pd-cm-side .av */}
+        <Avatar value={comment.User?.avatar} name={comment.User?.name} />
+        {comment.adminReply && <i className="pd-stem" aria-hidden="true" />}
+      </div>
+      <div className="pd-cm-main">
+        <div className="pd-cm-head">
+          <b>{userName}</b>
+          {comment.verifiedBuyer && (
+            <span className="pd-buyer">
+              <BadgeCheck aria-hidden="true" />
+              خریدار این محصول
+            </span>
+          )}
+          <span className="pd-cm-date">{formatDateTime(comment.createdAt)}</span>
         </div>
-        <p className="text-xs sm:text-sm md:text-base text-gray-500 mt-1 sm:mt-2">
-          {formatDateTime(comment.createdAt)}
-        </p>
-
+        <Stars rating={comment.rating} />
+        <p className="pd-cm-text">{comment.text}</p>
         {isAdmin && (
-          <button
-            onClick={handleDelete}
-            className="btn-flat text-red-500 hover:text-red-700 text-xs sm:text-sm md:text-base"
-          >
+          <button type="button" onClick={handleDelete} className="pd-cm-del btn-flat">
             حذف
           </button>
         )}
       </div>
-      <p className="mt-1 sm:mt-2 whitespace-pre-line text-gray-700 text-sm sm:text-base md:text-lg">
-        {comment.text}
-      </p>
-    </div>
+
+      {/* پاسخ فروشگاه: با نخ نقطه‌چین به نظر وصل است */}
+      {comment.adminReply && (
+        <>
+          <div className="pd-thr" aria-hidden="true" />
+          <div className="pd-reply">
+            <div className="pd-reply-h">
+              <span className="pd-reply-i" aria-hidden="true">
+                <Store />
+              </span>
+              <b>پاسخ فروشگاه به {replyName}</b>
+              {replyAt && <span className="pd-reply-date">{formatDateTime(replyAt)}</span>}
+            </div>
+            <p>{comment.adminReply}</p>
+          </div>
+        </>
+      )}
+    </li>
   );
 }

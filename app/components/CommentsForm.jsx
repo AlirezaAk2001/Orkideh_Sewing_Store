@@ -7,7 +7,7 @@ import toast from "react-hot-toast";
 import EmojiPicker from "emoji-picker-react";
 import StarRating from "./StarRating";
 import { useAuth } from "@/lib/context";
-import { MessageCircle, MessageSquareHeart } from "lucide-react";
+import { Lock, MessageCircle, MessageSquareHeart } from "lucide-react";
 import Icon from '@mdi/react';
 import { mdiCommentEditOutline } from '@mdi/js';
 import { TextField } from "@mui/material";
@@ -124,20 +124,24 @@ export default function CommentsForm({ productId, onSubmit }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="mb-4 p-4 border rounded-xl bg-gray-50" dir="rtl">
-      <h3 className="text-lg font-semibold mb-2 flex gap-1">
-        <Icon path={mdiCommentEditOutline} size={1.1} />
+    <form onSubmit={handleSubmit} className="pd-cm-form" dir="rtl">
+      <h3 className="pd-cm-h">
+        <span className="pd-sec-i" aria-hidden="true">
+          <Icon path={mdiCommentEditOutline} size={0.9} />
+        </span>
         ثبت نظر
       </h3>
 
       {!currentUser ? (
-        <div className="text-red-500 mb-4">
-          برای ثبت نظر، لطفاً ابتدا وارد حساب کاربری خود شوید
-        </div>
+        <p className="pd-lock">
+          <Lock aria-hidden="true" />
+          <span>برای ثبت نظر، لطفاً ابتدا وارد حساب کاربری خود شوید</span>
+        </p>
       ) : !canComment ? (
-        <div className="text-red-500 mb-4">
-          شما فقط می‌توانید برای محصولاتی که خریداری کرده‌اید و تحویل گرفته‌اید نظر دهید.
-        </div>
+        <p className="pd-lock">
+          <Lock aria-hidden="true" />
+          <span>شما فقط می‌توانید برای محصولاتی که خریداری کرده‌اید و تحویل گرفته‌اید نظر دهید.</span>
+        </p>
       ) : (
         <>
           <div className="mb-2">
@@ -189,7 +193,7 @@ export default function CommentsForm({ productId, onSubmit }) {
           <button
             type="submit"
             disabled={loading}
-            className="flex items-center justify-center gap-1 px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition disabled:opacity-50 cursor-pointer"
+            className="pd-cm-submit bar-sheen"
           >
             <MessageCircle size={18} />
             {loading ? "در حال ثبت نظر..." : "ثبت نظر"}

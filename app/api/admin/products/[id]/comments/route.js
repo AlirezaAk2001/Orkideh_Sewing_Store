@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { requireUser, requireAdmin } from "@/lib/auth";
-import { commentUserSelect, withCommentAvatar } from "@/lib/comments";
+import { commentUserSelect, withCommentAvatar, withVerifiedBuyers } from "@/lib/comments";
 
 // GET: دریافت کامنت‌های تأیید شده محصول (همراه با adminReply)
 export async function GET(req, { params }) {
@@ -22,7 +22,9 @@ export async function GET(req, { params }) {
       },
     });
 
-    return NextResponse.json(comments.map(withCommentAvatar));
+    // verifiedBuyer: همان نشان «خریدار این محصول» که صفحهٔ سروری هم می‌دهد (lib/comments.js)
+    const marked = await withVerifiedBuyers(productIdNum, comments);
+    return NextResponse.json(marked.map(withCommentAvatar));
   } catch (error) {
     console.error("خطا در دریافت نظرات:", error);
     return NextResponse.json(
