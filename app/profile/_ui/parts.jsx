@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import AppImage from "@/app/components/AppImage";
 import { useChangeKey } from "@/lib/motion";
@@ -103,11 +104,27 @@ export function MapArt({ seed = 0 }) {
   );
 }
 
-// قاب نقشه با سنجاق شناور وسط آن؛ حلقهٔ پالسِ دور سنجاق خودِ .pin::before است (profile.css)
-export function MapBox({ seed, children }) {
+// قاب نقشه با سنجاق شناور وسط آن؛ حلقهٔ پالسِ دور سنجاق خودِ .pin::before است (profile.css).
+// src (آدرس تصویر ثابت نقشه، mapUrl آدرس) که بیاید نقشهٔ واقعی نشان است و نقشهٔ ساختگی فقط جای خالی تا رسیدن تصویر؛ آدرس بی‌مختصات یا تصویر ناموفق همان نقشهٔ ساختگی را نگه می‌دارد
+export function MapBox({ seed, src, children }) {
+  const [state, setState] = useState("idle"); // idle | loaded | failed
+  const real = Boolean(src) && state !== "failed";
   return (
-    <div className="map">
+    <div className={`map ${real ? "real" : ""}`}>
       <MapArt seed={seed} />
+      {real && (
+        // eslint-disable-next-line @next/next/no-img-element -- تصویر ثابت نشان از route خود سایت با امضا و کش مرورگر است؛ بهینه‌ساز تصویر Next لازم نیست
+        <img
+          key={src}
+          className={state === "loaded" ? "loaded" : ""}
+          src={src}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          onLoad={() => setState("loaded")}
+          onError={() => setState("failed")}
+        />
+      )}
       <span className="pin">
         <Ic n="pin" />
       </span>

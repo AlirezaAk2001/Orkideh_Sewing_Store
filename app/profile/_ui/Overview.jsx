@@ -6,9 +6,10 @@ import { Scissors, Spool } from "lucide-react";
 import Avatar from "@/app/components/Avatar";
 import { useCountUp } from "@/app/admin/_ui/useCountUp";
 import { compactText } from "@/app/admin/_dashboard/format";
+import { formatAddress } from "@/lib/addressFormat";
 import { Ic } from "./icons";
 import { useTileReveal } from "./useTileReveal";
-import { dateFa, dayFull, fa, greeting, spendingByMonth, toman } from "./format";
+import { dateFa, dayFull, fa, faDigits, greeting, spendingByMonth, toman } from "./format";
 import { MapBox, ST, ST_KEYS, Stack, Thumb, countByStatus } from "./parts";
 
 // شمارش تا مقدار با همان آهنگ طرح (۱٫۳ ثانیه)؛ با «کاهش حرکت» فوری. run=false: هنوز شروع نکن (کاشی هنوز به صفحه نرسیده)
@@ -493,7 +494,7 @@ function AddrTile({ addresses, onGo }) {
   const last = addresses[addresses.length - 1];
   return (
     <article className="tile t-addr reveal" {...revealProps(revealRef, rv, 6)} {...tileLink("addresses", "آدرس من، رفتن به آدرس‌های من", onGo)}>
-      <MapBox seed={Math.max(0, addresses.length - 1)} />
+      <MapBox key={last?.mapUrl || "art"} seed={Math.max(0, addresses.length - 1)} src={last?.mapUrl} />
       {/* فلش گوشهٔ کاشی مثل کاشی‌های دیگر؛ این کاشی سرتاسر نقشه است و سرتیتر ندارد، پس فلش روی نقشه و سر جای همان فلش‌ها می‌نشیند (.t-addr .t-go در profile.css) */}
       <span className="t-go">
         <Ic n="arrowL" />
@@ -507,7 +508,7 @@ function AddrTile({ addresses, onGo }) {
             </span>
           )}
         </div>
-        <p>{last ? last.address : "هنوز آدرسی ثبت نکرده‌اید."}</p>
+        <p>{last ? faDigits(formatAddress(last)) : "هنوز آدرسی ثبت نکرده‌اید."}</p>
       </div>
     </article>
   );

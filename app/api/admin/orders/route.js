@@ -12,7 +12,7 @@ export async function GET(req) {
   // where رو کامل حذف کن
   include: {
     User: { select: { username: true, id: true } },
-    Address: { select: { address: true, postalCode: true } },
+    Address: { select: { title: true, address: true, plate: true, unit: true, postalCode: true } },
     OrderItems: {
       include: {
         Product: { select: { name: true, price: true, finalPrice: true } },
@@ -73,7 +73,7 @@ export async function PUT(req) {
       data: { status },
       include: {
         User: { select: { username: true, id: true } },
-        Address: { select: { address: true, postalCode: true } },
+        Address: { select: { title: true, address: true, plate: true, unit: true, postalCode: true } },
         OrderItems: {
           include: {
             Product: { select: { name: true, price: true, finalPrice: true } },

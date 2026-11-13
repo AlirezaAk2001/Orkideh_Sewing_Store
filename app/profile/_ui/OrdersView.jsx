@@ -9,6 +9,7 @@ import { useCart } from "@/lib/context";
 import ConfirmDialog from "./ConfirmDialog";
 import { Ic } from "./icons";
 import { costLabel } from "@/lib/shipping";
+import { formatAddress } from "@/lib/addressFormat";
 import { dateFa, dateTimeFa, fa, faDigits, toman } from "./format";
 import { Empty, ST, Stack, Thumb, ViewHead, countByStatus } from "./parts";
 
@@ -185,7 +186,7 @@ function OrderCard({ order, index, open, leaving, busy, onToggle, onPay, onAskDe
                 </DInfo>
               )}
               <DInfo icon="pin" label="آدرس تحویل" wide>
-                {order.Address ? faDigits(order.Address.address) : "آدرسی ثبت نشده است"}
+                {order.Address ? faDigits(formatAddress(order.Address)) : "آدرسی ثبت نشده است"}
               </DInfo>
               {/* کد پستی بخش جدا دارد (نه داخل متن آدرس)؛ کنار شمارهٔ تماس می‌نشیند */}
               {order.Address && (

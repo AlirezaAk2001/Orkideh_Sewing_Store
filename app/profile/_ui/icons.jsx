@@ -5,6 +5,10 @@ import {
   ClipboardCheck,
   Copy,
   CreditCard,
+  DoorOpen,
+  Hash,
+  LocateFixed,
+  Search,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
@@ -118,6 +122,10 @@ const ICONS = {
   upload: Upload,
   zoomIn: ZoomIn,
   zoomOut: ZoomOut,
+  search: Search,
+  locate: LocateFixed,
+  hash: Hash,
+  door: DoorOpen,
 };
 
 export function Ic({ n, className = "" }) {

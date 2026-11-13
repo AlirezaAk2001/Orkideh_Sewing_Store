@@ -119,8 +119,14 @@ model OrderItem {
 model Address {
   id          Int      @id @default(autoincrement())
   userId      Int
+  title       String?  // عنوان: «خانه»، «محل کار» یا متن دلخواه؛ خالی = در پنل «آدرس N» نشان داده می‌شود
   address     String
+  plate       String?
+  unit        String?
   postalCode  String
+  lat         Float?   // موقعیت روی نقشه (نشان)؛ هر دو یا هیچ‌کدام
+  lng         Float?
+  deletedAt   DateTime? // حذف نرم: سفارش‌های قبلی (Order.addressId) به همین ردیف وصل‌اند و مقصدشان نباید گم شود؛ ردیف حذف‌شده در هیچ لیستی نمی‌آید
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   User        User     @relation(fields: [userId], references: [id])

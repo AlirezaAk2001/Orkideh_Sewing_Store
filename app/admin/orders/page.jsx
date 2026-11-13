@@ -15,6 +15,7 @@ import EmptyState from "@/app/admin/_list/EmptyState";
 import SegmentedTabs from "@/app/admin/_list/SegmentedTabs";
 import StatusChip from "@/app/admin/_list/StatusChip";
 import { ORDER_STATUS, ORDER_STATUS_ORDER, statusTint } from "@/app/admin/_list/orderStatus";
+import { formatAddress } from "@/lib/addressFormat";
 
 const fa = (n) => (n || n === 0 ? Number(n).toLocaleString("fa-IR") : "");
 
@@ -87,7 +88,7 @@ function OrderCard({ order, index, busy, onStatus }) {
             <span dir="ltr" className="inline-block">{toPersianNumbers(order.phoneNumber) || "نامشخص"}</span>
           </Info>
           <Info icon={MapPin} label="آدرس و کد پستی" className="sm:col-span-2">
-            {toPersianNumbers(order.Address?.address) || "نامشخص"}، کد پستی: {toPersianNumbers(order.Address?.postalCode) || "نامشخص"}
+            {toPersianNumbers(formatAddress(order.Address)) || "نامشخص"}، کد پستی: {toPersianNumbers(order.Address?.postalCode) || "نامشخص"}
           </Info>
           {/* سفارش‌های قبل از قابلیت ارسال روشی ندارند و این ردیف را ندارند */}
           {order.shippingMethod != null && (

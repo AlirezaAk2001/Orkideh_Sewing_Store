@@ -70,7 +70,7 @@ export async function POST(req) {
 
     // بررسی وجود آدرس
     const address = await prisma.address.findFirst({
-      where: { userId },
+      where: { userId, deletedAt: null }, // آدرس حذف‌شده (حذف نرم) مقصد سفارش تازه نمی‌شود
     });
     if (!address) {
       return NextResponse.json(
