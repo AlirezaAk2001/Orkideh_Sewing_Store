@@ -7,6 +7,7 @@ import { useAuth } from "@/lib/context";
 import { toPersianDigits } from "@/lib/format";
 import { scrollBehavior } from "@/lib/motion";
 import { PenIcon, TrashCan } from "@/app/components/ActionIcons";
+import { tip } from "@/lib/tip";
 import { Ic } from "./icons";
 import { fa, toEn } from "./format";
 import { FL, MapBox, ViewHead } from "./parts";
@@ -251,6 +252,7 @@ export default function AddressesView() {
                               <Ic n="check" />
                               موقعیت روی نقشه ثبت شد
                               <button type="button" className="linkbtn" onClick={clearPoint}>
+                                <Ic n="mapOff" />
                                 برداشتن موقعیت
                               </button>
                             </>
@@ -307,6 +309,7 @@ export default function AddressesView() {
                   {geoText && text.trim() !== geoText && (
                     <div className="hint">
                       <button type="button" className="linkbtn" onClick={fillFromMap}>
+                        <Ic n="wand" />
                         پر کردن از روی نقشه
                       </button>
                     </div>
@@ -332,7 +335,7 @@ export default function AddressesView() {
 
                 <div className="sfoot" style={{ marginTop: 2 }}>
                   <button type="submit" className="btn btn-primary" disabled={!canSave}>
-                    {saving && <Ic n="loader" className="spin" />}
+                    {saving ? <Ic n="loader" className="spin" /> : <Ic n="check" />}
                     {saving ? "در حال ذخیره…" : editing ? "ذخیرهٔ تغییرات" : "ذخیرهٔ آدرس"}
                   </button>
                 </div>
@@ -379,18 +382,20 @@ export default function AddressesView() {
                     <>
                       <span className="q">این آدرس حذف شود؟</span>
                       <button type="button" className="bsm danger" onClick={() => remove(a)} disabled={deleting}>
+                        {deleting ? <Ic n="loader" className="spin" /> : <Ic n="trash2" />}
                         {deleting ? "در حال حذف…" : "بله، حذف شود"}
                       </button>
                       <button type="button" className="bsm ghost" onClick={() => setAskId(null)} disabled={deleting}>
+                        <Ic n="x" />
                         انصراف
                       </button>
                     </>
                   ) : (
                     <>
-                      <button type="button" className="ib-btn icon-action" onClick={() => openForm(a)} aria-label={`ویرایش ${label}`} title="ویرایش">
+                      <button type="button" className="ib-btn icon-action" onClick={() => openForm(a)} aria-label={`ویرایش ${label}`} {...tip("ویرایش")}>
                         <PenIcon />
                       </button>
-                      <button type="button" className="ib-btn red icon-action" onClick={() => setAskId(a.id)} aria-label={`حذف ${label}`} title="حذف">
+                      <button type="button" className="ib-btn red icon-action" onClick={() => setAskId(a.id)} aria-label={`حذف ${label}`} {...tip("حذف")}>
                         <TrashCan />
                       </button>
                     </>

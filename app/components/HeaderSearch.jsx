@@ -5,7 +5,7 @@ import { createPortal, flushSync } from "react-dom";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { ChevronLeft, Clock, PackageSearch, SearchX, X } from "lucide-react";
+import { ChevronLeft, Clock, PackageSearch, SearchX, Trash2, X } from "lucide-react";
 import AppImage from "./AppImage";
 import ScrollArea from "./ScrollArea";
 import SearchGlyph from "./SearchGlyph";
@@ -451,6 +451,7 @@ export default function HeaderSearch({ disabled = false }) {
                           <div className="sp-cap sp-rise" style={{ "--i": 0 }}>
                             <span>جستجوهای اخیر</span>
                             <button type="button" className="sp-clear" onClick={forget}>
+                              <Trash2 aria-hidden="true" />
                               پاک کردن
                             </button>
                           </div>

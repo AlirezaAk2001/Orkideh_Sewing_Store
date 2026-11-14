@@ -21,6 +21,8 @@ import {
   LogOut,
   Mail,
   MapPin,
+  MapPinOff,
+  MapPinPlus,
   Minus,
   Package,
   PackageCheck,
@@ -31,6 +33,7 @@ import {
   Plus,
   ReceiptText,
   Repeat,
+  RotateCw,
   ShieldCheck,
   ShoppingBag,
   ShoppingCart,
@@ -44,6 +47,7 @@ import {
   Truck,
   Undo2,
   User,
+  WandSparkles,
   X,
   ArrowLeft,
   LoaderCircle,
@@ -137,6 +141,10 @@ const ICONS = {
   locate: LocateFixed,
   plate: Plate,
   door: DoorOpen,
+  retry: RotateCw,
+  mapOff: MapPinOff,
+  mapPlus: MapPinPlus,
+  wand: WandSparkles,
 };
 
 export function Ic({ n, className = "" }) {

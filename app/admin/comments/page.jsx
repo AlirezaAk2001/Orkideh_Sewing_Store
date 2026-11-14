@@ -5,7 +5,8 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import moment from "moment-jalaali";
 import { Dialog } from "@mui/material";
-import { CheckCheck, CircleCheck, Clock, MessageSquareDashed, MessageSquareText, Package, Pencil, Reply, Send, Star, X } from "lucide-react";
+import { tip } from "@/lib/tip";
+import { CheckCheck, CircleCheck, Clock, Eye, MessageSquareDashed, MessageSquareText, Package, Pencil, Reply, Send, Star, X } from "lucide-react";
 import { PenIcon } from "@/app/components/ActionIcons";
 import Icon from "@mdi/react";
 import { mdiAccountBoxEditOutline } from "@mdi/js";
@@ -179,16 +180,18 @@ function ReplyDialog({ comment, onClose, onSave }) {
               }}
             />
             <div className="flex flex-col gap-2">
-              <button
-                type="button"
-                onClick={handleSend}
-                disabled={saving || !replyText.trim() || replyText.trim() === originalReply.trim()}
-                className="grid h-10 w-10 cursor-pointer place-items-center rounded-xl bg-brand-600 text-white shadow-sm transition hover:bg-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                title="ارسال (Ctrl+Enter)"
-                aria-label="ارسال پاسخ"
-              >
-                <Send className="h-4 w-4" aria-hidden="true" />
-              </button>
+              {/* راهنما روی عنصر دربرگیرنده است چون دکمهٔ غیرفعال رویداد موس نمی‌گیرد (disabled:pointer-events-none) */}
+              <span className="inline-flex" {...tip("ارسال (Ctrl+Enter)")}>
+                <button
+                  type="button"
+                  onClick={handleSend}
+                  disabled={saving || !replyText.trim() || replyText.trim() === originalReply.trim()}
+                  className="grid h-10 w-10 cursor-pointer place-items-center rounded-xl bg-brand-600 text-white shadow-sm transition hover:bg-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
+                  aria-label="ارسال پاسخ"
+                >
+                  <Send className="h-4 w-4" aria-hidden="true" />
+                </button>
+              </span>
               {comment.adminReply && editMode && (
                 <button
                   type="button"
@@ -197,7 +200,7 @@ function ReplyDialog({ comment, onClose, onSave }) {
                     setEditMode(false);
                   }}
                   className="grid h-10 w-10 cursor-pointer place-items-center rounded-xl bg-gray-200 text-gray-600 transition hover:bg-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400"
-                  title="انصراف"
+                  {...tip("انصراف")}
                   aria-label="انصراف از ویرایش"
                 >
                   <X className="h-4 w-4" aria-hidden="true" />
@@ -214,8 +217,9 @@ function ReplyDialog({ comment, onClose, onSave }) {
           <button
             type="button"
             onClick={onClose}
-            className="h-10 cursor-pointer rounded-xl bg-gray-200 px-5 text-sm font-semibold text-gray-700 transition hover:bg-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400"
+            className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-xl bg-gray-200 px-5 text-sm font-semibold text-gray-700 transition hover:bg-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400"
           >
+            <X className="h-[18px] w-[18px]" aria-hidden="true" />
             بستن
           </button>
         </div>
@@ -304,7 +308,7 @@ function CommentCard({ comment, index, activeTab, onApprove, onReject, onReply }
                 type="button"
                 onClick={handleApprove}
                 disabled={approving}
-                title="تأیید نظر"
+                {...tip("تأیید نظر")}
                 className="inline-flex h-10 cursor-pointer items-center gap-1.5 rounded-xl bg-emerald-700 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {approving ? (
@@ -319,7 +323,7 @@ function CommentCard({ comment, index, activeTab, onApprove, onReject, onReply }
                 <button
                   type="button"
                   onClick={() => setShowReplyDialog(true)}
-                  title={hasReply ? "ویرایش پاسخ" : "پاسخ به نظر"}
+                  {...tip(hasReply ? "ویرایش پاسخ" : "پاسخ به نظر")}
                   className={`inline-flex h-10 cursor-pointer items-center gap-1.5 rounded-xl px-4 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 focus-visible:ring-offset-2 ${
                     hasReply ? "bg-brand-50 text-brand-700 ring-1 ring-inset ring-brand-200 hover:bg-brand-100/70" : "bg-brand-600 text-white shadow-sm hover:bg-brand-700"
                   }`}
@@ -331,7 +335,7 @@ function CommentCard({ comment, index, activeTab, onApprove, onReject, onReply }
                   type="button"
                   onClick={handleReject}
                   disabled={dissolving}
-                  title="رد تأیید"
+                  {...tip("رد تأیید")}
                   className="inline-flex h-10 cursor-pointer items-center gap-1.5 rounded-xl bg-white px-4 text-sm font-semibold text-red-600 ring-1 ring-inset ring-red-200 transition hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   <X className="h-[18px] w-[18px]" aria-hidden="true" />
@@ -482,6 +486,7 @@ export default function AdminComments() {
               onClick={() => setActiveTab(target.id)}
               className="inline-flex h-10 cursor-pointer items-center gap-1.5 rounded-xl bg-gray-100 px-4 text-sm font-semibold text-gray-700 transition hover:bg-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300"
             >
+              <Eye className="h-[18px] w-[18px]" aria-hidden="true" />
               نمایش {target.id === "all" ? "همهٔ نظرها" : target.label} ({fa(counts[target.id])})
             </button>
           )

@@ -443,6 +443,7 @@
    transition همان قاعدهٔ سراسری .seg-tab است (این‌جا نباید transition بگذاریم تا transform و سایه گذار داشته باشند) */
 .pf .fseg { position: relative; display: inline-flex; flex-wrap: wrap; gap: 4px; padding: 4px; border-radius: 17px; background: rgb(80 30 90 / 0.06); }
 .pf .fseg button { display: inline-flex; align-items: center; gap: 7px; height: 36px; padding-inline: 14px; border-radius: 13px; font-size: 13px; font-weight: 700; color: var(--ink-2); }
+.pf .fseg button svg { width: 16px; height: 16px; }
 .pf .fseg button em { font-style: normal; display: grid; place-items: center; min-width: 20px; height: 20px; padding-inline: 5px; border-radius: 10px; font-size: 11px; background: rgb(80 30 90 / 0.08); transition: background 0.25s, color 0.25s; }
 .pf .fseg button[aria-pressed="true"] { color: var(--brand-700); }
 .pf .fseg button[aria-pressed="true"] em { background: var(--brand-600); color: #fff; }
@@ -561,14 +562,16 @@
 /* تأیید حذف: همان‌جا به‌جای دکمه‌ها */
 .pf .acard .aacts.ask { flex-wrap: wrap; justify-content: flex-end; }
 .pf .acard .aacts .q { font-size: 12.5px; font-weight: 700; color: var(--ink-2); }
-.pf .acard .bsm { height: 34px; padding-inline: 14px; border-radius: 11px; font-size: 12.5px; font-weight: 800; }
+.pf .acard .bsm { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 34px; padding-inline: 14px; border-radius: 11px; font-size: 12.5px; font-weight: 800; }
+.pf .acard .bsm svg { width: 15px; height: 15px; }
 .pf .acard .bsm.danger { color: #fff; background: linear-gradient(150deg, #f43f5e, #be123c); box-shadow: 0 8px 14px -8px #be123c; }
 .pf .acard .bsm.ghost { color: var(--ink-2); background: rgb(255 255 255 / 0.85); box-shadow: 0 0 0 1px var(--line); }
 .pf .acard .bsm:disabled { opacity: 0.6; }
 /* فرم آدرس: ردیف دوستونه (عنوان + کد پستی، پلاک + واحد)، لیست عنوان، برچسب با دکمهٔ «پر کردن از نقشه» */
 .pf .frow { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; align-items: start; }
 @container app (max-width: 640px) { .pf .frow { grid-template-columns: 1fr; } }
-.pf .linkbtn { font-size: 12.5px; font-weight: 800; color: var(--brand-700); text-decoration: underline; text-underline-offset: 3px; }
+.pf .linkbtn { display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; font-weight: 800; color: var(--brand-700); text-decoration: underline; text-underline-offset: 3px; }
+.pf .linkbtn svg { width: 15px; height: 15px; }
 /* انتخاب موقعیت روی نقشه (MapPicker): سنجاق ثابت وسط، نوار جستجو و GPS بالا. با کشیدن، سنجاق کمی بالا می‌آید و سایهٔ زیرش کوچک می‌شود */
 .pf .mp { position: relative; height: 300px; border-radius: 18px; overflow: hidden; isolation: isolate; background: linear-gradient(180deg, #fbeaf2, #f6e3ef); box-shadow: inset 0 0 0 1.5px rgb(80 30 90 / 0.12); }
 @container app (max-width: 640px) { .pf .mp { height: 270px; } }
@@ -588,7 +591,7 @@
 .pf .mp-x:hover { background: rgb(80 30 90 / 0.07); color: var(--ink-2); }
 .pf .mp-x svg { width: 14px; height: 14px; }
 .pf .mp-go, .pf .mp-gps { flex: none; height: 42px; border-radius: 14px; font-size: 13px; font-weight: 800; }
-.pf .mp-go { padding-inline: 16px; color: #fff; background: linear-gradient(150deg, var(--brand-500), var(--brand-700)); box-shadow: 0 10px 18px -10px var(--brand-600); }
+.pf .mp-go { display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding-inline: 16px; color: #fff; background: linear-gradient(150deg, var(--brand-500), var(--brand-700)); box-shadow: 0 10px 18px -10px var(--brand-600); }
 .pf .mp-go:disabled { opacity: 0.55; }
 .pf .mp-gps { display: grid; place-items: center; width: 42px; color: var(--brand-700); background: rgb(255 255 255 / 0.96); box-shadow: 0 0 0 1px var(--line), 0 10px 22px -12px rgb(60 20 70 / 0.35); }
 .pf .mp-gps:disabled { opacity: 0.6; }
@@ -692,7 +695,8 @@
 .pf .step button { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 11px; color: var(--ink-2); transition: background 0.2s, color 0.2s, transform 0.2s; }
 .pf .step button:hover:not(:disabled) { background: #fff; color: var(--brand-700); box-shadow: 0 2px 6px rgb(80 20 90 / 0.15); }
 .pf .step button:active:not(:disabled) { transform: scale(0.9); }
-.pf .step button:disabled { opacity: 0.35; cursor: not-allowed; }
+.pf .step button:disabled { opacity: 0.35; pointer-events: none; }
+.pf .step .step-plus { display: inline-flex; }
 .pf .step button svg { width: 15px; height: 15px; stroke-width: 2.4; }
 .pf .step span { min-width: 34px; text-align: center; font-weight: 800; font-size: 15px; }
 .pf .line-total { min-width: 118px; text-align: left; font-weight: 800; font-size: 15px; }
@@ -759,7 +763,8 @@
 .pf .ship .pr .free { font-style: normal; color: #86efac; }
 .pf .ship-skel { height: 48px; margin: 8px 0 6px; border-radius: 15px; background: linear-gradient(100deg, rgb(255 255 255 / 0.06) 30%, rgb(255 255 255 / 0.18) 50%, rgb(255 255 255 / 0.06) 70%) 0 0 / 220% 100%; animation: pf-shimmer 1.5s linear infinite; }
 .pf .ship-msg { display: flex; align-items: center; gap: 8px; margin: 8px 0 6px; padding: 10px 14px; border-radius: 14px; font-size: 12.5px; color: #fecaca; background: rgb(239 68 68 / 0.16); box-shadow: inset 0 0 0 1px rgb(254 202 202 / 0.3); }
-.pf .ship-msg button { margin-inline-start: auto; font-weight: 700; color: #fff; text-decoration: underline; text-underline-offset: 3px; }
+.pf .ship-msg button { display: inline-flex; align-items: center; gap: 5px; margin-inline-start: auto; font-weight: 700; color: #fff; text-decoration: underline; text-underline-offset: 3px; }
+.pf .ship-msg button svg { width: 14px; height: 14px; }
 .pf .sum .field { gap: 4px; }
 .pf .sum .btn { width: 100%; height: 44px; margin-top: 8px; font-size: 15px; }
 .pf .sum .secure { display: flex; align-items: center; justify-content: center; gap: 7px; margin-top: 6px; font-size: 12px; line-height: 1.5; color: rgb(255 255 255 / 0.6); }
@@ -888,7 +893,8 @@
 @keyframes pf-shimmer { to { background-position: -220% 0; } }
 .pf .note { display: flex; align-items: center; gap: 6px; margin-top: 8px; padding: 5px 5px 5px 8px; border-radius: 14px; font-size: 12px; color: rgb(255 255 255 / 0.85); background: rgb(255 255 255 / 0.1); box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.16); }
 /* «ثبت آدرس» یک دکمهٔ واقعی است (همان .btn-primary سایت با برق هاور)، کوچک‌تر از دکمهٔ پرداخت تا یادداشت بلندتر نشود */
-.pf .note .btn { flex: none; width: auto; height: 28px; margin: 0 0 0 0; margin-inline-start: auto; padding-inline: 12px; border-radius: 10px; font-size: 12.5px; }
+.pf .note .btn { flex: none; width: auto; height: 28px; margin: 0 0 0 0; margin-inline-start: auto; padding-inline: 12px; gap: 6px; border-radius: 10px; font-size: 12.5px; }
+.pf .note .btn svg { width: 15px; height: 15px; }
 .pf .lnk { color: var(--brand-700); font-weight: 700; }
 .pf .lnk:hover { text-decoration: underline; text-underline-offset: 3px; }
 .pf .drow .nm a:hover, .pf .citem h3 a:hover, .pf .pcard h3 a:hover { color: var(--brand-700); }

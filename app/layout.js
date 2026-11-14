@@ -7,6 +7,7 @@ import ConditionalLayout from "./components/ConditionalLayout";
 import ButtonDepth from "./components/ButtonDepth";
 import PageScrollbar from "./components/PageScrollbar";
 import NavProgress from "./components/NavProgress";
+import AppTooltip from "./components/AppTooltip";
 import MotionProvider from "./components/MotionProvider";
 import { SITE_NAME, SITE_DESCRIPTION, getSiteUrl, previewImage } from "../lib/seo";
 
@@ -48,6 +49,8 @@ export default function RootLayout({ children }) {
       <body className="bg-gray-100 text-gray-900 antialiased flex flex-col min-h-screen">
         <ButtonDepth />
         <PageScrollbar />
+        {/* راهنمای دکمه‌ها به‌جای title مرورگر (lib/tip.js) */}
+        <AppTooltip />
         {/* نوار پیشرفت ناوبری؛ useSearchParams داخلش پشت Suspense است تا صفحه‌های ایستا را کلاینتی نکند */}
         <Suspense fallback={null}>
           <NavProgress />

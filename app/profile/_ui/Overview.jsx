@@ -190,6 +190,7 @@ function TrackTile({ order, onGo, onPay, paying }) {
             </button>
           )}
           <button type="button" className="btn btn-white sm" onClick={(e) => onGo("orders", e.currentTarget.closest(".tile"), anchor)}>
+            <Ic n="receipt" />
             جزئیات سفارش
           </button>
         </div>

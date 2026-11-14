@@ -116,7 +116,7 @@ function UsernameCard() {
         </div>
         <div className="sfoot">
           <button type="submit" className="btn btn-primary" disabled={state !== "ok" || saving}>
-            {saving && <Ic n="loader" className="spin" />}
+            {saving ? <Ic n="loader" className="spin" /> : <Ic n="check" />}
             {saving ? "در حال ذخیره…" : "ذخیرهٔ نام کاربری"}
           </button>
         </div>
@@ -232,7 +232,7 @@ function PasswordCard() {
         </div>
         <div className="sfoot">
           <button type="submit" className="btn btn-primary" disabled={!canSave}>
-            {saving && <Ic n="loader" className="spin" />}
+            {saving ? <Ic n="loader" className="spin" /> : <Ic n="lock" />}
             {saving ? "در حال تغییر…" : "تغییر رمز عبور"}
           </button>
         </div>

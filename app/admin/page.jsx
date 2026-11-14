@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import Icon from '@mdi/react';
 import { mdiPanoramaVariantOutline, mdiCommentAccountOutline, mdiAccountFileText } from '@mdi/js';
 import CategoryOutlinedIcon from "@mui/icons-material/CategoryOutlined";
-import { Banknote, FlaskConical, MessageSquareText, PackageX, ShoppingBag, Truck, UserPlus, Wallet } from "lucide-react";
+import { Banknote, ChartColumn, FlaskConical, MessageSquareText, PackageX, ShoppingBag, Truck, UserPlus, Wallet } from "lucide-react";
 import { demoAllowed } from "@/lib/demoFlag";
 import AttentionBell from "./_dashboard/AttentionBell";
 import AttentionItem from "./_dashboard/AttentionItem";
@@ -184,8 +184,9 @@ export default function AdminHome() {
           <button
             type="button"
             onClick={() => toggleDemo(false)}
-            className="col-span-2 cursor-pointer justify-self-start rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-amber-800 sm:col-span-1 shadow-sm ring-1 ring-amber-200 transition hover:bg-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+            className="col-span-2 inline-flex cursor-pointer items-center gap-1.5 justify-self-start rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-amber-800 sm:col-span-1 shadow-sm ring-1 ring-amber-200 transition hover:bg-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
           >
+            <ChartColumn className="h-4 w-4" aria-hidden="true" />
             نمایش آمار واقعی
           </button>
         </div>

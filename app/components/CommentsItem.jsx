@@ -4,6 +4,7 @@ import { useAuth } from "@/lib/context";
 import axios from "axios";
 import toast from "react-hot-toast";
 import Avatar from "./Avatar";
+import { TrashCan } from "./ActionIcons";
 import { BadgeCheck, Star, Store } from "lucide-react";
 import moment from 'moment-jalaali';
 
@@ -89,6 +90,7 @@ export default function CommentsItem({ comment, onDelete, index = 0 }) {
         <p className="pd-cm-text">{comment.text}</p>
         {isAdmin && (
           <button type="button" onClick={handleDelete} className="pd-cm-del btn-flat">
+            <TrashCan className="h-4 w-4" />
             حذف
           </button>
         )}

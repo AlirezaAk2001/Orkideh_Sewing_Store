@@ -70,6 +70,7 @@ export default function ServiceSection() {
             href="/about"
             className="btn-lift inline-flex items-center gap-2 rounded-xl border border-white/30 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-white/10"
           >
+            <MapPin className="h-4 w-4" aria-hidden="true" />
             نقشه و اطلاعات تماس
           </Link>
         </div>

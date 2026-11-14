@@ -410,9 +410,9 @@ export default function AuthPage() {
               {/* زبانهٔ ورود/ثبت‌نام: همان تب‌های قطعه‌ای پنل مدیریت (.seg و .seg-tab در globals.css): قرص سفید خود تب فعال است و هنگام هاور همراه تب بالا می‌آید */}
               <div ref={switchRef} role="group" aria-label="ورود یا ثبت‌نام" className="seg mb-5 grid grid-cols-2 gap-1 rounded-xl bg-gray-100 p-1">
                 {[
-                  { toLogin: true, label: "ورود" },
-                  { toLogin: false, label: "ثبت‌نام" },
-                ].map(({ toLogin, label }) => {
+                  { toLogin: true, label: "ورود", Icon: LogIn },
+                  { toLogin: false, label: "ثبت‌نام", Icon: UserPlus },
+                ].map(({ toLogin, label, Icon }) => {
                   const on = isLogin === toLogin;
                   return (
                     <button
@@ -421,10 +421,11 @@ export default function AuthPage() {
                       aria-pressed={on}
                       data-on={on ? "" : undefined}
                       onClick={() => switchMode(toLogin)}
-                      className={`seg-tab h-10 cursor-pointer rounded-lg text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 ${
+                      className={`seg-tab inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 ${
                         on ? "text-brand-700" : "text-gray-600 hover:bg-white/60 hover:text-gray-900"
                       }`}
                     >
+                      <Icon className="h-4 w-4" aria-hidden="true" />
                       {label}
                     </button>
                   );

@@ -1,7 +1,7 @@
 "use client";
 
 import { Dialog } from "@mui/material";
-import { TriangleAlert } from "lucide-react";
+import { TriangleAlert, X } from "lucide-react";
 
 // پنجرهٔ تأیید کار برگشت‌ناپذیر (خروج، حذف): کارت سفید گرد با آیکون هشدار، عنوان، توضیح و دو دکمه. فوکوس اول روی «انصراف» است تا Enter ناخواسته
 // کاری را انجام ندهد. خود Dialog از MUI می‌آید (تله‌ی فوکوس، Esc و کلیک روی پس‌زمینه را درست انجام می‌دهد)
@@ -26,15 +26,18 @@ export default function ConfirmDialog({ open, onClose, onConfirm, title, childre
             type="button"
             autoFocus
             onClick={onClose}
-            className="h-11 flex-1 cursor-pointer rounded-xl bg-gray-100 text-sm font-semibold text-gray-700 transition hover:bg-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400"
+            className="inline-flex h-11 flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl bg-gray-100 text-sm font-semibold text-gray-700 transition hover:bg-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400"
           >
+            <X className="h-[18px] w-[18px]" aria-hidden="true" />
             {cancelLabel}
           </button>
+          {/* آیکون دکمهٔ تأیید همان آیکون هر پنجره است (سطل برای حذف، خروج برای خروج) */}
           <button
             type="button"
             onClick={onConfirm}
-            className="h-11 flex-1 cursor-pointer rounded-xl bg-red-600 text-sm font-semibold text-white shadow-sm transition hover:bg-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
+            className="inline-flex h-11 flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl bg-red-600 text-sm font-semibold text-white shadow-sm transition hover:bg-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
           >
+            <Icon className="h-[18px] w-[18px]" aria-hidden="true" />
             {confirmLabel}
           </button>
         </div>

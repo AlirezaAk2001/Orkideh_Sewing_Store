@@ -887,12 +887,19 @@ html.sb-dragging * {
   font-weight: 600;
 }
 .sp-clear {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
   padding: 0.15rem 0.5rem;
   border-radius: 9999px;
   color: var(--color-brand-600);
   font-size: 0.72rem;
   font-weight: 600;
   transition: background-color 0.2s ease;
+}
+.sp-clear svg {
+  width: 0.8rem;
+  height: 0.8rem;
 }
 .sp-clear:hover {
   background: var(--color-brand-50);
@@ -2662,4 +2669,43 @@ html.sb-dragging * {
   .ff input::placeholder {
     transition: none;
   }
+}
+
+/* ───── راهنمای دکمه‌ها (AppTooltip.jsx، lib/tip.js): جای title مرورگر ─────
+   همان ظاهر Tip پنل مدیریت (admin/_list/Tip.jsx): زمینهٔ تیره، گوشهٔ گرد، فونت سایت. بالاتر از دیالوگ‌های MUI (z-index ۱۳۰۰) و هدر می‌نشیند و کلیک را رد می‌کند. */
+.react-tooltip.app-tip {
+  z-index: 9999;
+  max-width: 260px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: #1f2937;
+  color: #fff;
+  font-family: "Vazirmatn", sans-serif;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.7;
+  direction: rtl;
+  text-align: right;
+  pointer-events: none;
+}
+.react-tooltip.app-tip .react-tooltip-arrow {
+  background: #1f2937;
+}
+/* دکمهٔ غیرفعال رویداد موس نمی‌گیرد؛ راهنما روی عنصر دربرگیرنده است و موس باید از دکمه رد شود تا به آن برسد */
+.qty-step button:disabled {
+  pointer-events: none;
+}
+
+/* ───── نشانگر موس: همه‌جای پروژه پیش‌فرض (پیکان) ─────
+   دست (pointer)، زوم، grab و not-allowed کنار گذاشته شد؛ فقط میدان‌های متنی نشانگر متن می‌دارند تا قابل‌نوشتن‌بودنشان معلوم باشد.
+   !important لازم است چون خیلی از کامپوننت‌ها و کلاس‌های Tailwind (cursor-pointer، cursor-not-allowed، …) و کتابخانه‌ها (MUI، نقشه) نشانگر خودشان را می‌گذارند. */
+*,
+*::before,
+*::after {
+  cursor: default !important;
+}
+input:not([type="checkbox"], [type="radio"], [type="range"], [type="button"], [type="submit"], [type="reset"], [type="file"], [type="color"], [type="image"]),
+textarea,
+[contenteditable]:not([contenteditable="false"]) {
+  cursor: text !important;
 }

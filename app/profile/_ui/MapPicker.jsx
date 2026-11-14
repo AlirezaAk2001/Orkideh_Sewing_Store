@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
+import { tip } from "@/lib/tip";
 import { Ic } from "./icons";
 import { MAP_KEY, searchPlaces } from "./mapClient";
 
@@ -191,9 +192,10 @@ export default function MapPicker({ view, onPick }) {
           )}
         </div>
         <button type="button" className="mp-go" onClick={search} disabled={searching || query.trim().length < 2}>
-          {searching ? <Ic n="loader" className="spin" /> : "جستجو"}
+          {searching ? <Ic n="loader" className="spin" /> : <Ic n="search" />}
+          جستجو
         </button>
-        <button type="button" className="mp-gps" onClick={locate} disabled={locating} aria-label="موقعیت فعلی من" title="موقعیت فعلی من (GPS)">
+        <button type="button" className="mp-gps" onClick={locate} disabled={locating} aria-label="موقعیت فعلی من" {...tip("موقعیت فعلی من (GPS)")}>
           {locating ? <Ic n="loader" className="spin" /> : <Ic n="locate" />}
         </button>
       </div>

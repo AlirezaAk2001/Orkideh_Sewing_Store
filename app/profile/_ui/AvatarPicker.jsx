@@ -83,6 +83,7 @@ function CropBox({ crop, onChange, onOk, onCancel }) {
           ثبت عکس
         </button>
         <button type="button" className="btn btn-ghost sm" onClick={onCancel}>
+          <Ic n="x" />
           انصراف
         </button>
       </div>
@@ -349,10 +350,11 @@ export default function AvatarPicker() {
       <div className="pk-foot">
         <span className="sp">{dirty ? "تغییرها هنوز ذخیره نشده‌اند" : ""}</span>
         <button type="button" className="btn btn-ghost sm" onClick={cancel} disabled={(!dirty && !crop) || saving}>
+          <Ic n="x" />
           انصراف
         </button>
         <button type="button" className="btn btn-primary" onClick={save} disabled={!dirty || saving}>
-          {saving && <Ic n="loader" className="spin" />}
+          {saving ? <Ic n="loader" className="spin" /> : <Ic n="check" />}
           {saving ? "در حال ذخیره…" : "ذخیرهٔ آواتار"}
         </button>
       </div>

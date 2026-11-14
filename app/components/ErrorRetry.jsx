@@ -2,6 +2,7 @@
 
 import { startTransition } from "react";
 import { useRouter } from "next/navigation";
+import { RotateCw } from "lucide-react";
 
 // صفحهٔ خطای مشترک برای صفحه‌هایی که داده را سمت سرور می‌خوانند (error.jsx هر بخش از آن استفاده می‌کند).
 // پاسخ برای ربات‌ها همچنان خطای 500 است؛ بازدیدکننده پیام فارسی و دکمهٔ تلاش مجدد می‌بیند.
@@ -19,8 +20,9 @@ export default function ErrorRetry({ message, reset }) {
             reset();
           })
         }
-        className="bg-pink-600 text-white px-6 py-2 rounded-lg hover:bg-pink-700 transition cursor-pointer"
+        className="inline-flex items-center gap-2 bg-pink-600 text-white px-6 py-2 rounded-lg hover:bg-pink-700 transition cursor-pointer"
       >
+        <RotateCw className="h-4 w-4" aria-hidden="true" />
         تلاش مجدد
       </button>
     </div>

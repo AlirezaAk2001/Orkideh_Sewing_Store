@@ -12,7 +12,7 @@ import ProductBackdrop from "./product/ProductBackdrop";
 import Reveal from "./product/Reveal";
 import SectionNav from "./product/SectionNav";
 import QuantityStepper from "./QuantityStepper";
-import { Award, BadgePercent, BaggageClaim, ChevronDown, ChevronLeft, Gauge, Info, Layers, MessageSquare, PackageCheck, Palette, Phone, Ruler, Sparkles, Star, Tag, Truck, Weight, Zap, ZoomIn } from "lucide-react";
+import { Award, BadgePercent, BaggageClaim, ChevronDown, ChevronLeft, Gauge, Info, Layers, MessageSquare, PackageCheck, PackageX, Palette, Phone, Ruler, Sparkles, Star, Tag, Truck, Weight, Zap, ZoomIn } from "lucide-react";
 import { STORE } from "@/lib/contact";
 import { brandOf } from "@/lib/brands";
 import { useChangeKey } from "@/lib/motion";
@@ -364,7 +364,8 @@ export default function ProductDetails({ product, initialComments = [], related 
 
   // دکمهٔ اصلی نوار چسبان با همان وضعیت‌ها و همان کنترل‌کننده‌های دکمهٔ اصلی صفحه
   const stickyAction = isOutOfStock ? (
-    <button type="button" disabled className="h-11 flex-1 cursor-not-allowed rounded-xl bg-gray-400 text-sm font-medium text-white">
+    <button type="button" disabled className="flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-gray-400 text-sm font-medium text-white">
+      <PackageX className="h-5 w-5" aria-hidden="true" />
       ناموجود
     </button>
   ) : isInCart ? (
@@ -392,6 +393,7 @@ export default function ProductDetails({ product, initialComments = [], related 
   // دکمهٔ خرید فشردهٔ نوار بخش‌ها (دسکتاپ): همان وضعیت‌ها و همان کنترل‌کننده‌های دکمهٔ اصلی صفحه
   const miniAction = isOutOfStock ? (
     <button type="button" disabled className="pd-mini-btn pd-mini-btn--out">
+      <PackageX className="h-[18px] w-[18px]" aria-hidden="true" />
       ناموجود
     </button>
   ) : isInCart ? (
@@ -558,6 +560,7 @@ export default function ProductDetails({ product, initialComments = [], related 
             <div className="pd-cta-main">
               {isOutOfStock ? (
                 <button type="button" disabled className="pd-btn pd-btn-out">
+                  <PackageX className="h-5 w-5" aria-hidden="true" />
                   ناموجود
                 </button>
               ) : isInCart ? (

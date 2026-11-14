@@ -8,6 +8,7 @@ import CategoryIcon from "@/app/components/CategoryIcon";
 import ExpandSearch from "@/app/components/ExpandSearch";
 import ProductCard from "@/app/components/ProductCard";
 import { SORTS, activeFilterCount, buildListUrl, pageItems, parsePrice } from "@/lib/productQuery";
+import { tip } from "@/lib/tip";
 
 const fa = (n) => Number(n).toLocaleString("fa-IR");
 
@@ -155,15 +156,17 @@ function FilterPanel({ params, bounds, onApply, clearHref }) {
 
         {/* دکمه‌ها کوچک و هم‌اندازه‌اند: روی دسکتاپ flex-1 نباید باشد، وگرنه به‌اندازهٔ ارتفاع ردیف کش می‌آمدند */}
         <div className="flex gap-2 lg:w-36 lg:flex-col lg:justify-center">
-          <button
-            type="submit"
-            disabled={!dirty}
-            title={dirty ? undefined : "تغییری برای اعمال وجود ندارد"}
-            className="inline-flex h-10 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-brand-600 px-3 text-sm font-medium text-white shadow-sm transition enabled:hover:bg-brand-700 enabled:active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-400 disabled:shadow-none lg:flex-none"
-          >
-            <FunnelPlus className="h-4 w-4" aria-hidden="true" />
-            {applyLabel}
-          </button>
+          {/* راهنما روی عنصر دربرگیرنده است چون دکمهٔ غیرفعال رویداد موس نمی‌گیرد (disabled:pointer-events-none) */}
+          <span className="flex flex-1 lg:flex-none" {...tip(dirty ? undefined : "تغییری برای اعمال وجود ندارد")}>
+            <button
+              type="submit"
+              disabled={!dirty}
+              className="inline-flex h-10 w-full cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-brand-600 px-3 text-sm font-medium text-white shadow-sm transition enabled:hover:bg-brand-700 enabled:active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-400 disabled:shadow-none"
+            >
+              <FunnelPlus className="h-4 w-4" aria-hidden="true" />
+              {applyLabel}
+            </button>
+          </span>
           {hasApplied ? (
             <Link
               href={clearHref}
@@ -174,15 +177,16 @@ function FilterPanel({ params, bounds, onApply, clearHref }) {
               {clearLabel}
             </Link>
           ) : (
-            <button
-              type="button"
-              disabled
-              title="هیچ فیلتری اعمال نشده است"
-              className="inline-flex h-10 flex-1 cursor-not-allowed items-center justify-center gap-1.5 rounded-lg border border-gray-200 bg-gray-100 px-3 text-sm font-medium text-gray-400 lg:flex-none"
-            >
-              <FunnelX className="h-4 w-4" aria-hidden="true" />
-              {clearLabel}
-            </button>
+            <span className="flex flex-1 lg:flex-none" {...tip("هیچ فیلتری اعمال نشده است")}>
+              <button
+                type="button"
+                disabled
+                className="pointer-events-none inline-flex h-10 w-full cursor-not-allowed items-center justify-center gap-1.5 rounded-lg border border-gray-200 bg-gray-100 px-3 text-sm font-medium text-gray-400"
+              >
+                <FunnelX className="h-4 w-4" aria-hidden="true" />
+                {clearLabel}
+              </button>
+            </span>
           )}
         </div>
       </div>
@@ -309,7 +313,7 @@ function Pagination({ basePath, params, page, pageCount }) {
   const arrow = "btn-lift grid h-10 w-10 place-items-center rounded-xl border transition";
   const enabled = `${arrow} border-gray-300 bg-white text-gray-700 hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700`;
   // در اولین و آخرین صفحه دکمهٔ غیرفعال است (نه فقط کمرنگ): خوانندهٔ صفحه آن را «غیرفعال» می‌خواند و نشانگر موس not-allowed می‌شود
-  const disabled = `${arrow} cursor-not-allowed border-gray-200 bg-gray-50 text-gray-300`;
+  const disabled = `${arrow} pointer-events-none cursor-not-allowed border-gray-200 bg-gray-50 text-gray-300`;
   return (
     <nav aria-label="صفحه‌بندی" className="mt-10 flex flex-wrap items-center justify-center gap-2">
       {page > 1 ? (
@@ -317,9 +321,11 @@ function Pagination({ basePath, params, page, pageCount }) {
           <ChevronRight className="h-5 w-5" aria-hidden="true" />
         </Link>
       ) : (
-        <button type="button" disabled aria-label="صفحهٔ قبل" title="این اولین صفحه است" className={disabled}>
-          <ChevronRight className="h-5 w-5" aria-hidden="true" />
-        </button>
+        <span className="inline-flex" {...tip("این اولین صفحه است")}>
+          <button type="button" disabled aria-label="صفحهٔ قبل" className={disabled}>
+            <ChevronRight className="h-5 w-5" aria-hidden="true" />
+          </button>
+        </span>
       )}
 
       {pageItems(page, pageCount).map((item, i) =>
@@ -348,9 +354,11 @@ function Pagination({ basePath, params, page, pageCount }) {
           <ChevronLeft className="h-5 w-5" aria-hidden="true" />
         </Link>
       ) : (
-        <button type="button" disabled aria-label="صفحهٔ بعد" title="این آخرین صفحه است" className={disabled}>
-          <ChevronLeft className="h-5 w-5" aria-hidden="true" />
-        </button>
+        <span className="inline-flex" {...tip("این آخرین صفحه است")}>
+          <button type="button" disabled aria-label="صفحهٔ بعد" className={disabled}>
+            <ChevronLeft className="h-5 w-5" aria-hidden="true" />
+          </button>
+        </span>
       )}
     </nav>
   );
@@ -498,7 +506,8 @@ export default function ProductListing({ title, accent, category, basePath, cate
       ) : total === 0 ? (
         <div className="mt-10 text-center">
           <p className="text-gray-600">هیچ محصولی با این فیلترها پیدا نشد.</p>
-          <Link href={clearHref} scroll={false} className="btn-lift mt-4 inline-block rounded-xl bg-brand-600 px-5 py-2 text-sm font-medium text-white transition hover:bg-brand-700">
+          <Link href={clearHref} scroll={false} className="btn-lift mt-4 inline-flex items-center gap-2 rounded-xl bg-brand-600 px-5 py-2 text-sm font-medium text-white transition hover:bg-brand-700">
+            <FunnelX className="h-4 w-4" aria-hidden="true" />
             پاک‌کردن فیلترها
           </Link>
         </div>

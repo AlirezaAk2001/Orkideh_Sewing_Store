@@ -7,6 +7,7 @@ import Icon from "@mdi/react";
 import { mdiAccountTieOutline } from "@mdi/js";
 import { ExternalLink, LogOut, PanelRightClose, PanelRightOpen, Store, X } from "lucide-react";
 import BrandMark from "@/app/components/BrandMark";
+import { tip } from "@/lib/tip";
 import { NAV_GROUPS, isActive } from "./nav";
 
 // همهٔ ردیف‌های منو یک قالب دارند: آیکون ۲۰ پیکسلی همیشه در همان جای خودش می‌ماند (با عرض جمع‌شده درست وسط می‌افتد: ۱۲ + ۱۶ پیکسل از لبه)،
@@ -67,7 +68,7 @@ function SidebarBody({ collapsed, busy, pathname, onLogout, onNavigate, onToggle
                     <Link
                       href={busy ? "#" : item.href}
                       onClick={onNavigate}
-                      title={collapsed ? item.label : undefined}
+                      {...tip(collapsed ? item.label : undefined, "left")}
                       aria-current={active ? "page" : undefined}
                       aria-disabled={busy || undefined}
                       tabIndex={busy ? -1 : undefined}
@@ -93,7 +94,7 @@ function SidebarBody({ collapsed, busy, pathname, onLogout, onNavigate, onToggle
           href="/"
           target="_blank"
           rel="noopener noreferrer"
-          title={collapsed ? "مشاهدهٔ فروشگاه" : undefined}
+          {...tip(collapsed ? "مشاهدهٔ فروشگاه" : undefined, "left")}
           className={`${ITEM} text-gray-600 hover:bg-gray-100 hover:text-gray-900`}
         >
           <span className={ICON}>
@@ -109,7 +110,7 @@ function SidebarBody({ collapsed, busy, pathname, onLogout, onNavigate, onToggle
             onClick={onToggleCollapsed}
             disabled={busy}
             aria-expanded={!collapsed}
-            title={collapsed ? "باز کردن منو" : "بستن منو"}
+            {...tip(collapsed ? "باز کردن منو" : "بستن منو", "left")}
             className={`${ITEM} cursor-pointer text-gray-600 hover:bg-gray-100 hover:text-gray-900 disabled:cursor-wait ${lock}`}
           >
             <span className={ICON}>
@@ -119,7 +120,7 @@ function SidebarBody({ collapsed, busy, pathname, onLogout, onNavigate, onToggle
           </button>
         )}
 
-        <div className="flex h-14 items-center gap-3 overflow-hidden px-2" title={collapsed ? "مدیر فروشگاه" : undefined}>
+        <div className="flex h-14 items-center gap-3 overflow-hidden px-2" {...tip(collapsed ? "مدیر فروشگاه" : undefined, "left")}>
           <span aria-hidden="true" className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand-50 text-brand-700 ring-1 ring-brand-100">
             <Icon path={mdiAccountTieOutline} size="20px" />
           </span>
@@ -132,7 +133,7 @@ function SidebarBody({ collapsed, busy, pathname, onLogout, onNavigate, onToggle
           type="button"
           onClick={onLogout}
           disabled={busy}
-          title={collapsed ? "خروج از حساب" : undefined}
+          {...tip(collapsed ? "خروج از حساب" : undefined, "left")}
           className={`${ITEM} cursor-pointer text-red-600 hover:bg-red-50 disabled:cursor-wait ${lock}`}
         >
           <span className={ICON}>

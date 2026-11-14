@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
-import { CalendarDays, Hourglass, MapPin, PackageCheck, Phone, ShoppingBag, Truck, Undo2 } from "lucide-react";
+import { CalendarDays, Eye, Hourglass, MapPin, PackageCheck, Phone, ShoppingBag, Truck, Undo2 } from "lucide-react";
 import Icon from "@mdi/react";
 import { mdiAccountFileText } from "@mdi/js";
 import PageHeader from "@/app/admin/_shell/PageHeader";
@@ -303,6 +303,7 @@ export default function AdminOrders() {
                 onClick={() => setTab(otherTab)}
                 className="inline-flex h-10 cursor-pointer items-center gap-1.5 rounded-xl bg-gray-100 px-4 text-sm font-semibold text-gray-700 transition hover:bg-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300"
               >
+                <Eye className="h-[18px] w-[18px]" aria-hidden="true" />
                 نمایش سفارش‌های «{ORDER_STATUS[otherTab].tab}» ({fa(counts[otherTab])})
               </button>
             )

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Loader2, Save } from "lucide-react";
+import { Loader2, Save, X } from "lucide-react";
 
 // نوار ذخیرهٔ چسبان پایین فرم‌ها: همیشه در دسترس است (حتی وسط فرم بلند محصول). سمت شروع وضعیت را می‌گوید (چه چیزی لازم است، تغییر ذخیره‌نشده، آپلود در جریان)،
 // سمت پایان «انصراف» (برگشت به فهرست، بدون ذخیره) و دکمهٔ اصلی. tone: "ready" سبز، "dirty" کهربایی، "idle" خاکستری. وقتی disabled است، status دلیلش را می‌گوید.
@@ -19,8 +19,9 @@ export default function SaveBar({ saving = false, disabled = false, label, backH
         <div className="flex w-full items-center gap-2 sm:w-auto">
           <Link
             href={backHref}
-            className="btn-lift inline-flex h-11 flex-1 items-center justify-center rounded-xl border border-gray-300 bg-white px-5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-100 sm:flex-none"
+            className="btn-lift inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-xl border border-gray-300 bg-white px-5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-100 sm:flex-none"
           >
+            <X className="h-[18px] w-[18px]" aria-hidden="true" />
             انصراف
           </Link>
           <button

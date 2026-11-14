@@ -7,6 +7,7 @@ import { mdiCartMinus, mdiDeleteCircleOutline, mdiDeleteSweepOutline } from "@md
 import { useAuth, useCart } from "@/lib/context";
 import { useShipping } from "@/lib/useShipping";
 import { TrashCan } from "@/app/components/ActionIcons";
+import { tip } from "@/lib/tip";
 import ConfirmDialog from "./ConfirmDialog";
 import { Ic } from "./icons";
 import { fa, toEn, toman } from "./format";
@@ -44,15 +45,18 @@ function CartItem({ item, index, leaving, qtyBusy, onQty, onAskRemove }) {
         <span aria-live="polite">
           <Tick value={item.quantity}>{fa(item.quantity)}</Tick>
         </span>
-        <button type="button" onClick={() => onQty(item, item.quantity + 1)} disabled={qtyBusy || item.quantity >= max} aria-label="افزایش تعداد" title={item.quantity >= max ? "بیشتر از موجودی نمی‌شود" : undefined}>
-          <Ic n="plus" />
-        </button>
+        {/* راهنمای سقف موجودی روی عنصر دربرگیرنده است چون دکمهٔ غیرفعال رویداد موس نمی‌گیرد (.pf .step button:disabled در profile.css) */}
+        <div className="step-plus" {...tip(item.quantity >= max ? "بیشتر از موجودی نمی‌شود" : undefined)}>
+          <button type="button" onClick={() => onQty(item, item.quantity + 1)} disabled={qtyBusy || item.quantity >= max} aria-label={item.quantity >= max ? "افزایش تعداد؛ بیشتر از موجودی نمی‌شود" : "افزایش تعداد"}>
+            <Ic n="plus" />
+          </button>
+        </div>
       </div>
       <div className="line-total">
         <Tick value={item.price * item.quantity}>{toman(item.price * item.quantity)}</Tick>
       </div>
       {/* همان سطل متحرک دکمهٔ حذف کارت آدرس‌ها (TrashCan): با هاور یا فوکوس کیبورد درِ سطل بالا می‌رود و می‌جنبد؛ icon-action یعنی دکمه از جایش بلند نمی‌شود */}
-      <button type="button" className="ib-btn red icon-action" onClick={() => onAskRemove(item)} aria-label={`حذف ${item.name} از سبد`} title="حذف">
+      <button type="button" className="ib-btn red icon-action" onClick={() => onAskRemove(item)} aria-label={`حذف ${item.name} از سبد`} {...tip("حذف")}>
         <TrashCan />
       </button>
     </article>
@@ -209,6 +213,7 @@ export default function CartView({ onGo }) {
               <div className="ship-msg" role="alert">
                 روش‌های ارسال دریافت نشد.
                 <button type="button" onClick={ship.reload}>
+                  <Ic n="retry" />
                   تلاش دوباره
                 </button>
               </div>
@@ -266,6 +271,7 @@ export default function CartView({ onGo }) {
                 <Ic n="pin" />
                 برای ثبت سفارش باید یک آدرس ثبت کنید.
                 <button type="button" className="btn btn-primary" onClick={() => onGo("addresses")}>
+                  <Ic n="mapPlus" />
                   ثبت آدرس
                 </button>
               </div>

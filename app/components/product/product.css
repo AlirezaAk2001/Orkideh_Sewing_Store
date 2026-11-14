@@ -294,7 +294,7 @@ a.pd-chip:hover { color: var(--b700); border-color: var(--b200); background: var
 .pd-cm .pd-stars { margin-top: 4px; }
 .pd-cm .pd-stars svg { width: 16px; height: 16px; }
 .pd-cm-text { margin-top: 6px; font-size: 15px; color: var(--ink2); white-space: pre-line; overflow-wrap: anywhere; }
-.pd-cm-del { margin-top: 8px; font-size: 13px; color: #ef4444; }
+.pd-cm-del { display: inline-flex; align-items: center; gap: 5px; margin-top: 8px; font-size: 13px; color: #ef4444; }
 .pd-cm-del:hover { color: #b91c1c; }
 .pd-thr { grid-column: 1; grid-row: 2; position: relative; }
 .pd-thr::before { content: ""; position: absolute; top: -14px; bottom: 50%; right: calc(50% - 1px); width: calc(50% + 16px); border-right: 2px dashed var(--b300); border-bottom: 2px dashed var(--b300); border-bottom-right-radius: 16px; }

@@ -34,6 +34,8 @@ function FilterSeg({ value, counts, onChange }) {
     <div className="fseg seg" ref={ref}>
       {FILTERS.filter(([k]) => k === "all" || counts[k] > 0).map(([k, label]) => (
         <button key={k} type="button" className="seg-tab" aria-pressed={value === k} data-on={value === k ? "" : undefined} onClick={() => onChange(k)}>
+          {/* آیکون هر تب همان آیکون وضعیتش در کارت‌هاست (ST در parts.jsx)؛ «همه» کیسهٔ خرید */}
+          <Ic n={k === "all" ? "bag" : ST[k].icon} />
           {label}
           <em>{fa(counts[k])}</em>
         </button>
@@ -126,6 +128,7 @@ function OrderCard({ order, index, open, leaving, busy, onToggle, onPay, onAskDe
         {order.status === "pending" && (
           <>
             <button type="button" className="btn btn-primary sm" disabled={busy} onClick={() => onPay(order)}>
+              <Ic n={busy === "pay" ? "loader" : "shield"} className={busy === "pay" ? "spin" : ""} />
               {busy === "pay" ? "در حال انتقال به درگاه…" : "ادامهٔ پرداخت"}
             </button>
             <button type="button" className="btn btn-soft-red sm" disabled={!!busy} onClick={() => onAskDelete(order)}>
