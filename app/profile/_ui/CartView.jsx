@@ -191,14 +191,14 @@ export default function CartView({ onGo }) {
                 خلاصهٔ سفارش
               </div>
             </div>
+            {/* تعداد کالاها کنار «جمع کالاها» آمده (نه ردیف جدا) تا کارت کوتاه بماند */}
             <div className="srow">
-              <span>تعداد کالاها</span>
-              <b>
-                <Tick value={cartCount}>{fa(cartCount)}</Tick>
-              </b>
-            </div>
-            <div className="srow">
-              <span>جمع کالاها</span>
+              <span>
+                جمع کالاها
+                <small>
+                  (<Tick value={cartCount}>{fa(cartCount)}</Tick> عدد)
+                </small>
+              </span>
               <b>
                 <Tick value={total}>{toman(total)}</Tick>
               </b>
@@ -238,12 +238,7 @@ export default function CartView({ onGo }) {
                 ))}
               </fieldset>
             )}
-            {ship.method && (
-              <div className="srow">
-                <span>هزینهٔ ارسال</span>
-                <b>{ship.cost > 0 ? <Tick value={ship.cost}>{toman(ship.cost)}</Tick> : <span className="free">رایگان</span>}</b>
-              </div>
-            )}
+            {/* هزینهٔ روش انتخاب‌شده همان قیمت کنار گزینهٔ فعال است؛ ردیف جدایش برداشته شد و در «مبلغ قابل پرداخت» حساب می‌شود */}
             <div className="stotal">
               <span>مبلغ قابل پرداخت</span>
               <b>
