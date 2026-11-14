@@ -269,7 +269,7 @@ export default function CartView({ onGo }) {
             {addresses.length === 0 && (
               <div className="note">
                 <Ic n="pin" />
-                برای ثبت سفارش باید یک آدرس ثبت کنید.
+                <span>برای ثبت سفارش، یک آدرس ثبت کنید.</span>
                 <button type="button" className="btn btn-primary" onClick={() => onGo("addresses")}>
                   <Ic n="mapPlus" />
                   ثبت آدرس
