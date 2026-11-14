@@ -195,8 +195,8 @@ export default function CartView({ onGo }) {
             <div className="srow">
               <span>
                 جمع کالاها
-                <small>
-                  (<Tick value={cartCount}>{fa(cartCount)}</Tick> عدد)
+                <small className="cnt">
+                  <Tick value={cartCount}>{fa(cartCount)}</Tick> عدد
                 </small>
               </span>
               <b>

@@ -710,7 +710,8 @@
 .pf .sum .t-title .ib { width: 30px; height: 30px; border-radius: 10px; color: #fff; background: rgb(255 255 255 / 0.12); box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.18); }
 .pf .srow { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; font-size: 14px; line-height: 1.5; color: rgb(255 255 255 / 0.75); }
 .pf .srow b { color: #fff; font-weight: 700; }
-.pf .srow small { margin-inline-start: 6px; font-size: 12px; color: rgb(255 255 255 / 0.55); }
+/* تعداد کالاها کنار «جمع کالاها» در یک چیپ شیشه‌ای (نه داخل پرانتز)؛ ارتفاعش از خط ردیف کمتر است تا ردیف بلندتر نشود */
+.pf .srow .cnt { display: inline-block; margin-inline-start: 8px; padding: 0 10px; border-radius: 999px; font-size: 12px; font-weight: 700; line-height: 20px; vertical-align: middle; color: rgb(255 255 255 / 0.9); background: rgb(255 255 255 / 0.12); box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.2); }
 .pf .srow .free { color: #86efac; }
 .pf .stotal { display: flex; align-items: flex-end; justify-content: space-between; margin: 4px 0 10px; padding-top: 8px; border-top: 1px dashed rgb(255 255 255 / 0.22); }
 .pf .stotal span { font-size: 14px; color: rgb(255 255 255 / 0.8); }
