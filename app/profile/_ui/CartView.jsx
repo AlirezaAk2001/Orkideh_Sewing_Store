@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import { mdiCartMinus, mdiDeleteCircleOutline, mdiDeleteSweepOutline } from "@mdi/js";
 import { useAuth, useCart } from "@/lib/context";
 import { useShipping } from "@/lib/useShipping";
+import { TrashCan } from "@/app/components/ActionIcons";
 import ConfirmDialog from "./ConfirmDialog";
 import { Ic } from "./icons";
 import { fa, toEn, toman } from "./format";
@@ -50,8 +51,9 @@ function CartItem({ item, index, leaving, qtyBusy, onQty, onAskRemove }) {
       <div className="line-total">
         <Tick value={item.price * item.quantity}>{toman(item.price * item.quantity)}</Tick>
       </div>
-      <button type="button" className="ib-btn red" onClick={() => onAskRemove(item)} aria-label={`حذف ${item.name} از سبد`}>
-        <Ic n="trash" />
+      {/* همان سطل متحرک دکمهٔ حذف کارت آدرس‌ها (TrashCan): با هاور یا فوکوس کیبورد درِ سطل بالا می‌رود و می‌جنبد؛ icon-action یعنی دکمه از جایش بلند نمی‌شود */}
+      <button type="button" className="ib-btn red icon-action" onClick={() => onAskRemove(item)} aria-label={`حذف ${item.name} از سبد`} title="حذف">
+        <TrashCan />
       </button>
     </article>
   );
@@ -166,7 +168,7 @@ export default function CartView({ onGo }) {
       <ViewHead icon="cart" title="سبد خرید" sub={`${fa(cartCount)} کالا · آمادهٔ ثبت سفارش`}>
         {cartItems.length > 1 && (
           <button type="button" className="btn btn-soft-red sm" onClick={() => setAskClear(true)}>
-            <Ic n="trash" />
+            <TrashCan />
             حذف همه
           </button>
         )}
