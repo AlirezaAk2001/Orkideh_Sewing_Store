@@ -265,7 +265,7 @@ export default function CartView({ onGo }) {
               <div className="note">
                 <Ic n="pin" />
                 برای ثبت سفارش باید یک آدرس ثبت کنید.
-                <button type="button" className="btn-flat" onClick={() => onGo("addresses")}>
+                <button type="button" className="btn btn-primary" onClick={() => onGo("addresses")}>
                   ثبت آدرس
                 </button>
               </div>
