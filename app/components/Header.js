@@ -197,9 +197,9 @@ export default function Header() {
                 ? "cursor-not-allowed opacity-50 pointer-events-none"
                 : "hover:text-pink-600 cursor-pointer"
                 }`}
-              aria-label="درباره ما"
+              aria-label="درباره فروشگاه"
               data-tooltip-id="about-tooltip"
-              data-tooltip-content={loading ? "در حال بارگذاری..." : "درباره ما"}
+              data-tooltip-content={loading ? "در حال بارگذاری..." : "درباره فروشگاه"}
             >
               <Info className={`w-7 sm:w-6 h-7 sm:h-6 ${loading ? "text-gray-400" : ""
                 }`} />

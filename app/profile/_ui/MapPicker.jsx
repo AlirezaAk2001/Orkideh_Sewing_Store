@@ -4,19 +4,11 @@ import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { tip } from "@/lib/tip";
 import { Ic } from "./icons";
-import { MAP_KEY, searchPlaces } from "./mapClient";
+import { MAP_KEY, MAP_LOCALE, MAP_STYLE_URL, searchPlaces } from "./mapClient";
 
 // انتخاب موقعیت روی نقشهٔ نشان برای فرم آدرس. سنجاق ثابت وسط نقشه است و کاربر نقشه را زیر آن می‌کشد؛ هر جابه‌جایی که تمام شود، onPick(lat, lng) صدا زده می‌شود
 // (آدرس‌یابی و پر کردن کادر آدرس کار فرم است). سه راه رسیدن به مکان: کشیدن/کلیک روی نقشه، جستجو (با دکمه یا Enter؛ نه با هر حرف، تا سهمیهٔ پولی سرویس هدر نرود)، و موقعیت GPS گوشی.
 // این فایل با next/dynamic و فقط بعد از اولین بازشدن فرم بار می‌شود (SDK نقشه حدود ۱٫۹ مگابایت است). فرم داخل <form> است، پس اینجا <form> نیست و Enter با onKeyDown گرفته می‌شود.
-const STYLE_URL = "https://static.neshan.org/sdk/maplibre/styles/light.json";
-const LOCALE = {
-  "CooperativeGesturesHandler.WindowsHelpText": "برای بزرگ‌نمایی کلید Ctrl را نگه دارید و اسکرول کنید",
-  "CooperativeGesturesHandler.MacHelpText": "برای بزرگ‌نمایی کلید ⌘ را نگه دارید و اسکرول کنید",
-  "CooperativeGesturesHandler.MobileHelpText": "برای حرکت روی نقشه از دو انگشت استفاده کنید",
-  "NavigationControl.ZoomIn": "بزرگ‌نمایی",
-  "NavigationControl.ZoomOut": "کوچک‌نمایی",
-};
 // view: { lat, lng, zoom, key } جای شروع؛ با عوض شدن key (هر بار که فرم باز می‌شود) نقشه همان‌جا می‌پرد
 export default function MapPicker({ view, onPick }) {
   const boxRef = useRef(null);
@@ -43,14 +35,14 @@ export default function MapPicker({ view, onPick }) {
         if (cancelled || !boxRef.current) return;
         map = new maplibregl.Map({
           container: boxRef.current,
-          style: STYLE_URL,
+          style: MAP_STYLE_URL,
           center: [view.lng, view.lat],
           zoom: view.zoom,
           minZoom: 4,
           maxZoom: 19,
           apiKey: MAP_KEY,
           cooperativeGestures: true, // اسکرول صفحه روی نقشه گیر نکند
-          locale: LOCALE,
+          locale: MAP_LOCALE,
         });
         mapRef.current = map;
         map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-left");

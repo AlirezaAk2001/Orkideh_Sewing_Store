@@ -6,7 +6,8 @@ import { useEffect, useRef } from "react";
 // صفت data-in را مستقیم روی DOM می‌گذارد (نه state)، پس رندر دوباره‌ای ندارد و HTML سروری و کلاینتی یکی می‌ماند. بدون IntersectionObserver فوراً دیده می‌شود.
 // پرش (کلید End، لینک لنگری، اسکرول بازیابی‌شده) صفحه را از کنار بخش رد می‌کند بی‌آنکه هیچ‌وقت «دیده‌شده» حساب شود؛ برای همین با اسکرول هم
 // بررسی می‌شود که بخش بالای پنجره جا نمانده باشد (مثل useTileReveal پروفایل).
-export default function Reveal({ as: Tag = "div", className = "", children, ...rest }) {
+// base: کلاس پایهٔ استایل ورود؛ پیش‌فرضش مال صفحهٔ محصول است (pd-reveal در product.css) و صفحهٔ «درباره فروشگاه» کلاس خودش را می‌دهد (ab-reveal در about.css)
+export default function Reveal({ as: Tag = "div", base = "pd-reveal", className = "", children, ...rest }) {
   const ref = useRef(null);
 
   useEffect(() => {
@@ -47,7 +48,7 @@ export default function Reveal({ as: Tag = "div", className = "", children, ...r
   }, []);
 
   return (
-    <Tag ref={ref} className={`pd-reveal ${className}`} {...rest}>
+    <Tag ref={ref} className={`${base} ${className}`} {...rest}>
       {children}
     </Tag>
   );

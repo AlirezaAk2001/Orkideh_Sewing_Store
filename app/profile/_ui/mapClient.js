@@ -4,6 +4,16 @@
 // کلید «نقشهٔ وب» (NEXT_PUBLIC_NESHAN_MAP_KEY) عمومی است و هنگام ساخت (build) در کد می‌نشیند؛ بدون آن فرم آدرس بدون نقشه (دستی) کار می‌کند
 export const MAP_KEY = process.env.NEXT_PUBLIC_NESHAN_MAP_KEY || "";
 
+// استایل و متن‌های فارسی نقشهٔ نشان؛ مشترک بین انتخاب موقعیت فرم آدرس (MapPicker) و نقشهٔ فروشگاه در صفحهٔ «درباره فروشگاه» (app/about/StoreMap.jsx)
+export const MAP_STYLE_URL = "https://static.neshan.org/sdk/maplibre/styles/light.json";
+export const MAP_LOCALE = {
+  "CooperativeGesturesHandler.WindowsHelpText": "برای بزرگ‌نمایی کلید Ctrl را نگه دارید و اسکرول کنید",
+  "CooperativeGesturesHandler.MacHelpText": "برای بزرگ‌نمایی کلید ⌘ را نگه دارید و اسکرول کنید",
+  "CooperativeGesturesHandler.MobileHelpText": "برای حرکت روی نقشه از دو انگشت استفاده کنید",
+  "NavigationControl.ZoomIn": "بزرگ‌نمایی",
+  "NavigationControl.ZoomOut": "کوچک‌نمایی",
+};
+
 // خطاهای فنی (کلید، تنظیم‌نشدن، قطعی) را به کاربر نشان نمی‌دهیم؛ فقط «فعلاً در دسترس نیست». پیام سقف درخواست و ورودی نامعتبر برای کاربر مفید است
 const UNAVAILABLE = "سرویس نقشه فعلاً در دسترس نیست؛ آدرس را دستی وارد کنید.";
 
