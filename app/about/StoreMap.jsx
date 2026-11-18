@@ -7,9 +7,9 @@ import { MAP_KEY, MAP_LOCALE, MAP_STYLE_URL } from "@/app/profile/_ui/mapClient"
 // نقشهٔ فروشگاه در صفحهٔ «درباره فروشگاه» با نقشهٔ وب «نشان» (همان SDK و کلید فرم آدرس: NEXT_PUBLIC_NESHAN_MAP_KEY).
 // SDK حدود ۱٫۹ مگابایت است و هر بار باز شدن نقشه هزینهٔ تایل دارد؛ پس فقط وقتی کادر نقشه نزدیک دید آمد بار می‌شود (IntersectionObserver)،
 // نه با باز شدن صفحه. cooperativeGestures هم اسکرول صفحه را روی نقشه گیر نمی‌اندازد. بدون کلید، بدون WebGL یا با خطای شبکه، به‌جای نقشه فقط پیام می‌آید
-// و نشانی کنار آن در صفحه هست. سنجاق (عنصر DOM) استایلش در about.css است؛ نوکش دقیقاً روی مختصات می‌نشیند (anchor: bottom).
+// و نشانی کنار آن در صفحه هست. سنجاق (عنصر DOM) و انیمیشن پالسش (همان سنجاق کاشی آدرس داشبورد) در about.css است؛ نوکش دقیقاً روی مختصات می‌نشیند (anchor: bottom).
 const PIN =
-  '<svg viewBox="5 2 14 20" aria-hidden="true" focusable="false"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.6"/></svg><span class="ab-pin-pulse"></span>';
+  '<div class="ab-pin-in"><svg viewBox="5 2 14 20" aria-hidden="true" focusable="false"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.6"/></svg></div>';
 
 export default function StoreMap({ lat, lng, name }) {
   const frameRef = useRef(null);

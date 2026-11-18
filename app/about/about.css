@@ -167,17 +167,27 @@
 .ab-map-chip svg { width: 16px; height: 16px; flex: none; color: var(--b600); }
 .ab-map-state { position: absolute; inset: 0; z-index: 3; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 24px; text-align: center; font-size: 14px; line-height: 1.9; color: var(--ink2); background: linear-gradient(180deg, #faf1f6, #f3e9f0); }
 .ab-map-state svg { width: 20px; height: 20px; flex: none; color: var(--b600); }
-/* سنجاق فروشگاه روی نقشه: عنصر بیرونی را خود MapLibre جابه‌جا می‌کند (transform)، پس انیمیشن فقط روی فرزندهاست؛ نوک سنجاق دقیقاً کف عنصر است (anchor: bottom) */
+/* سنجاق فروشگاه روی نقشه: عنصر بیرونی (.ab-pin) را خود MapLibre جابه‌جا می‌کند (transform)، پس انیمیشن فقط روی فرزندش (.ab-pin-in) است؛ نوک سنجاق دقیقاً کف عنصر است (anchor: bottom).
+   انیمیشن همان سنجاق کاشی آدرس داشبورد پروفایل است (.pf .pin در profile.css): سنجاق بالا و پایین می‌رود (ab-bob)، سایهٔ کفش کوچک و بزرگ می‌شود (ab-shadow) و یک حلقه از دور سر سنجاق
+   بیرون می‌رود و محو می‌شود (ab-map-ring)؛ هر سه ۲٫۶ ثانیه و هم‌ساعت. حلقه و سایه فرزند همان عنصرِ در حال حرکت‌اند، پس همیشه همراه سنجاق می‌مانند و حلقه هم‌مرکز سر می‌ماند:
+   مرکز سر در آیکون ۴۰×۵۷ (viewBox ۱۴×۲۰) نقطهٔ (۲۰، ۲۰) است؛ z-index منفی حلقه را زیر آیکون می‌گذارد. بدون انیمیشن (کاهش حرکت) حلقه opacity صفر دارد و دیده نمی‌شود. */
 .ab-pin { position: relative; width: 40px; height: 57px; }
-.ab-pin svg { position: absolute; inset: 0; width: 40px; height: 57px; overflow: visible; filter: drop-shadow(0 8px 8px rgb(110 20 90 / 0.4)); }
+/* سایه مثل داشبورد: drop-shadow روی کل عنصر متحرک (هم سنجاق، هم بیضی کف و حلقه هالهٔ نرم می‌گیرند) و بیضی کف درست زیر نوک شناور است، نه چسبیده به آن.
+   در داشبورد سنجاقِ ۲۴×۳۰ با بیضی ۱۶×۶ است و بیضی فقط حدود ۴px زیر نوک می‌افتد (از اسکرین‌شات اندازه گرفته شد)؛ اینجا سنجاق ۴۰×۵۷ (حدود ۱٫۸ برابر) است، پس بیضی ۲۷×۱۱ ولی فاصله فقط ۵px
+   (فاصلهٔ متناسب ۸px هم دور بود). bottom = -(فاصله + ارتفاع بیضی) */
+.ab-pin-in { position: absolute; inset: 0; filter: drop-shadow(0 12px 12px rgb(190 24 93 / 0.4)); }
+.ab-pin-in svg { position: absolute; inset: 0; width: 40px; height: 57px; overflow: visible; }
 .ab-pin path { fill: var(--b600); stroke: #fff; stroke-width: 0.8; paint-order: stroke; }
 .ab-pin circle { fill: #fff; }
-.ab-pin-pulse { position: absolute; left: 50%; bottom: -5px; width: 26px; height: 10px; margin-left: -13px; border-radius: 50%; background: rgb(214 20 120 / 0.35); }
-@keyframes ab-pin-bob { 0%, 100% { translate: 0 0; } 50% { translate: 0 -6px; } }
-@keyframes ab-pin-pulse { 0% { scale: 0.5; opacity: 0.9; } 100% { scale: 2.6; opacity: 0; } }
+.ab-pin-in::before { content: ""; position: absolute; z-index: -1; left: 20px; top: 20px; width: 60px; height: 60px; margin: -30px 0 0 -30px; box-sizing: border-box; border-radius: 50%; border: 2px solid var(--b500); opacity: 0; pointer-events: none; }
+.ab-pin-in::after { content: ""; position: absolute; left: 50%; bottom: -16px; translate: -50% 0; width: 27px; height: 11px; border-radius: 50%; background: rgb(190 24 93 / 0.35); }
+@keyframes ab-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+@keyframes ab-shadow { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(0.6); opacity: 0.5; } }
+@keyframes ab-map-ring { 0% { transform: scale(0.6); opacity: 0; } 6% { opacity: 0.7; } 70%, 100% { transform: scale(1.9); opacity: 0; } }
 @media (prefers-reduced-motion: no-preference) {
-  .ab-pin svg { animation: ab-pin-bob 2.4s ease-in-out infinite; }
-  .ab-pin-pulse { animation: ab-pin-pulse 2.4s ease-out infinite; }
+  .ab-pin-in { animation: ab-bob 2.6s ease-in-out infinite; }
+  .ab-pin-in::before { animation: ab-map-ring 2.6s ease-out infinite; }
+  .ab-pin-in::after { animation: ab-shadow 2.6s ease-in-out infinite; }
 }
 @media (max-width: 639px) { .ab-loc { padding: 22px; border-radius: 26px; } .ab-addr { font-size: 17px; } .ab-mapframe { padding: 6px; border-radius: 28px; } .ab-map { border-radius: 22px; } }
 
