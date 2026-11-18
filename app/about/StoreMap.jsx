@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { LoaderCircle, MapPinOff, Store } from "lucide-react";
+import { LoaderCircle, MapPinOff, Navigation, Store } from "lucide-react";
+import { tip } from "@/lib/tip";
 import { MAP_KEY, MAP_LOCALE, MAP_STYLE_URL } from "@/app/profile/_ui/mapClient";
 
 // نقشهٔ فروشگاه در صفحهٔ «درباره فروشگاه» با نقشهٔ وب «نشان» (همان SDK و کلید فرم آدرس: NEXT_PUBLIC_NESHAN_MAP_KEY).
@@ -11,7 +12,11 @@ import { MAP_KEY, MAP_LOCALE, MAP_STYLE_URL } from "@/app/profile/_ui/mapClient"
 const PIN =
   '<div class="ab-pin-in"><svg viewBox="5 2 14 20" aria-hidden="true" focusable="false"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.6"/></svg></div>';
 
-export default function StoreMap({ lat, lng, name }) {
+const NAV_HINT = "مسیریابی با نشان";
+
+// mapUrl (اختیاری): لینک اشتراک‌گذاری مکان در نشان. اگر باشد، کلیک (یا لمس) روی هر جای نقشه، سنجاق و برچسب نام آن را در تب تازه باز می‌کند (مثل نقشهٔ گوگل که کلیک روی آن به خود گوگل‌مپ می‌برد و آنجا مسیریابی هست).
+// کشیدن نقشه «کلیک» حساب نمی‌شود (MapLibre بعد از drag رویداد click نمی‌دهد). بزرگ‌نمایی با دابل‌کلیک خاموش است تا دو کلیک پشت‌سرهم دو تب باز نکند؛ با دکمه‌های + و − و Ctrl+اسکرول (یا دو انگشت) همچنان می‌شود.
+export default function StoreMap({ lat, lng, name, mapUrl }) {
   const frameRef = useRef(null);
   const boxRef = useRef(null);
   const [status, setStatus] = useState(MAP_KEY ? "loading" : "off"); // loading | ready | error | off
@@ -35,13 +40,33 @@ export default function StoreMap({ lat, lng, name }) {
           maxZoom: 19,
           apiKey: MAP_KEY,
           cooperativeGestures: true,
+          doubleClickZoom: !mapUrl,
           locale: MAP_LOCALE,
         });
         map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-left");
-        const pin = document.createElement("div");
+        const pin = document.createElement(mapUrl ? "a" : "div");
         pin.className = "ab-pin";
+        if (mapUrl) {
+          pin.href = mapUrl;
+          pin.target = "_blank";
+          pin.rel = "noopener noreferrer";
+          pin.setAttribute("aria-label", NAV_HINT);
+          // راهنمای هاور از همان tooltip مشترک سایت (lib/tip.js)؛ سنجاق متن دیدنی ندارد، پس aria-label هم گذاشته شد
+          for (const [key, value] of Object.entries(tip(NAV_HINT))) pin.setAttribute(key, value);
+        }
         pin.innerHTML = PIN;
         new maplibregl.Marker({ element: pin, anchor: "bottom" }).setLngLat([lng, lat]).addTo(map);
+        if (mapUrl) {
+          let lastOpen = 0;
+          map.on("click", (e) => {
+            // سنجاق خودش لینک است؛ کلیکش از اینجا هم رد می‌شود و نباید تب دوم باز کند
+            if (e.originalEvent?.target?.closest?.(".ab-pin")) return;
+            const now = Date.now();
+            if (now - lastOpen < 800) return;
+            lastOpen = now;
+            window.open(mapUrl, "_blank", "noopener,noreferrer");
+          });
+        }
         // «آماده» یعنی استایل نقشه نشسته؛ منتظر همهٔ تایل‌ها نمی‌مانیم. فقط خطای خودِ استایل «بارگذاری نشد» است
         map.once("style.load", () => setStatus("ready"));
         map.on("error", () => {
@@ -71,18 +96,25 @@ export default function StoreMap({ lat, lng, name }) {
       if (observer) observer.disconnect();
       if (map) map.remove();
     };
-  }, [lat, lng]);
+  }, [lat, lng, mapUrl]);
 
   return (
     <div className="ab-mapframe">
-      <div className="ab-map" ref={frameRef}>
+      <div className={`ab-map ${mapUrl ? "ab-map--link" : ""}`} ref={frameRef}>
         <div className="ab-map-box" ref={boxRef} />
-        {status === "ready" && (
-          <span className="ab-map-chip">
-            <Store aria-hidden="true" />
-            {name}
-          </span>
-        )}
+        {status === "ready" &&
+          (mapUrl ? (
+            <a className="ab-map-chip" href={mapUrl} target="_blank" rel="noopener noreferrer" aria-label={`${NAV_HINT} تا ${name}`} {...tip(NAV_HINT)}>
+              <Store aria-hidden="true" />
+              {name}
+              <Navigation aria-hidden="true" />
+            </a>
+          ) : (
+            <span className="ab-map-chip">
+              <Store aria-hidden="true" />
+              {name}
+            </span>
+          ))}
         {status === "loading" && (
           <div className="ab-map-state" role="status">
             <LoaderCircle className="animate-spin" aria-hidden="true" />

@@ -215,7 +215,7 @@ export default async function AboutPage() {
               </div>
             </div>
             <div className="ab-st" style={{ "--i": 1 }}>
-              <StoreMap lat={STORE.location.lat} lng={STORE.location.lng} name={STORE.name} />
+              <StoreMap lat={STORE.location.lat} lng={STORE.location.lng} name={STORE.name} mapUrl={STORE.mapUrl} />
             </div>
           </div>
         </Reveal>
