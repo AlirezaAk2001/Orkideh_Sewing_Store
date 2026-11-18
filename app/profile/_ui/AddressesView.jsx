@@ -243,7 +243,7 @@ export default function AddressesView() {
                   ? mapOn && (
                       <div className="field" role="group" aria-labelledby="mp-label">
                         <span id="mp-label" className="flabel">
-                          موقعیت روی نقشه (اختیاری)
+                          انتخاب موقعیت روی نقشه
                         </span>
                         <MapPicker view={view} onPick={onPick} />
                         <div className={`mp-status ${point ? "on" : ""}`}>
