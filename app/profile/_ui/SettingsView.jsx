@@ -198,7 +198,7 @@ function PasswordCard() {
     <section className="tile scard rise" style={{ "--i": 4 }}>
       <h3>
         <span className="ib">
-          <Ic n="lock" />
+          <Ic n="keyRound" />
         </span>
         تغییر رمز عبور
       </h3>
@@ -264,7 +264,7 @@ function PasswordCard() {
         </div>
         <div className="sfoot">
           <button type="submit" className="btn btn-primary" disabled={!canSave}>
-            {saving ? <Ic n="loader" className="spin" /> : <Ic n="lock" />}
+            {saving ? <Ic n="loader" className="spin" /> : <Ic n="keyRound" />}
             {saving ? "در حال تغییر…" : "تغییر رمز عبور"}
           </button>
         </div>

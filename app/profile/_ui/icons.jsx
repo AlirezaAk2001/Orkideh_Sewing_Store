@@ -16,6 +16,7 @@ import {
   Heart,
   Hourglass,
   House,
+  KeyRound,
   LayoutDashboard,
   Lock,
   LogOut,
@@ -107,6 +108,7 @@ const ICONS = {
   user: User,
   mail: Mail,
   lock: Lock,
+  keyRound: KeyRound, // «تغییر رمز عبور» (عنوان کارت و دکمه)؛ قفل برای فیلدهای رمز می‌ماند
   eye: Eye,
   eyeOff: EyeOff,
   cal: Calendar,
