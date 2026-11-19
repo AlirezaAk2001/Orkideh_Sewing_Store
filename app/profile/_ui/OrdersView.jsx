@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import { mdiDeleteCircleOutline, mdiTrashCanOutline } from "@mdi/js";
 import { useSegmentSlide } from "@/app/admin/_ui/useSegmentSlide";
 import { useCart } from "@/lib/context";
+import { TrashCan } from "@/app/components/ActionIcons";
 import ConfirmDialog from "./ConfirmDialog";
 import { Ic } from "./icons";
 import { costLabel } from "@/lib/shipping";
@@ -132,7 +133,8 @@ function OrderCard({ order, index, open, leaving, busy, onToggle, onPay, onAskDe
               {busy === "pay" ? "در حال انتقال به درگاه…" : "ادامهٔ پرداخت"}
             </button>
             <button type="button" className="btn btn-soft-red sm" disabled={!!busy} onClick={() => onAskDelete(order)}>
-              <Ic n="trash" />
+              {/* همان سطل متحرک «حذف همه» سبد و علاقه‌مندی‌ها (TrashCan)؛ دکمهٔ غیرفعال (در حال کار) حرکت نمی‌کند */}
+              <TrashCan />
               {busy === "delete" ? "در حال حذف…" : "حذف سفارش"}
             </button>
           </>
