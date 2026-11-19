@@ -35,7 +35,7 @@ export default function FavoritesView({ favorites, leavingId, onUnfav, onAdd }) 
             </HeadChip>
           ) : (
             <HeadChip icon="heart" muted>
-              هنوز چیزی ذخیره نشده
+              هنوز کالایی ذخیره نشده
             </HeadChip>
           )
         }
