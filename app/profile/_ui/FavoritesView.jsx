@@ -24,7 +24,7 @@ export default function FavoritesView({ favorites, leavingId, onUnfav, onAdd }) 
 
   return (
     <>
-      <ViewHead icon="heart" title="علاقه‌مندی‌ها" sub={favorites.length ? `${fa(favorites.length)} کالا ذخیره شده` : "هنوز چیزی ذخیره نشده"}>
+      <ViewHead icon="heart" title="علاقه‌مندی‌های من" sub={favorites.length ? `${fa(favorites.length)} کالا ذخیره شده` : "هنوز چیزی ذخیره نشده"}>
         {favorites.length > 1 && (
           <button type="button" className="btn btn-soft-red sm" onClick={() => setAskClear(true)}>
             <Ic n="trash" />

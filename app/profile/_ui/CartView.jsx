@@ -169,7 +169,25 @@ export default function CartView({ onGo }) {
 
   return (
     <>
-      <ViewHead icon="cart" title="سبد خرید" sub={`${fa(cartCount)} کالا · آمادهٔ ثبت سفارش`}>
+      <ViewHead
+        icon="cart"
+        title="سبد خرید من"
+        sub={
+          <>
+            <span className="chip" style={{ "--c": "var(--brand-600)" }}>
+              <Ic n="pack" />
+              <span>
+                <Tick value={cartCount}>{fa(cartCount)}</Tick> کالا
+              </span>
+            </span>
+            <span className="chip" style={{ "--c": "#15803d" }}>
+              {/* همان نقطهٔ تپندهٔ چیپ وضعیت صفحهٔ سفارش‌ها (beat-dot در globals.css؛ هالهٔ آن از رنگ نقطه می‌آید) */}
+              <i className="beat-dot" />
+              آمادهٔ ثبت سفارش
+            </span>
+          </>
+        }
+      >
         {cartItems.length > 1 && (
           <button type="button" className="btn btn-soft-red sm" onClick={() => setAskClear(true)}>
             <TrashCan />
