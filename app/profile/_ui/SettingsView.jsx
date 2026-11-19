@@ -301,7 +301,9 @@ export default function SettingsView({ user, placedOrders, onLogout }) {
               <div className="fact">
                 <Ic n="bag" />
                 <span>سفارش‌های ثبت‌شده</span>
-                <b style={{ direction: "rtl" }}>{fa(placedOrders)}</b>
+                <b className="fact-n" style={{ direction: "rtl" }}>
+                  {fa(placedOrders)}
+                </b>
               </div>
             )}
           </div>

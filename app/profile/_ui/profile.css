@@ -813,6 +813,8 @@
 /* مقدار به گوشهٔ چپ کارت می‌چسبد. margin فیزیکی راست است، نه margin-inline-start: جهت مقدار (ایمیل چپ‌به‌راست، تاریخ و تعداد راست‌به‌چپ) معنای inline-start را عوض می‌کرد
    و ایمیل به برچسب «ایمیل» می‌چسبید */
 .pf .fact b { margin-right: auto; direction: ltr; font-weight: 700; }
+/* عدد داخل چیپ گرد (fact-n، تعداد سفارش‌ها): همان زمینهٔ روشن چیپ نام کاربری؛ با یک یا دو رقم دایره است و با سه رقم یا بیشتر خودش به قرص کشیده می‌شود */
+.pf .fact b.fact-n { display: grid; place-items: center; min-width: 28px; height: 28px; padding-inline: 6px; border-radius: 99px; font-size: 13px; line-height: 1; color: var(--ink); background: var(--brand-50); box-shadow: inset 0 0 0 1px var(--brand-100); }
 .pf .me-card .btn { width: 100%; margin-top: 16px; }
 .pf .scol { display: grid; gap: 16px; }
 .pf .scard h3 { display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 800; margin-bottom: 4px; }
