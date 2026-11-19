@@ -174,6 +174,8 @@
 .pf .chip svg { width: 14px; height: 14px; }
 /* آیکون توپر داخل چیپ (کلاس fill-ic): مثل قلب علاقه‌مندی‌ها وقتی چیزی ذخیره شده؛ آیکون‌های lucide فقط خط دارند، پس رنگ خطشان به‌عنوان پر هم گذاشته می‌شود */
 .pf .chip.fill-ic svg { fill: currentColor; }
+/* چیپ روشن (کلاس chip-soft): همان زمینه و رنگ چیپ «حرف اول نام» کارت آواتار (.pk-cur)، برای چیپ نام کاربری */
+.pf .chip.chip-soft { color: var(--brand-700); background: var(--brand-50); box-shadow: inset 0 0 0 1px var(--brand-100); }
 /* آیکون چیپ‌های زیرعنوان (HeadChip) در پوشش .hc-ic است. کلاس pulse-ic حلقهٔ پالس سنجاق کاشی آدرس داشبورد را دور آیکون می‌گذارد (همان pf-map-ring، همان ۲٫۶ ثانیه و همان رنگ برند):
    حلقه‌ای که از دور آیکون بیرون می‌رود و محو می‌شود. مرکزش روی سر سنجاق است (سر در آیکون ۲۴ واحدی روی (۱۲، ۱۰) است، یعنی کمی بالاتر از وسط)؛ z-index منفی زیر آیکون می‌گذاردش.
    حلقه opacity صفر دارد و فقط با انیمیشن دیده می‌شود، پس با «کاهش حرکت» دیده نمی‌شود */
@@ -846,7 +848,8 @@
 .pf .pk-ring::after { content: ""; position: absolute; inset: -3px; border-radius: 50%; pointer-events: none; animation: pf-glow 4.5s ease-in-out infinite; }
 .pf .pk-meta { min-width: 0; }
 .pf .pk-meta b { display: block; font-size: 17px; font-weight: 800; line-height: 1.4; }
-.pf .pk-meta .un { direction: ltr; text-align: right; color: var(--ink-3); font-size: 13px; overflow-wrap: anywhere; }
+/* نام کاربری زیر نام: چیپ آیکون‌دار (HeadChip)؛ خود @نام داخل bdi چپ‌به‌راست است و ظرف مثل بقیهٔ چیپ‌ها راست‌به‌چپ می‌ماند */
+.pf .pk-meta .un { margin-top: 4px; overflow-wrap: anywhere; }
 .pf .pk-cur { display: inline-flex; align-items: center; gap: 6px; margin-top: 6px; padding: 2px 11px; border-radius: 99px; font-size: 12px; font-weight: 700; color: var(--brand-700); background: var(--brand-50); box-shadow: inset 0 0 0 1px var(--brand-100); }
 .pf .pk-cur svg { width: 13px; height: 13px; }
 .pf .pk-block { border-radius: 20px; padding: 16px; background: rgb(255 255 255 / 0.7); box-shadow: inset 0 0 0 1px var(--line); }

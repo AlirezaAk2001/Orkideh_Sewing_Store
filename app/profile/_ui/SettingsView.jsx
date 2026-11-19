@@ -280,7 +280,7 @@ export default function SettingsView({ user, placedOrders, onLogout }) {
           </div>
           <h3>{user?.name}</h3>
           <div className="sub">
-            <HeadChip icon="user">
+            <HeadChip icon="user" soft>
               <bdi dir="ltr">@{user?.username}</bdi>
             </HeadChip>
           </div>

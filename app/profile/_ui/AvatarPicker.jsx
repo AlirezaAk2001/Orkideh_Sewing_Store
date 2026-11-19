@@ -8,6 +8,7 @@ import { useAuth } from "@/lib/context";
 import { AVATAR_FILE_TYPES, AVATAR_MAX_BYTES, AVATAR_SIZE, PRESETS, avatarChoice, avatarLabel } from "@/lib/avatar";
 import { Ic } from "./icons";
 import { fa } from "./format";
+import { HeadChip } from "./parts";
 
 const MB = 1024 * 1024;
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
@@ -244,7 +245,11 @@ export default function AvatarPicker() {
         </div>
         <div className="pk-meta">
           <b>{user.name}</b>
-          <div className="un">@{user.username}</div>
+          <div className="un">
+            <HeadChip icon="user" soft>
+              <bdi dir="ltr">@{user.username}</bdi>
+            </HeadChip>
+          </div>
           <span className="pk-cur" aria-live="polite">
             <Ic n="check" />
             {avatarLabel(draft.type, draft.key)}
