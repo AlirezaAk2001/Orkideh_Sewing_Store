@@ -8,7 +8,7 @@ import { useFavorites } from "@/lib/context";
 import ConfirmDialog from "./ConfirmDialog";
 import { Ic } from "./icons";
 import { fa } from "./format";
-import { CountChips, Empty, Pcard, ViewHead } from "./parts";
+import { Empty, HeadChip, Pcard, Tick, ViewHead } from "./parts";
 
 // علاقه‌مندی‌ها: شبکهٔ کارت محصول. قلب هر کارت (با تأییدیهٔ صفحهٔ پنل که نمای کلی هم از آن استفاده می‌کند) آن را برمی‌دارد و «حذف همه» همهٔ فهرست را خالی می‌کند.
 // onAdd همان افزودن به سبدِ همراه پرواز تصویر است
@@ -24,7 +24,21 @@ export default function FavoritesView({ favorites, leavingId, onUnfav, onAdd }) 
 
   return (
     <>
-      <ViewHead icon="heart" title="علاقه‌مندی‌های من" sub={<CountChips icon="heart" count={favorites.length} unit="کالا" state="ذخیره شده" empty="هنوز چیزی ذخیره نشده" />}>
+      <ViewHead
+        icon="heart"
+        title="علاقه‌مندی‌های من"
+        sub={
+          favorites.length ? (
+            <HeadChip icon="heart" filled>
+              <Tick value={favorites.length}>{fa(favorites.length)}</Tick> کالا ذخیره شده
+            </HeadChip>
+          ) : (
+            <HeadChip icon="heart" muted>
+              هنوز چیزی ذخیره نشده
+            </HeadChip>
+          )
+        }
+      >
         {favorites.length > 1 && (
           <button type="button" className="btn btn-soft-red sm" onClick={() => setAskClear(true)}>
             <Ic n="trash" />

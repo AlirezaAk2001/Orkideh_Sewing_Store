@@ -172,6 +172,8 @@
 .pf .chip { display: inline-flex; align-items: center; gap: 6px; height: 26px; padding-inline: 10px; border-radius: 99px; font-size: 12px; font-weight: 700; white-space: nowrap; color: var(--c, var(--ink-2)); background: color-mix(in srgb, var(--c, #888) 12%, white); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c, #888) 28%, white); }
 .pf .chip i { width: 6px; height: 6px; border-radius: 50%; background: var(--c); }
 .pf .chip svg { width: 14px; height: 14px; }
+/* آیکون توپر داخل چیپ (کلاس fill-ic): مثل قلب علاقه‌مندی‌ها وقتی چیزی ذخیره شده؛ آیکون‌های lucide فقط خط دارند، پس رنگ خطشان به‌عنوان پر هم گذاشته می‌شود */
+.pf .chip.fill-ic svg { fill: currentColor; }
 .pf .muted { color: var(--ink-2); }
 .pf .num { font-weight: 800; letter-spacing: -0.01em; }
 

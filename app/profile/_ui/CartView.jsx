@@ -11,7 +11,7 @@ import { tip } from "@/lib/tip";
 import ConfirmDialog from "./ConfirmDialog";
 import { Ic } from "./icons";
 import { fa, toEn, toman } from "./format";
-import { CountChips, Empty, FL, Thumb, Tick, ViewHead } from "./parts";
+import { CountChips, Empty, FL, HeadChip, Thumb, Tick, ViewHead } from "./parts";
 
 const auth = () => ({ Authorization: `Bearer ${localStorage.getItem("token")}` });
 
@@ -156,7 +156,15 @@ export default function CartView({ onGo }) {
   if (!cartItems.length) {
     return (
       <>
-        <ViewHead icon="cart" title="سبد خرید" sub="محصولی در سبد نیست" />
+        <ViewHead
+          icon="cart"
+          title="سبد خرید"
+          sub={
+            <HeadChip icon="cart" muted>
+              محصولی در سبد نیست
+            </HeadChip>
+          }
+        />
         <Empty icon="cart" title="سبد خرید شما خالی است" text="از علاقه‌مندی‌ها یا فروشگاه محصول اضافه کنید.">
           <Link href="/products" className="btn btn-primary" style={{ marginTop: 10 }}>
             <Ic n="store" />
