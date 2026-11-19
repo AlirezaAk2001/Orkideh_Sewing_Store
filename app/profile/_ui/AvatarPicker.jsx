@@ -257,79 +257,91 @@ export default function AvatarPicker() {
         </div>
       </div>
 
-      <div className="pk-block">
+      <div className="pk-group">
+        {/* سرتیتر کلی کارت، هم‌شکل سرتیتر «انتخاب آواتار» و «عکس شما»: آیکون کلی (کاربر)، عنوان کلی و توضیح که هم دربارهٔ بارگذاری عکس است هم انتخاب آواتار */}
         <div className="pk-h">
           <span className="ib">
-            <Ic n="imageUp" />
+            <Ic n="user" />
           </span>
           <div>
-            <b>عکس شما</b>
-            <small>JPG، PNG یا WebP · تا {fa(AVATAR_MAX_BYTES / MB)} مگابایت · دایره‌ای برش می‌خورد</small>
+            <b>آواتار شما</b>
+            <small>عکس خودتان یا یکی از طرح‌های فروشگاه؛ در هدر سایت، پنل و زیر نظرهایتان دیده می‌شود.</small>
           </div>
         </div>
-        {crop ? (
-          <CropBox crop={crop} onChange={setCrop} onOk={commitCrop} onCancel={closeCrop} />
-        ) : draft.photo ? (
-          <div className="ph-row">
-            <Avatar value={draft.photo.src} name={user.name} size={64} />
-            <div className="info">
-              <b>{draft.photo.blob ? "عکس انتخاب‌شده" : "عکس آپلودشده"}</b>
-              {fa(AVATAR_SIZE)}×{fa(AVATAR_SIZE)} پیکسل{kb ? ` · حدود ${fa(kb)} کیلوبایت` : ""}
-            </div>
-            <div className="acts">
-              <button type="button" className="btn btn-ghost sm" onClick={() => fileInput.current?.click()}>
-                <Ic n="upload" />
-                جایگزینی
-              </button>
-              <button type="button" className="btn btn-soft-red sm" onClick={removePhoto}>
-                <TrashCan />
-                حذف عکس
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div
-            className={`dz${over ? " over" : ""}`}
-            onDragOver={(e) => {
-              e.preventDefault();
-              setOver(true);
-            }}
-            onDragLeave={() => setOver(false)}
-            onDrop={(e) => {
-              e.preventDefault();
-              setOver(false);
-              handleFile(e.dataTransfer.files[0]);
-            }}
-          >
-            <span className="ic">
+        <div className="pk-block">
+          <div className="pk-h">
+            <span className="ib">
               <Ic n="imageUp" />
             </span>
-            <p>
-              <b>عکس خود را اینجا رها کنید</b> یا از رایانه‌تان انتخاب کنید.
-            </p>
-            <button type="button" className="btn btn-primary sm" onClick={() => fileInput.current?.click()}>
-              <Ic n="upload" />
-              انتخاب عکس
-            </button>
+            <div>
+              <b>عکس شما</b>
+              <small>JPG، PNG یا WebP · تا {fa(AVATAR_MAX_BYTES / MB)} مگابایت · دایره‌ای برش می‌خورد</small>
+            </div>
           </div>
-        )}
-        {error && (
-          <div className="pk-err" role="alert">
-            {error}
-          </div>
-        )}
-        <input
-          ref={fileInput}
-          className="sr"
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-          tabIndex={-1}
-          aria-hidden="true"
-          onChange={(e) => {
-            handleFile(e.target.files[0]);
-            e.target.value = "";
-          }}
-        />
+          {crop ? (
+            <CropBox crop={crop} onChange={setCrop} onOk={commitCrop} onCancel={closeCrop} />
+          ) : draft.photo ? (
+            <div className="ph-row">
+              <Avatar value={draft.photo.src} name={user.name} size={64} />
+              <div className="info">
+                <b>{draft.photo.blob ? "عکس انتخاب‌شده" : "عکس آپلودشده"}</b>
+                {fa(AVATAR_SIZE)}×{fa(AVATAR_SIZE)} پیکسل{kb ? ` · حدود ${fa(kb)} کیلوبایت` : ""}
+              </div>
+              <div className="acts">
+                <button type="button" className="btn btn-ghost sm" onClick={() => fileInput.current?.click()}>
+                  <Ic n="upload" />
+                  جایگزینی
+                </button>
+                <button type="button" className="btn btn-soft-red sm" onClick={removePhoto}>
+                  <TrashCan />
+                  حذف عکس
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div
+              className={`dz${over ? " over" : ""}`}
+              onDragOver={(e) => {
+                e.preventDefault();
+                setOver(true);
+              }}
+              onDragLeave={() => setOver(false)}
+              onDrop={(e) => {
+                e.preventDefault();
+                setOver(false);
+                handleFile(e.dataTransfer.files[0]);
+              }}
+            >
+              <span className="ic">
+                <Ic n="imageUp" />
+              </span>
+              <p>
+                <b>عکس خود را اینجا رها کنید</b> یا از رایانه‌تان انتخاب کنید.
+              </p>
+              <button type="button" className="btn btn-primary sm" onClick={() => fileInput.current?.click()}>
+                <Ic n="upload" />
+                انتخاب عکس
+              </button>
+            </div>
+          )}
+          {error && (
+            <div className="pk-err" role="alert">
+              {error}
+            </div>
+          )}
+          <input
+            ref={fileInput}
+            className="sr"
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            tabIndex={-1}
+            aria-hidden="true"
+            onChange={(e) => {
+              handleFile(e.target.files[0]);
+              e.target.value = "";
+            }}
+          />
+        </div>
       </div>
 
       <div className="pk-block">
