@@ -1,6 +1,7 @@
 /* صفحهٔ «درباره فروشگاه» (app/about/page.jsx، StoreMap.jsx، CopyButton.jsx). همهٔ قاعده‌ها زیر .ab هستند و نام keyframeها ab- دارد تا با بقیهٔ سایت قاطی نشوند.
    رنگ برند از همان مقیاس سایت (--color-brand-* در globals.css) می‌آید و زبان طراحی همان صفحهٔ محصول و پنل کاربری است: شیشه‌ای، سایهٔ نرم صورتی، نخ بخیه.
-   دکمه‌ها گذار و بالا آمدن هاور را از قاعدهٔ سراسری globals.css می‌گیرند (هر <button> و لینکی با کلاس btn-lift)؛ مکان‌نما هم سراسری default است، پس اینجا cursor نداریم. */
+   دکمه‌ها گذار و بالا آمدن هاور را از قاعدهٔ سراسری globals.css می‌گیرند (هر <button> و لینکی با کلاس btn-lift)؛ مکان‌نما هم سراسری است (همان‌جا: دست روی هر چیز قابل کلیک، پیکان بقیه)،
+   پس اینجا فقط برای خود نقشه، که لینک نیست، استثنا داریم (پایین‌تر: .ab-map--link). */
 
 /* ═════════ پایه: رنگ‌ها و ظرف ═════════ */
 .ab {
@@ -163,9 +164,10 @@
 .ab-mapframe { padding: 8px; border-radius: 34px; background: #fff; box-shadow: var(--sh), 0 0 0 1px var(--line); }
 .ab-map { position: relative; height: clamp(340px, 56vh, 480px); overflow: hidden; border-radius: 26px; background: #f3e9f0; }
 .ab-map-box { width: 100%; height: 100%; }
-/* مکان‌نمای دست (pointer) روی نقشه و برچسب نام وقتی لینک نشان تنظیم است. قاعدهٔ سراسری globals.css همه‌جا default می‌گذارد (* با !important، حتی روی grab خودِ MapLibre)؛
-   اینجا به‌خواستهٔ صاحب فروشگاه برای همین دو مورد (کل نقشه با سنجاق و دکمه‌هایش، و برچسب نام) استثنا شده. انتخابگر کلاس‌دار از * قوی‌تر است، پس بعد از آن لازم نیست بیاید. پیام بارگذاری و خطا لینک نیستند و استثنا نمی‌گیرند */
-.ab-map--link .ab-map-box, .ab-map--link .ab-map-box *, a.ab-map-chip, a.ab-map-chip * { cursor: pointer !important; }
+/* مکان‌نمای دست (pointer) روی کل نقشه وقتی لینک نشان تنظیم است. قاعدهٔ سراسری globals.css فقط روی لینک و دکمه دست می‌گذارد و بوم نقشه (که با رویداد کلیک MapLibre لینک را باز می‌کند)
+   نه لینک است نه دکمه، پس پیکان می‌ماند (حتی grab خودِ MapLibre را هم بازنویسی می‌کند)؛ اینجا به‌خواستهٔ صاحب فروشگاه برای کل نقشه استثنا شده. برچسب نام و سنجاق خودشان لینک‌اند و از قاعدهٔ سراسری دست می‌گیرند.
+   پیام بارگذاری و خطا لینک نیستند و استثنا نمی‌گیرند */
+.ab-map--link .ab-map-box, .ab-map--link .ab-map-box * { cursor: pointer !important; }
 .ab-map-chip { position: absolute; top: 14px; inset-inline-start: 14px; z-index: 2; display: inline-flex; align-items: center; gap: 8px; height: 38px; padding: 0 14px; border-radius: 999px; background: rgb(255 255 255 / 0.9); backdrop-filter: blur(10px); box-shadow: 0 10px 22px -12px rgb(60 0 40 / 0.45), 0 0 0 1px var(--line); font-size: 13.5px; font-weight: 700; pointer-events: none; }
 .ab-map-chip svg { width: 16px; height: 16px; flex: none; color: var(--b600); }
 /* وقتی لینک نشان تنظیم است برچسب نام لینک است (مسیریابی با نشان): کلیک می‌گیرد و با هاور کمی پررنگ می‌شود */

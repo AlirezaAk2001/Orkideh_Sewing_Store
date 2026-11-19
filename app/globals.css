@@ -2696,12 +2696,31 @@ html.sb-dragging * {
   pointer-events: none;
 }
 
-/* ───── نشانگر موس: همه‌جای پروژه پیش‌فرض (پیکان) ─────
-   دست (pointer)، زوم، grab و not-allowed کنار گذاشته شد؛ فقط میدان‌های متنی نشانگر متن می‌دارند تا قابل‌نوشتن‌بودنشان معلوم باشد.
-   !important لازم است چون خیلی از کامپوننت‌ها و کلاس‌های Tailwind (cursor-pointer، cursor-not-allowed، …) و کتابخانه‌ها (MUI، نقشه) نشانگر خودشان را می‌گذارند. */
+/* ───── نشانگر موس: پیکان همه‌جا، دست (pointer) روی هر چیز قابل کلیک ─────
+   زوم، grab و not-allowed کنار گذاشته شد. هر چیز قابل کلیک (دکمه، لینک، تب، کلید، گزینه، چک‌باکس، انتخاب‌گر و …؛ هدر سایت و پنل‌ها هم) هنگام هاور دست می‌شود، با همهٔ فرزندانش
+   (آیکون و متن داخل دکمه)؛ دکمه یا عنصر غیرفعال پیکان می‌ماند. میدان‌های متنی نشانگر متن می‌دارند تا قابل‌نوشتن‌بودنشان معلوم باشد.
+   !important لازم است چون خیلی از کامپوننت‌ها و کلاس‌های Tailwind (cursor-pointer، cursor-not-allowed، …) و کتابخانه‌ها (MUI، نقشه) نشانگر خودشان را می‌گذارند.
+   ترتیب و :where مهم‌اند: :where ویژگی‌دهی را صفر می‌کند، پس هر سه قاعدهٔ اول فقط با ترتیب (بعدی برنده است) رقابت می‌کنند: پیکان، بعد دست، بعد غیرفعال. قاعده‌های دقیق‌تر (متن، html.sb-dragging که grabbing
+   می‌گذارد، و استثناهای صفحه‌ها مثل نقشهٔ درباره فروشگاه) بدون نیاز به ترتیب از همه قوی‌ترند. عنصر قابل کلیکی که نه لینک است نه دکمه (مثل div با onClick) باید role یا خودش دکمه باشد تا دست شود. */
 *,
 *::before,
 *::after {
+  cursor: default !important;
+}
+:where(a[href], button, summary, select, [role="button"], [role="link"], [role="tab"], [role="option"], [role="menuitem"], [role="switch"], [role="radio"], [role="checkbox"], input[type="checkbox"], input[type="radio"], input[type="range"], input[type="button"], input[type="submit"], input[type="reset"], input[type="file"], input[type="image"], input[type="color"]),
+:where(a[href], button, summary, select, [role="button"], [role="link"], [role="tab"], [role="option"], [role="menuitem"], [role="switch"], [role="radio"], [role="checkbox"], input[type="checkbox"], input[type="radio"], input[type="range"], input[type="button"], input[type="submit"], input[type="reset"], input[type="file"], input[type="image"], input[type="color"])::before,
+:where(a[href], button, summary, select, [role="button"], [role="link"], [role="tab"], [role="option"], [role="menuitem"], [role="switch"], [role="radio"], [role="checkbox"], input[type="checkbox"], input[type="radio"], input[type="range"], input[type="button"], input[type="submit"], input[type="reset"], input[type="file"], input[type="image"], input[type="color"])::after,
+:where(a[href], button, summary, select, [role="button"], [role="link"], [role="tab"], [role="option"], [role="menuitem"], [role="switch"], [role="radio"], [role="checkbox"]) *,
+:where(a[href], button, summary, select, [role="button"], [role="link"], [role="tab"], [role="option"], [role="menuitem"], [role="switch"], [role="radio"], [role="checkbox"]) *::before,
+:where(a[href], button, summary, select, [role="button"], [role="link"], [role="tab"], [role="option"], [role="menuitem"], [role="switch"], [role="radio"], [role="checkbox"]) *::after {
+  cursor: pointer !important;
+}
+:where(button:disabled, select:disabled, input:disabled, [aria-disabled="true"]),
+:where(button:disabled, select:disabled, input:disabled, [aria-disabled="true"])::before,
+:where(button:disabled, select:disabled, input:disabled, [aria-disabled="true"])::after,
+:where(button:disabled, select:disabled, [aria-disabled="true"]) *,
+:where(button:disabled, select:disabled, [aria-disabled="true"]) *::before,
+:where(button:disabled, select:disabled, [aria-disabled="true"]) *::after {
   cursor: default !important;
 }
 input:not([type="checkbox"], [type="radio"], [type="range"], [type="button"], [type="submit"], [type="reset"], [type="file"], [type="color"], [type="image"]),
