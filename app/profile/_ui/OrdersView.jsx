@@ -12,7 +12,7 @@ import { Ic } from "./icons";
 import { costLabel } from "@/lib/shipping";
 import { formatAddress } from "@/lib/addressFormat";
 import { dateFa, dateTimeFa, fa, faDigits, toman } from "./format";
-import { Empty, ST, Stack, Thumb, ViewHead, countByStatus } from "./parts";
+import { Empty, HeadChip, ST, Stack, Thumb, ViewHead, countByStatus } from "./parts";
 
 const FILTERS = [
   ["all", "همه"],
@@ -307,7 +307,17 @@ export default function OrdersView({ orders, payingId, deletingId, onPay, onDele
 
   return (
     <>
-      <ViewHead icon="bag" title="سفارش‌های من" sub="پیگیری و تاریخچهٔ خریدهای شما">
+      <ViewHead
+        icon="bag"
+        title="سفارش‌های من"
+        sub={
+          <>
+            {/* پیگیری: کامیون (همان آیکون وضعیت «جاری»)؛ تاریخچهٔ خریدها: رسید (همان آیکون «جزئیات سفارش») */}
+            <HeadChip icon="truck">پیگیری</HeadChip>
+            <HeadChip icon="receipt">تاریخچهٔ خریدهای شما</HeadChip>
+          </>
+        }
+      >
         <FilterSeg value={filter} counts={counts} onChange={setFilter} />
       </ViewHead>
 
