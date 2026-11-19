@@ -9,7 +9,7 @@ import { evaluatePassword, STRENGTH_LABELS } from "@/lib/passwordStrength";
 import AvatarPicker from "./AvatarPicker";
 import { Ic } from "./icons";
 import { dateFa, fa } from "./format";
-import { FL, ViewHead } from "./parts";
+import { FL, HeadChip, ViewHead } from "./parts";
 
 const usernameRegex = /^[a-zA-Z0-9_]+$/;
 const CHECK_DELAY = 600;
@@ -261,7 +261,18 @@ function AvatarCard() {
 export default function SettingsView({ user, placedOrders, onLogout }) {
   return (
     <>
-      <ViewHead icon="sliders" title="تنظیمات حساب" sub="آواتار، نام کاربری و رمز عبور" />
+      {/* هر بخش یک چیپ، با همان آیکون عنوان کارتش پایین‌تر (آواتار: imageUp، نام کاربری: user، رمز عبور: lock) */}
+      <ViewHead
+        icon="sliders"
+        title="تنظیمات حساب"
+        sub={
+          <>
+            <HeadChip icon="imageUp">آواتار</HeadChip>
+            <HeadChip icon="user">نام کاربری</HeadChip>
+            <HeadChip icon="lock">رمز عبور</HeadChip>
+          </>
+        }
+      />
       <div className="sgrid">
         <aside className="tile me-card rise" style={{ "--i": 1 }}>
           <div className="me-av">
