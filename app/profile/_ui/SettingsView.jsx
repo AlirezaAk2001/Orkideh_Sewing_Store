@@ -279,7 +279,11 @@ export default function SettingsView({ user, placedOrders, onLogout }) {
             <Avatar value={user?.avatar} name={user?.name} size={100} label={user?.name || "حساب کاربری"} />
           </div>
           <h3>{user?.name}</h3>
-          <div className="sub">@{user?.username}</div>
+          <div className="sub">
+            <HeadChip icon="user">
+              <bdi dir="ltr">@{user?.username}</bdi>
+            </HeadChip>
+          </div>
           <div className="facts">
             <div className="fact">
               <Ic n="mail" />

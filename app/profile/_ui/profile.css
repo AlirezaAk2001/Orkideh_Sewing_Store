@@ -802,7 +802,8 @@
 .pf .me-av { position: relative; width: 112px; height: 112px; margin: 0 auto 14px; border-radius: 50%; display: grid; place-items: center; }
 .pf .me-av::before { content: ""; position: absolute; inset: -4px; border-radius: 50%; background: conic-gradient(from 0deg, var(--brand-400), #8b5cf6, var(--brand-600), #fda4af, var(--brand-400)); animation: pf-spin 8s linear infinite; mask: radial-gradient(circle, transparent 62%, #000 64%); }
 .pf .me-card h3 { font-size: 20px; font-weight: 800; }
-.pf .me-card .sub { color: var(--ink-3); font-size: 13px; direction: ltr; }
+/* نام کاربری زیر نام: یک چیپ با آیکون کاربر (HeadChip)؛ خود @نام داخل bdi چپ‌به‌راست است، پس ظرف مثل بقیهٔ چیپ‌ها راست‌به‌چپ می‌ماند (آیکون سمت راست) */
+.pf .me-card .sub { margin-top: 8px; }
 .pf .facts { display: grid; gap: 8px; margin-top: 20px; text-align: right; }
 .pf .fact { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 15px; background: rgb(255 255 255 / 0.65); box-shadow: 0 0 0 1px var(--line); font-size: 13px; }
 .pf .fact svg { width: 17px; height: 17px; color: var(--brand-600); }
