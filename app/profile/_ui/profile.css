@@ -889,7 +889,8 @@
 .pf .crop-ctl input { flex: 1; accent-color: var(--brand-600); }
 .pf .crop .hint { min-height: 0; font-size: 12px; color: var(--ink-3); }
 .pf .crop-btns { display: flex; gap: 8px; }
-.pf .pk-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; max-width: 680px; }
+/* شبکهٔ آواتارها تمام عرض کارت را می‌گیرد (قبلاً max-width: 680px داشت و روی کارت پهن به راست می‌چسبید و سمت چپ خالی می‌ماند)؛ ستون‌ها روی کارت‌های باریک‌تر با @container pk کمتر می‌شوند */
+.pf .pk-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; }
 .pf .pk-sep { display: flex; align-items: center; gap: 10px; margin: 14px 0 12px; font-size: 12px; font-weight: 700; color: var(--ink-3); }
 .pf .pk-sep::before, .pf .pk-sep::after { content: ""; flex: 1; height: 1px; background: var(--line); }
 .pf .pk-tile { position: relative; display: grid; justify-items: center; align-content: start; gap: 7px; padding: 14px 6px 9px; border-radius: 18px; background: #fff; box-shadow: 0 0 0 1px var(--line); transition: translate 0.3s var(--ease), box-shadow 0.3s var(--ease), background 0.25s; }
