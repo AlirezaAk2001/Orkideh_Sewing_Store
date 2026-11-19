@@ -70,6 +70,33 @@ export function Tick({ value, className = "", children }) {
   );
 }
 
+// زیرعنوان چیپی سربرگ نماها (سبد خرید، علاقه‌مندی‌ها، آدرس‌ها): چیپ برند «آیکون + تعداد + واحد» (عدد هنگام تغییر tick می‌زند) و چیپ سبز وضعیت با نقطهٔ تپندهٔ
+// چیپ‌های صفحهٔ سفارش‌ها (beat-dot). وقتی چیزی نیست فقط یک چیپ خاکستری با آیکون همان بخش و پیام خالی می‌آید (empty)؛ جایش در ViewHead (sub) است
+export function CountChips({ icon, count, unit, state, empty }) {
+  if (!count) {
+    return (
+      <span className="chip" style={{ "--c": "var(--ink-3)" }}>
+        <Ic n={icon} />
+        {empty}
+      </span>
+    );
+  }
+  return (
+    <>
+      <span className="chip" style={{ "--c": "var(--brand-600)" }}>
+        <Ic n={icon} />
+        <span>
+          <Tick value={count}>{fa(count)}</Tick> {unit}
+        </span>
+      </span>
+      <span className="chip" style={{ "--c": "#15803d" }}>
+        <i className="beat-dot" />
+        {state}
+      </span>
+    </>
+  );
+}
+
 export function Thumb({ src, alt = "", width, height }) {
   return <AppImage src={src || NO_IMAGE} alt={alt} width={width} height={height} />;
 }

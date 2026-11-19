@@ -10,7 +10,7 @@ import { PenIcon, TrashCan } from "@/app/components/ActionIcons";
 import { tip } from "@/lib/tip";
 import { Ic } from "./icons";
 import { fa, toEn } from "./format";
-import { FL, MapBox, ViewHead } from "./parts";
+import { CountChips, FL, MapBox, ViewHead } from "./parts";
 import Select from "./Select";
 import { MAP_KEY, reverseGeocode } from "./mapClient";
 
@@ -216,7 +216,7 @@ export default function AddressesView() {
 
   return (
     <>
-      <ViewHead icon="pin" title="آدرس‌های من" sub={addresses.length ? `${fa(addresses.length)} آدرس ثبت شده` : "هنوز آدرسی ثبت نشده"}>
+      <ViewHead icon="pin" title="آدرس‌های من" sub={<CountChips icon="pin" count={addresses.length} unit="آدرس" state="ثبت شده" empty="هنوز آدرسی ثبت نشده" />}>
         <button type="button" className="btn btn-primary" onClick={() => (open && !editing ? close() : openForm())}>
           <Ic n="plus" />
           آدرس جدید
