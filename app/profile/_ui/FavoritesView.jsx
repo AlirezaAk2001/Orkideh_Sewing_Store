@@ -5,6 +5,7 @@ import Link from "next/link";
 import toast from "react-hot-toast";
 import { mdiDeleteSweepOutline } from "@mdi/js";
 import { useFavorites } from "@/lib/context";
+import { TrashCan } from "@/app/components/ActionIcons";
 import ConfirmDialog from "./ConfirmDialog";
 import { Ic } from "./icons";
 import { fa } from "./format";
@@ -41,7 +42,8 @@ export default function FavoritesView({ favorites, leavingId, onUnfav, onAdd }) 
       >
         {favorites.length > 1 && (
           <button type="button" className="btn btn-soft-red sm" onClick={() => setAskClear(true)}>
-            <Ic n="trash" />
+            {/* همان سطل متحرک «حذف همه» سبد خرید و دکمهٔ حذف کارت آدرس‌ها (TrashCan): با هاور یا فوکوس کیبورد درِ سطل بالا می‌رود و می‌جنبد */}
+            <TrashCan />
             حذف همه
           </button>
         )}
