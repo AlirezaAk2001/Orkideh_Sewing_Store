@@ -221,7 +221,7 @@ export default function AddressesView() {
         title="آدرس‌های من"
         sub={
           addresses.length ? (
-            <HeadChip icon="pin">
+            <HeadChip icon="pin" pulse>
               <Tick value={addresses.length}>{fa(addresses.length)}</Tick> آدرس ثبت شده
             </HeadChip>
           ) : (

@@ -174,6 +174,14 @@
 .pf .chip svg { width: 14px; height: 14px; }
 /* آیکون توپر داخل چیپ (کلاس fill-ic): مثل قلب علاقه‌مندی‌ها وقتی چیزی ذخیره شده؛ آیکون‌های lucide فقط خط دارند، پس رنگ خطشان به‌عنوان پر هم گذاشته می‌شود */
 .pf .chip.fill-ic svg { fill: currentColor; }
+/* آیکون چیپ‌های زیرعنوان (HeadChip) در پوشش .hc-ic است. کلاس pulse-ic حلقهٔ پالس سنجاق کاشی آدرس داشبورد را دور آیکون می‌گذارد (همان pf-map-ring، همان ۲٫۶ ثانیه و همان رنگ برند):
+   حلقه‌ای که از دور آیکون بیرون می‌رود و محو می‌شود. مرکزش روی سر سنجاق است (سر در آیکون ۲۴ واحدی روی (۱۲، ۱۰) است، یعنی کمی بالاتر از وسط)؛ z-index منفی زیر آیکون می‌گذاردش.
+   حلقه opacity صفر دارد و فقط با انیمیشن دیده می‌شود، پس با «کاهش حرکت» دیده نمی‌شود */
+.pf .chip .hc-ic { position: relative; isolation: isolate; display: inline-grid; place-items: center; }
+.pf .chip.pulse-ic .hc-ic::before { content: ""; position: absolute; z-index: -1; left: 50%; top: calc(50% - 1px); width: 20px; height: 20px; margin: -10px 0 0 -10px; box-sizing: border-box; border-radius: 50%; border: 1.5px solid var(--brand-500); opacity: 0; pointer-events: none; }
+@media (prefers-reduced-motion: no-preference) {
+  .pf .chip.pulse-ic .hc-ic::before { animation: pf-map-ring 2.6s ease-out infinite; }
+}
 .pf .muted { color: var(--ink-2); }
 .pf .num { font-weight: 800; letter-spacing: -0.01em; }
 

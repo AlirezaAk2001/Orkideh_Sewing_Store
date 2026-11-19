@@ -71,11 +71,15 @@ export function Tick({ value, className = "", children }) {
 }
 
 // زیرعنوان چیپی سربرگ نماها (جای sub در ViewHead): یک چیپ با آیکون و عنوان کامل داخلش؛ برند، یا خاکستری (muted) برای حالت خالی.
-// filled آیکون را توپر می‌کند (مثل قلب علاقه‌مندی‌ها وقتی چیزی ذخیره شده). عدد داخل را با Tick بدهید تا هنگام تغییر بپرد
-export function HeadChip({ icon, filled = false, muted = false, children }) {
+// filled آیکون را توپر می‌کند (مثل قلب علاقه‌مندی‌ها وقتی چیزی ذخیره شده) و pulse حلقهٔ پالس سنجاق داشبورد را دور آیکون می‌گذارد (مثل سنجاق آدرس‌ها وقتی آدرسی ثبت شده).
+// عدد داخل را با Tick بدهید تا هنگام تغییر بپرد
+export function HeadChip({ icon, filled = false, pulse = false, muted = false, children }) {
+  const cls = ["chip", filled && "fill-ic", pulse && "pulse-ic"].filter(Boolean).join(" ");
   return (
-    <span className={`chip ${filled ? "fill-ic" : ""}`.trim()} style={{ "--c": muted ? "var(--ink-3)" : "var(--brand-600)" }}>
-      <Ic n={icon} />
+    <span className={cls} style={{ "--c": muted ? "var(--ink-3)" : "var(--brand-600)" }}>
+      <span className="hc-ic">
+        <Ic n={icon} />
+      </span>
       <span>{children}</span>
     </span>
   );
