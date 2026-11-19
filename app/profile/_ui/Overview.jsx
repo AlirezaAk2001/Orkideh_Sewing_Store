@@ -570,7 +570,17 @@ function FavTile({ favorites, onGo }) {
   );
 }
 
-// جملهٔ خلاصهٔ زیر سلام، از روی وضعیت واقعی سفارش‌ها و سبد
+// یک چیپ شیشه‌ای از جملهٔ خلاصه با آیکون مرتبطش (استایل: .lead-chip در profile.css)
+function LeadChip({ icon, children }) {
+  return (
+    <span className="lead-chip">
+      <Ic n={icon} />
+      <span>{children}</span>
+    </span>
+  );
+}
+
+// جمله‌های خلاصهٔ زیر سلام، از روی وضعیت واقعی سفارش‌ها و سبد؛ هر کدام یک چیپ با آیکون خودش (کامیون: جاری، ساعت شنی: منتظر پرداخت، بستهٔ تیک‌دار: تحویل، برگشت: مرجوع، سبد: سبد خرید)
 function Lead({ orders, cartCount }) {
   if (orders == null) return null;
   const processing = orders.find((o) => o.status === "processing");
@@ -579,31 +589,30 @@ function Lead({ orders, cartCount }) {
   let first;
   if (processing)
     first = (
-      <>
-        سفارش شمارهٔ <b>{fa(processing.userOrderNumber)}</b> شما در جریان است.
-      </>
+      <LeadChip icon="truck">
+        سفارش شمارهٔ <b>{fa(processing.userOrderNumber)}</b> در جریان است
+      </LeadChip>
     );
   else if (pending)
     first = (
-      <>
-        سفارش شمارهٔ <b>{fa(pending.userOrderNumber)}</b> شما هنوز پرداخت نشده است.
-      </>
+      <LeadChip icon="hourglass">
+        سفارش شمارهٔ <b>{fa(pending.userOrderNumber)}</b> هنوز پرداخت نشده است
+      </LeadChip>
     );
   else if (last)
     first = (
-      <>
-        آخرین سفارش شما (شمارهٔ <b>{fa(last.userOrderNumber)}</b>) {last.status === "delivered" ? "تحویل شده است." : "مرجوع شده است."}
-      </>
+      <LeadChip icon={last.status === "delivered" ? "packcheck" : "undo"}>
+        آخرین سفارش (شمارهٔ <b>{fa(last.userOrderNumber)}</b>) {last.status === "delivered" ? "تحویل شده است" : "مرجوع شده است"}
+      </LeadChip>
     );
-  else first = <>هنوز سفارشی ثبت نکرده‌اید.</>;
+  else first = <LeadChip icon="bag">هنوز سفارشی ثبت نکرده‌اید</LeadChip>;
   return (
     <>
       {first}
       {cartCount > 0 && (
-        <>
-          {" "}
-          <b>{fa(cartCount)} کالا</b> هم در سبد خرید منتظر شماست.
-        </>
+        <LeadChip icon="cart">
+          <b>{fa(cartCount)} کالا</b> در سبد خرید منتظر شماست
+        </LeadChip>
       )}
     </>
   );
@@ -647,9 +656,9 @@ export default function Overview({ user, orders, cartItems, cartCount, favorites
               <h1 id="profile-title" className="hello">
                 {greeting()}، {first}
               </h1>
-              <p className="lead">
+              <div className="lead">
                 <Lead orders={orders} cartCount={cartCount} />
-              </p>
+              </div>
               {(user?.username || user?.email) && (
                 <ul className="hero-meta" aria-label="مشخصات حساب">
                   {user?.username && (
