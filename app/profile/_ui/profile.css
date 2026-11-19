@@ -671,6 +671,13 @@
 .pf .fl .inp.bad label { color: #dc2626; }
 .pf .fl .inp input::placeholder, .pf .fl .inp textarea::placeholder { color: var(--ink-3); opacity: 0; transition: opacity 0.2s; }
 .pf .fl .inp input:focus::placeholder, .pf .fl .inp textarea:focus::placeholder { opacity: 1; }
+/* پیشوند @ نام کاربری (کلاس at-in روی .inp، span.at بعد از input): کنار ابتدای متن (سمت چپ) می‌نشیند و با پر بودن فیلد یا با کلیک (فوکوس) روی فیلدِ خالی ظاهر می‌شود.
+   جایش همیشه با padding-left در input رزرو است تا متن با ظاهر شدنش جابه‌جا نشود؛ @ روی همان بالشتک می‌افتد و pointer-events ندارد، پس کلیک روی خودِ @ هم به input می‌رسد.
+   span باید بعد از input بیاید (انتخابگر هم‌نیای ~، مثل برچسب شناور) */
+.pf .inp.at-in input { padding-left: 17px; }
+.pf .inp .at { position: absolute; left: 14px; top: 0; bottom: 0; display: flex; align-items: center; font-size: 14px; font-weight: 600; direction: ltr; color: var(--ink-3); opacity: 0; translate: -5px 0; pointer-events: none; user-select: none; transition: opacity 0.2s, translate 0.25s var(--ease), color 0.25s; }
+.pf .inp:focus-within .at, .pf .inp input:not(:placeholder-shown) ~ .at { opacity: 1; translate: 0 0; }
+.pf .inp:focus-within .at { color: var(--brand-600); }
 /* باکس چندخطی (آدرس): آیکون کنار خط اولِ متن می‌نشیند، نه وسط باکس، تا با عنوان، مثال و خط اول یک تراز باشد. مرکز خط اول = ۱۲px بالشتک + نصف قد خط (۲۳٫۸px) ≈ ۲۴px = ۱۴px فاصله + ۱۰px نصف آیکون */
 .pf .fl .inp.ta { align-items: flex-start; }
 .pf .fl .inp.ta svg.i { margin-top: 14px; }

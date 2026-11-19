@@ -119,7 +119,7 @@ function UsernameCard() {
       <form onSubmit={save} noValidate>
         {/* برچسب شناور: عنوان داخل باکس است و با فوکوس یا پر بودن روی لبه می‌رود؛ مثال (placeholder) بعد از کلیک دیده می‌شود. برچسب باید بعد از input بیاید (profile.css، کلاس fl) */}
         <div className="field fl">
-          <div className={`inp ${tone}`}>
+          <div className={`inp at-in ${tone}`}>
             <Ic n="user" />
             {/* onBeforeInput جلوی درج حرف فارسی را می‌گیرد تا مکان‌نما جابه‌جا نشود؛ onChange برای ورودی‌هایی است که قابل‌گرفتن نیستند (چسباندن، کیبورد گوشی) */}
             <input
@@ -138,6 +138,10 @@ function UsernameCard() {
               autoComplete="off"
               spellCheck={false}
             />
+            {/* @ پیشوندِ نمایشی است و جزو مقدار نیست؛ با پر بودن فیلد یا فوکوس دیده می‌شود (profile.css، .at) و باید بعد از input بیاید */}
+            <span className="at" aria-hidden="true">
+              @
+            </span>
             <FL htmlFor="un">نام کاربری</FL>
           </div>
           <div className={`hint ${tone}`}>{keyboard ? KEYBOARD_MSG : msg}</div>
