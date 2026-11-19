@@ -8,6 +8,7 @@ import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../lib/context";
 import { rememberRedirect, takeRedirect } from "../../lib/redirect";
+import { NON_LATIN } from "../../lib/latinInput";
 import { useSegmentSlide } from "@/app/admin/_ui/useSegmentSlide";
 import AuthShell from "./auth/AuthShell";
 import { AuthCard, AuthTitle, Field, PasswordInput, SubmitButton, TextInput } from "./auth/AuthUI";
@@ -16,6 +17,14 @@ const allowedAdmins = ["poshtibani.orkideh@gmail.com"];
 
 // بدون پرانتز و نماد در انتها: در متن راست‌به‌چپ جابه‌جا نشان داده می‌شدند
 const PASSWORD_HINT = "حداقل ۸ کاراکتر شامل حرف انگلیسی، عدد و یک نماد مانند @";
+
+// نام کاربری و ایمیل (ثبت‌نام) و «ایمیل یا نام کاربری» (ورود) فقط نویسهٔ لاتین می‌گیرند: با کیبورد فارسی چیزی نوشته نمی‌شود و این خطای قرمز زیر باکس می‌آید
+const LATIN_ONLY = new Set(["username", "email"]);
+const KEYBOARD_MSG = {
+  username: "کیبورد را روی انگلیسی بگذارید؛ نام کاربری فقط می‌تواند حروف انگلیسی، عدد و خط زیر (_) داشته باشد.",
+  email: "کیبورد را روی انگلیسی بگذارید؛ ایمیل فقط با حروف انگلیسی نوشته می‌شود.",
+  identifier: "کیبورد را روی انگلیسی بگذارید؛ ایمیل و نام کاربری فقط با حروف انگلیسی نوشته می‌شوند.",
+};
 
 export default function AuthPage() {
   const { login, loading } = useAuth();
@@ -39,6 +48,7 @@ export default function AuthPage() {
   const [verificationCode, setVerificationCode] = useState("");
   const [tempAuth, setTempAuth] = useState(null);
   const [shakeFields, setShakeFields] = useState({}); // برای افکت لرزش
+  const [keyboardField, setKeyboardField] = useState(null); // فیلدی که حرف فارسی در آن تایپ یا چسبانده شد و پذیرفته نشد
   const router = useRouter();
   // زبانهٔ ورود/ثبت‌نام همان تب‌های قطعه‌ای پنل مدیریت است (قرص سفید خود تب فعال است و بین دو تب می‌لغزد)
   const switchRef = useSegmentSlide(isLogin ? "login" : "register");
@@ -84,8 +94,24 @@ export default function AuthPage() {
     setShakeFields({});
   };
 
+  // onBeforeInput: جلوی درج حرف فارسی را می‌گیرد تا مکان‌نما جابه‌جا نشود؛ handleChange برای ورودی‌های غیرقابل‌گرفتن (چسباندن، کیبورد گوشی) است
+  const blockNonLatin = (name) => (e) => {
+    if (e.data && NON_LATIN.test(e.data)) {
+      e.preventDefault();
+      setKeyboardField(name);
+    }
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
+    if (LATIN_ONLY.has(name)) {
+      // حرف فارسی: مقدار و خطاهای قبلی فیلد دست‌نخورده می‌ماند، فقط خطای کیبورد نشان داده می‌شود
+      if (NON_LATIN.test(value)) {
+        setKeyboardField(name);
+        return;
+      }
+      setKeyboardField((cur) => (cur === name ? null : cur));
+    }
     setFormData((prev) => ({ ...prev, [name]: value }));
     if (name === "fullName") {
       const parts = value.trim().split(/\s+/);
@@ -103,6 +129,7 @@ export default function AuthPage() {
 
   const handleBlur = (e) => {
     const { name, value } = e.target;
+    setKeyboardField((cur) => (cur === name ? null : cur));
     setTouched((prev) => ({ ...prev, [name]: true }));
     validateField(name, value);
   };
@@ -468,7 +495,7 @@ export default function AuthPage() {
                       index={1}
                       id="auth-username"
                       label="نام کاربری"
-                      error={shown("username") ? errors.username : ""}
+                      error={keyboardField === "username" ? KEYBOARD_MSG.username : shown("username") ? errors.username : ""}
                       hint={usernameHint}
                       shake={shakeFields.username}
                     >
@@ -481,8 +508,9 @@ export default function AuthPage() {
                         placeholder="aaa_123"
                         value={formData.username}
                         onChange={handleChange}
+                        onBeforeInput={blockNonLatin("username")}
                         onBlur={handleBlur}
-                        invalid={shown("username") || usernameExists}
+                        invalid={keyboardField === "username" || shown("username") || usernameExists}
                       />
                     </Field>
                   </div>
@@ -492,7 +520,7 @@ export default function AuthPage() {
                   index={isLogin ? 0 : 2}
                   id="auth-email"
                   label={isLogin ? "ایمیل یا نام کاربری" : "ایمیل"}
-                  error={shown("email") ? errors.email : ""}
+                  error={keyboardField === "email" ? (isLogin ? KEYBOARD_MSG.identifier : KEYBOARD_MSG.email) : shown("email") ? errors.email : ""}
                   shake={shakeFields.email}
                 >
                   <TextInput
@@ -504,8 +532,9 @@ export default function AuthPage() {
                     placeholder={isLogin ? "example@gmail.com یا aaa_123" : "example@gmail.com"}
                     value={formData.email}
                     onChange={handleChange}
+                    onBeforeInput={blockNonLatin("email")}
                     onBlur={handleBlur}
-                    invalid={shown("email")}
+                    invalid={keyboardField === "email" || shown("email")}
                   />
                 </Field>
 

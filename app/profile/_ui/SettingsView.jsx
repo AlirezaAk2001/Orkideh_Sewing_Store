@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import axios from "axios";
 import Avatar from "@/app/components/Avatar";
 import { useAuth } from "@/lib/context";
+import { NON_LATIN } from "@/lib/latinInput";
 import { evaluatePassword, STRENGTH_LABELS } from "@/lib/passwordStrength";
 import AvatarPicker from "./AvatarPicker";
 import { Ic } from "./icons";
@@ -12,8 +13,7 @@ import { dateFa, fa } from "./format";
 import { FL, HeadChip, ViewHead } from "./parts";
 
 const usernameRegex = /^[a-zA-Z0-9_]+$/;
-// حروف و رقم و نشانهٔ فارسی/عربی (و نیم‌فاصله): با کیبورد فارسی تایپ نمی‌شوند؛ مقدار فیلد همان قبلی می‌ماند و زیر باکس خطای قرمز می‌آید
-const NON_LATIN = /[؀-ۿݐ-ݿࢠ-ࣿﭐ-﷿ﹰ-﻿‌‍]/;
+// حرف فارسی/عربی با کیبورد فارسی تایپ نمی‌شود (NON_LATIN در lib/latinInput.js)؛ مقدار فیلد همان قبلی می‌ماند و زیر باکس خطای قرمز می‌آید
 const KEYBOARD_MSG = "کیبورد را روی انگلیسی بگذارید؛ نام کاربری فقط می‌تواند حروف انگلیسی، عدد و خط زیر (_) داشته باشد.";
 const CHECK_DELAY = 600;
 const ltr = { direction: "ltr", textAlign: "right" };
