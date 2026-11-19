@@ -396,7 +396,7 @@ export default function AddressesView() {
                     <>
                       <span className="q">این آدرس حذف شود؟</span>
                       <button type="button" className="bsm danger" onClick={() => remove(a)} disabled={deleting}>
-                        {deleting ? <Ic n="loader" className="spin" /> : <Ic n="trash2" />}
+                        {deleting ? <Ic n="loader" className="spin" /> : <TrashCan />}
                         {deleting ? "در حال حذف…" : "بله، حذف شود"}
                       </button>
                       <button type="button" className="bsm ghost" onClick={() => setAskId(null)} disabled={deleting}>

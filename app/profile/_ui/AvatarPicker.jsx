@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import Avatar from "@/app/components/Avatar";
+import { TrashCan } from "@/app/components/ActionIcons";
 import { useAuth } from "@/lib/context";
 import { AVATAR_FILE_TYPES, AVATAR_MAX_BYTES, AVATAR_SIZE, PRESETS, avatarChoice, avatarLabel } from "@/lib/avatar";
 import { Ic } from "./icons";
@@ -276,7 +277,7 @@ export default function AvatarPicker() {
                 جایگزینی
               </button>
               <button type="button" className="btn btn-soft-red sm" onClick={removePhoto}>
-                <Ic n="trash2" />
+                <TrashCan />
                 حذف عکس
               </button>
             </div>

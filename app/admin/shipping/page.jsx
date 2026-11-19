@@ -4,7 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { Plus, Trash2, Truck } from "lucide-react";
+import { Plus, Truck } from "lucide-react";
+import { TrashCan } from "@/app/components/ActionIcons";
 import PageHeader from "@/app/admin/_shell/PageHeader";
 import FormSection from "@/app/admin/_form/FormSection";
 import { TextInput } from "@/app/admin/_form/Fields";
@@ -142,7 +143,7 @@ export default function AdminShipping() {
                         aria-label={`حذف «${r.label || `روش ${fa(i + 1)}`}»`}
                         className="grid h-9 w-9 cursor-pointer place-items-center rounded-lg text-gray-400 transition hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300"
                       >
-                        <Trash2 className="h-[18px] w-[18px]" aria-hidden="true" />
+                        <TrashCan />
                       </button>
                     </span>
                   </div>
