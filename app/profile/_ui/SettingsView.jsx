@@ -12,8 +12,13 @@ import { dateFa, fa } from "./format";
 import { FL, HeadChip, ViewHead } from "./parts";
 
 const usernameRegex = /^[a-zA-Z0-9_]+$/;
+// حروف و رقم و نشانهٔ فارسی/عربی (و نیم‌فاصله): با کیبورد فارسی تایپ نمی‌شوند؛ مقدار فیلد همان قبلی می‌ماند و زیر باکس خطای قرمز می‌آید
+const NON_LATIN = /[؀-ۿݐ-ݿࢠ-ࣿﭐ-﷿ﹰ-﻿‌‍]/;
+const KEYBOARD_MSG = "کیبورد را روی انگلیسی بگذارید؛ نام کاربری فقط می‌تواند حروف انگلیسی، عدد و خط زیر (_) داشته باشد.";
 const CHECK_DELAY = 600;
 const ltr = { direction: "ltr", textAlign: "right" };
+// نام کاربری از چپ نوشته و نشان داده می‌شود (رمزها همان ltr بالا را می‌گیرند)
+const ltrLeft = { direction: "ltr", textAlign: "left" };
 
 // نام کاربری: همان قواعد قبلی (حروف و عدد و _)؛ بعد از ۰٫۶ ثانیه توقف تایپ، آزاد بودنش از سرور پرسیده می‌شود.
 // state: idle | same | bad | checking | ok
@@ -24,6 +29,7 @@ function UsernameCard() {
   const [state, setState] = useState("idle");
   const [msg, setMsg] = useState("");
   const [saving, setSaving] = useState(false);
+  const [keyboard, setKeyboard] = useState(false); // کاراکتر فارسی/عربی تایپ یا چسبانده شد و پذیرفته نشد
   const ticket = useRef(0);
 
   // اگر کاربر دیرتر از اولین رندر رسید، نام فعلی را وقتی آمد در فیلد می‌گذاریم
@@ -34,6 +40,12 @@ function UsernameCard() {
   useEffect(() => () => void (ticket.current += 1), []);
 
   const onChange = (raw) => {
+    // کیبورد فارسی (یا چسباندن متن فارسی): نوشته نمی‌شود و مقدار و وضعیت قبلی فیلد دست‌نخورده می‌ماند، فقط خطا نشان داده می‌شود
+    if (NON_LATIN.test(raw)) {
+      setKeyboard(true);
+      return;
+    }
+    setKeyboard(false);
     const v = raw.trim();
     setValue(raw);
     const mine = ++ticket.current;
@@ -94,7 +106,7 @@ function UsernameCard() {
     setSaving(false);
   };
 
-  const tone = state === "ok" ? "ok" : state === "bad" ? "bad" : "";
+  const tone = keyboard ? "bad" : state === "ok" ? "ok" : state === "bad" ? "bad" : "";
   return (
     <section className="tile scard rise" style={{ "--i": 3 }}>
       <h3>
@@ -109,10 +121,26 @@ function UsernameCard() {
         <div className="field fl">
           <div className={`inp ${tone}`}>
             <Ic n="user" />
-            <input id="un" value={value} onChange={(e) => onChange(e.target.value)} placeholder="aaa_123" style={ltr} autoComplete="off" spellCheck={false} />
+            {/* onBeforeInput جلوی درج حرف فارسی را می‌گیرد تا مکان‌نما جابه‌جا نشود؛ onChange برای ورودی‌هایی است که قابل‌گرفتن نیستند (چسباندن، کیبورد گوشی) */}
+            <input
+              id="un"
+              value={value}
+              onChange={(e) => onChange(e.target.value)}
+              onBeforeInput={(e) => {
+                if (e.data && NON_LATIN.test(e.data)) {
+                  e.preventDefault();
+                  setKeyboard(true);
+                }
+              }}
+              onBlur={() => setKeyboard(false)}
+              placeholder="aaa_123"
+              style={ltrLeft}
+              autoComplete="off"
+              spellCheck={false}
+            />
             <FL htmlFor="un">نام کاربری</FL>
           </div>
-          <div className={`hint ${tone}`}>{msg}</div>
+          <div className={`hint ${tone}`}>{keyboard ? KEYBOARD_MSG : msg}</div>
         </div>
         <div className="sfoot">
           <button type="submit" className="btn btn-primary" disabled={state !== "ok" || saving}>
