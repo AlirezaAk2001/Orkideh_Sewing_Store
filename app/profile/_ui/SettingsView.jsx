@@ -301,7 +301,7 @@ export default function SettingsView({ user, placedOrders, onLogout }) {
           <>
             <HeadChip icon="imageUp">آواتار</HeadChip>
             <HeadChip icon="user">نام کاربری</HeadChip>
-            <HeadChip icon="lock">رمز عبور</HeadChip>
+            <HeadChip icon="keyRound">رمز عبور</HeadChip>
           </>
         }
       />
