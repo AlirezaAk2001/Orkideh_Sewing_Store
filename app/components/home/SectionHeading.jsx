@@ -9,6 +9,17 @@ const ICONS = { layers: Layers, tag: Tag, sparkles: Sparkles, flame: Flame, mess
 // پس موج با هر طول کشیده نمی‌شود و فقط کوتاه یا بلند دیده می‌شود
 const STITCH_PATH = "M0 5 Q10 -1 20 5" + Array.from({ length: 59 }, (_, i) => ` T${40 + i * 20} 5`).join("");
 
+// بخیهٔ زیر عنوان؛ جدا شده تا عنوان صفحهٔ فهرست محصولات (ProductListing.jsx) هم همین را بگیرد
+export function StitchLine() {
+  return (
+    <span className="hs-stitch" aria-hidden="true">
+      <svg viewBox="0 0 1200 10" preserveAspectRatio="xMaxYMid slice">
+        <path d={STITCH_PATH} />
+      </svg>
+    </span>
+  );
+}
+
 // عنوان یک بخش صفحهٔ اصلی: برچسب آیکون‌دار (اختیاری)، عنوان، زیرعنوان و بخیهٔ کشیده‌شونده (استایل و انیمیشن در home.css).
 // id برای aria-labelledby بخش است؛ لینک «مشاهده همه» اختیاری است و children (مثل دکمه‌های قبلی/بعدی ردیف) کنار آن، سمت چپ عنوان می‌نشیند.
 // بخیه با رسیدن بخش به صفحه کشیده می‌شود: Reveal.jsx روی لفافهٔ بخش is-in می‌گذارد و home.css آن را می‌خواند.
@@ -27,11 +38,7 @@ export default function SectionHeading({ id, title, subtitle, href, linkText = "
           {title}
         </h2>
         {subtitle && <p className="hs-sub">{subtitle}</p>}
-        <span className="hs-stitch" aria-hidden="true">
-          <svg viewBox="0 0 1200 10" preserveAspectRatio="xMaxYMid slice">
-            <path d={STITCH_PATH} />
-          </svg>
-        </span>
+        <StitchLine />
       </div>
       {children}
       {href && (

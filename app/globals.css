@@ -1121,20 +1121,19 @@ html.sb-dragging * {
   }
 }
 
-/* ورود نرم کارت‌های فهرست محصولات (ProductListing.jsx)؛ با «کاهش حرکت» کارت‌ها همان اول و بدون انیمیشن دیده می‌شوند */
+/* ورود نرم کارت‌های فهرست محصولات (ProductListing.jsx): هر کارت از کمی پایین‌تر بالا می‌آید و روشن می‌شود (تأخیر پلکانی را خود کامپوننت می‌دهد).
+   با ویژگی‌های مستقل translate و scale و با backwards (نه both) تا بعد از پایان، هیچ transform ماندگاری روی لفافه نماند و روی هاور و وضوح عکس اثر نگذارد.
+   با «کاهش حرکت» کارت‌ها همان اول و بدون انیمیشن دیده می‌شوند */
 @keyframes product-in {
   from {
     opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
+    translate: 0 26px;
+    scale: 0.97;
   }
 }
 @media (prefers-reduced-motion: no-preference) {
   .product-in {
-    animation: product-in 0.5s ease-out both;
+    animation: product-in 0.65s cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
   }
 }
 

@@ -6,6 +6,7 @@ import AppImage from "./AppImage";
 import ImageSlider from "./ImageSlider";
 import FavoriteButton from "./FavoriteButton";
 import { productImages } from "@/lib/productImages";
+import { brandOf } from "@/lib/brands";
 import { useRouter } from "next/navigation";
 import { useCart, useAuth } from "@/lib/context";
 import { authUrl } from "@/lib/redirect";
@@ -42,6 +43,7 @@ export default function ProductCard({ product, priority = false, sizes = DEFAULT
     });
   };
   // میانگین امتیاز و تعداد رای را صفحهٔ سروری حساب کرده (lib/products.js یا lib/categories.js + lib/comments.js)
+  const brand = brandOf(product.name);
   const averageRating = product.averageRating ?? 0;
   const totalVotes = product.totalVotes ?? 0;
 
@@ -147,20 +149,34 @@ export default function ProductCard({ product, priority = false, sizes = DEFAULT
       </div>
 
       <div className="flex flex-1 flex-col gap-2 p-3 sm:p-4">
+        {/* برند (از نام محصول، lib/brands.js) و دستهٔ محصول؛ هر کدام که نبود نمی‌آید */}
+        {(brand || product.categoryName) && (
+          <p className="pk-meta">
+            {brand && <span className="pk-brand">{brand.name}</span>}
+            {product.categoryName && <span className="pk-cat">{product.categoryName}</span>}
+          </p>
+        )}
+
         <h2 className="text-sm font-semibold leading-6 text-gray-800 sm:text-base">
           <Link
             href={`/products/${slug}`}
-            className="line-clamp-2 min-h-12 outline-none after:absolute after:inset-0"
+            className="line-clamp-2 outline-none after:absolute after:inset-0"
           >
             {product.name}
           </Link>
         </h2>
 
-        {totalVotes > 0 && (
+        {/* بدون رای هم ردیف امتیاز می‌ماند (کم‌رنگ)، تا کارت‌ها در یک ردیف هم‌قد و بی‌شکاف باشند */}
+        {totalVotes > 0 ? (
           <div className="flex items-center gap-1 text-xs text-gray-500">
             <Star className="h-4 w-4 fill-amber-400 text-amber-400" aria-hidden="true" />
             <span className="font-medium text-gray-700">{averageRating.toLocaleString("fa-IR")}</span>
             <span>({totalVotes.toLocaleString("fa-IR")} رای)</span>
+          </div>
+        ) : (
+          <div className="flex items-center gap-1 text-xs text-gray-400">
+            <Star className="h-4 w-4 text-gray-300" aria-hidden="true" />
+            <span>بدون نظر</span>
           </div>
         )}
 

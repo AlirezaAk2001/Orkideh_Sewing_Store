@@ -2,6 +2,37 @@
    ProductCard متغیرهای --mx و --my (مکان موس در کارت) را با حرکت موس روی خود article می‌گذارد.
    عکس هیچ transform سه‌بعدی یا کج شدنی ندارد (آن‌ها لایهٔ عکس را با همان اندازهٔ اولش رسترایز می‌کردند و عکس را تار می‌کردند)؛ فقط بزرگ شدن ساده‌ی group-hover:scale-105 خود عکس مانده است.
    فقط برای دستگاه‌های دارای موس و بدون «کاهش حرکت»اند؛ در لمسی هاور می‌چسبد و با کاهش حرکت، برق نباید باشد. */
+/* ردیف برند و دستهٔ بالای عنوان کارت: چیپ کوچک صورتی برای برند و دستهٔ کم‌رنگ کنارش (اگر جا کم بود دسته با «…» کوتاه می‌شود، برند نه) */
+.pk-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--color-gray-500);
+  white-space: nowrap;
+}
+.pk-brand {
+  flex: none;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-weight: 700;
+  color: var(--color-brand-700);
+  background: var(--color-brand-50);
+  box-shadow: inset 0 0 0 1px var(--color-brand-100);
+  transition: background-color 0.3s, box-shadow 0.3s;
+}
+.pk:hover .pk-brand {
+  background: var(--color-brand-100);
+  box-shadow: inset 0 0 0 1px var(--color-brand-200);
+}
+.pk-cat {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .pk-shine,
 .pk::before {
   display: none;
