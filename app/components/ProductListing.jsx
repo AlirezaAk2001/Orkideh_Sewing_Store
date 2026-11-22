@@ -3,14 +3,31 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowUpDown, BadgePercent, Banknote, BookOpen, Boxes, Check, FunnelPlus, ChevronDown, ChevronLeft, ChevronRight, FunnelX, LayoutGrid, Package, PackageCheck, SlidersHorizontal, PackageSearch  } from "lucide-react";
+import { ArrowUpDown, BadgePercent, Banknote, BookOpen, Boxes, Check, FunnelPlus, ChevronDown, ChevronLeft, ChevronRight, FunnelX, LayoutGrid, Package, PackageCheck, SlidersHorizontal, PackageSearch, Ruler, Scissors, Spool } from "lucide-react";
 import CategoryIcon from "@/app/components/CategoryIcon";
 import ExpandSearch from "@/app/components/ExpandSearch";
 import ProductCard from "@/app/components/ProductCard";
+import { StitchLine } from "@/app/components/home/SectionHeading";
+import useSlidePill from "@/app/components/useSlidePill";
+import { scrollBehavior } from "@/lib/motion";
 import { SORTS, activeFilterCount, buildListUrl, pageItems, parsePrice } from "@/lib/productQuery";
 import { tip } from "@/lib/tip";
+import "@/app/components/listing.css";
 
 const fa = (n) => Number(n).toLocaleString("fa-IR");
+
+// ابزارهای خیاطی تزئینی (قرقره، قیچی، متر؛ همان‌ها و همان شناوری پس‌زمینهٔ پروفایل، ProfileBackdrop.jsx): سه‌تا در نوار عنوان و سه‌تا در حاشیهٔ کنار صفحه.
+// --r زاویه، --dur مدت و --delay تأخیر شناوری (کلاس auth-float در globals.css؛ با «کاهش حرکت» خودش خاموش است)
+const BAND_TOOLS = [
+  { icon: Spool, style: { "--r": "-10deg", "--dur": "10s", alignSelf: "flex-start", marginTop: 6 } },
+  { icon: Scissors, style: { "--r": "14deg", "--dur": "12s", "--delay": "-4s" } },
+  { icon: Ruler, style: { "--r": "-18deg", "--dur": "11s", "--delay": "-7s", alignSelf: "flex-end", marginBottom: 6 } },
+];
+const SIDE_TOOLS = [
+  { icon: Spool, className: "right-[3%] top-[30%]", style: { "--r": "-8deg", "--dur": "10s" } },
+  { icon: Scissors, className: "left-[2%] top-[52%]", style: { "--r": "12deg", "--dur": "12s", "--delay": "-4s" } },
+  { icon: Ruler, className: "right-[4%] top-[78%]", style: { "--r": "-18deg", "--dur": "11s", "--delay": "-7s" } },
+];
 
 const FIELD =
   "w-full rounded-xl border bg-white px-3 py-2 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2";
@@ -308,6 +325,10 @@ function SortMenu({ value, onChange }) {
 }
 
 function Pagination({ basePath, params, page, pageCount }) {
+  // قرص لغزان زیر شمارهٔ صفحهٔ جاری؛ هوک‌ها باید قبل از return زودهنگام بیایند
+  const box = useRef(null);
+  const pill = useRef(null);
+  useSlidePill(box, pill, page, "pages");
   if (pageCount <= 1) return null;
   const href = (n) => buildListUrl(basePath, params, { page: n });
   const arrow = "btn-lift grid h-10 w-10 place-items-center rounded-xl border transition";
@@ -315,7 +336,7 @@ function Pagination({ basePath, params, page, pageCount }) {
   // در اولین و آخرین صفحه دکمهٔ غیرفعال است (نه فقط کمرنگ): خوانندهٔ صفحه آن را «غیرفعال» می‌خواند و نشانگر موس not-allowed می‌شود
   const disabled = `${arrow} pointer-events-none cursor-not-allowed border-gray-200 bg-gray-50 text-gray-300`;
   return (
-    <nav aria-label="صفحه‌بندی" className="mt-10 flex flex-wrap items-center justify-center gap-2">
+    <nav ref={box} aria-label="صفحه‌بندی" className="relative isolate mt-10 flex flex-wrap items-center justify-center gap-2">
       {page > 1 ? (
         <Link href={href(page - 1)} rel="prev" aria-label="صفحهٔ قبل" className={enabled}>
           <ChevronRight className="h-5 w-5" aria-hidden="true" />
@@ -334,7 +355,7 @@ function Pagination({ basePath, params, page, pageCount }) {
             …
           </span>
         ) : item === page ? (
-          <span key={item} aria-current="page" className="grid h-10 min-w-10 place-items-center rounded-xl bg-brand-600 px-2 text-sm font-bold text-white">
+          <span key={item} aria-current="page" className="lst-pg grid h-10 min-w-10 place-items-center rounded-xl bg-brand-600 px-2 text-sm font-bold text-white">
             {fa(item)}
           </span>
         ) : (
@@ -360,6 +381,7 @@ function Pagination({ basePath, params, page, pageCount }) {
           </button>
         </span>
       )}
+      <i ref={pill} aria-hidden="true" className="lst-pill lst-pill--sq" />
     </nav>
   );
 }
@@ -372,6 +394,50 @@ export default function ProductListing({ title, accent, category, basePath, cate
   const [pending, startTransition] = useTransition();
   const filterCount = activeFilterCount(params);
   const [panelOpen, setPanelOpen] = useState(filterCount > 0);
+  // نوار دسته/فیلتر/مرتب‌سازی زیر هدر می‌چسبد؛ ارتفاع هدر با اندازه و صفحه فرق می‌کند، پس اندازه‌گیری می‌شود (مثل SectionNav صفحهٔ محصول؛ ۹۶ پیش‌فرض سمت سرور)
+  const [top, setTop] = useState(96);
+  // چسبیده است؟ (هنگام چسبیدن نوار زمینهٔ شیشه‌ای می‌گیرد؛ گیرندهٔ دیده‌بانی خطی نامرئی بالای نوار است)
+  const [stuck, setStuck] = useState(false);
+  // بخیهٔ عنوان بعد از اولین رندر کشیده می‌شود (home.css: [data-in] .hs-stitch)، نه این‌که از اول باز باشد
+  const [drawn, setDrawn] = useState(false);
+  const sentinel = useRef(null);
+  const panelRef = useRef(null);
+  const chipsRef = useRef(null);
+  const chipsPill = useRef(null);
+  // قرص لغزان چیپ‌ها: از «همه» به یک دسته (که صفحهٔ دیگری است) هم از جای قبلی به جای تازه می‌لغزد
+  useSlidePill(chipsRef, chipsPill, basePath, "chips");
+
+  useEffect(() => {
+    const header = document.querySelector("header");
+    if (!header) return undefined;
+    const update = () => setTop(Math.round(header.getBoundingClientRect().height) + 8);
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(header);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const el = sentinel.current;
+    if (!el) return undefined;
+    const observer = new IntersectionObserver(([entry]) => setStuck(!entry.isIntersecting && entry.boundingClientRect.top < top), {
+      rootMargin: `-${top}px 0px 0px 0px`,
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [top]);
+
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setDrawn(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
+
+  // وقتی نوار چسبیده است و پنل فیلتر باز می‌شود، پنل زیر نوار و هدر می‌ماند؛ صفحه تا آن می‌رود
+  const togglePanel = () => {
+    const next = !panelOpen;
+    setPanelOpen(next);
+    if (next && stuck) requestAnimationFrame(() => panelRef.current?.scrollIntoView({ behavior: scrollBehavior(), block: "start" }));
+  };
 
   const go = (overrides) =>
     startTransition(() => {
@@ -384,22 +450,45 @@ export default function ProductListing({ title, accent, category, basePath, cate
   const countText = filterCount > 0 ? `${fa(total)} محصول از ${fa(scopeTotal)}` : `${fa(total)} محصول`;
 
   const chipBase =
-    "chip-3d inline-flex min-h-10 shrink-0 items-center gap-2 rounded-full border px-4 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2";
+    "lst-chip chip-3d inline-flex min-h-10 shrink-0 items-center gap-2 rounded-full border px-4 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2";
   const chipOn = "border-brand-600 bg-brand-600 font-medium text-white";
   const chipOff = "border-gray-300 bg-white text-gray-700 hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700";
 
   return (
+    <div className="lst-page" style={{ "--lst-top": `${top}px` }}>
+      {/* پس‌زمینهٔ تزئینی بالای صفحه (listing.css) */}
+      <div className="lst-ambient" aria-hidden="true">
+        <i />
+        <i />
+      </div>
+      {/* ابزارهای خیاطی شناور در حاشیهٔ کنار صفحه، پشت کارت‌ها؛ فقط از ۱۵۳۶ پیکسل به بالا که حاشیهٔ خالی دارد (همان آیکون‌ها و شناوریِ پس‌زمینهٔ پروفایل) */}
+      <div className="lst-side" aria-hidden="true">
+        {SIDE_TOOLS.map(({ icon: Icon, className, style }) => (
+          <Icon key={className} className={`auth-float absolute hidden h-14 w-14 text-brand-300/50 2xl:block ${className}`} style={style} strokeWidth={1.1} />
+        ))}
+      </div>
     <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:py-10">
-      <header className="mb-5 flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
-        <h1 className="flex items-center gap-3 text-2xl font-bold text-gray-900">
-          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-brand-50 text-brand-600 ring-1 ring-brand-100">
-            {category ? <CategoryIcon slug={category.slug} name={category.name} className="h-6 w-6" /> : <Boxes className="h-6 w-6" aria-hidden="true" />}
+      {/* عنوان با همان سبک عنوان بخش‌های صفحهٔ اصلی: برچسب آیکون‌دار، عنوان و بخیهٔ جاری که بعد از رندر اول کشیده می‌شود */}
+      <header className="hs lst-head" data-in={drawn ? "" : undefined}>
+        <div className="hs-text">
+          <span className="hs-eyebrow">
+            {category ? <CategoryIcon slug={category.slug} name={category.name} className="h-[15px] w-[15px]" /> : <Boxes size={15} aria-hidden="true" />}
+            {category ? "دسته‌بندی" : "فروشگاه"}
           </span>
-          <span>
+          <h1 className="hs-title">
             {title}
             {accent && <span className="text-brand-600">{accent}</span>}
-          </span>
-        </h1>
+          </h1>
+          <StitchLine />
+        </div>
+        {/* سه ابزار خیاطی کم‌رنگ و شناور در فضای خالی میان عنوان و چیپ‌ها (فقط از lg؛ فضایش را خود flex می‌دهد، پس روی نوشته نمی‌افتند) */}
+        {scopeTotal > 0 && (
+          <div className="lst-tools" aria-hidden="true">
+            {BAND_TOOLS.map(({ icon: Icon, style }, i) => (
+              <Icon key={i} className="lst-tool auth-float" style={style} strokeWidth={1.1} />
+            ))}
+          </div>
+        )}
         {scopeTotal > 0 && (
           <div aria-live="polite" className="flex flex-wrap items-center gap-2 text-sm">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-50 px-3 py-1 font-medium text-brand-700 ring-1 ring-brand-100">
@@ -416,12 +505,19 @@ export default function ProductListing({ title, accent, category, basePath, cate
         )}
       </header>
 
-      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      {/* خط نامرئی بالای نوار: وقتی از زیر هدر بالا رفت، نوار چسبیده است (stuck) */}
+      <div ref={sentinel} aria-hidden="true" className="-mb-px h-px" />
+      <div
+        className="lst-bar flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+        data-stuck={stuck ? "" : undefined}
+        style={{ top }}
+      >
         {categories.length > 0 ? (
           // پدینگ بالا و پایین جای بالا آمدن و سایهٔ چیپ‌ها را می‌دهد؛ مارجین منفی همان‌قدر آن را جبران می‌کند تا فاصله‌ها عوض نشود
           <nav
+            ref={chipsRef}
             aria-label="دسته‌بندی‌ها"
-            className="no-scrollbar -mx-4 -mb-5 -mt-3 flex min-w-0 gap-2 overflow-x-auto px-4 pb-5 pt-3 sm:mx-0 sm:mb-0 sm:mt-0 sm:flex-wrap sm:overflow-visible sm:p-0"
+            className="no-scrollbar relative isolate -mx-4 -mb-5 -mt-3 flex min-w-0 gap-2 overflow-x-auto px-4 pb-5 pt-3 sm:mx-0 sm:mb-0 sm:mt-0 sm:flex-wrap sm:overflow-visible sm:p-0"
           >
             <Link
               href={buildListUrl("/products", params, { page: 1 })}
@@ -449,6 +545,7 @@ export default function ProductListing({ title, accent, category, basePath, cate
                 </Link>
               );
             })}
+            <i ref={chipsPill} aria-hidden="true" className="lst-pill" />
           </nav>
         ) : (
           <span />
@@ -458,7 +555,7 @@ export default function ProductListing({ title, accent, category, basePath, cate
           <div className="flex items-center gap-3">
             <button
               type="button"
-              onClick={() => setPanelOpen((open) => !open)}
+              onClick={togglePanel}
               aria-expanded={panelOpen}
               aria-controls="product-filters"
               className={BUTTON}
@@ -480,10 +577,11 @@ export default function ProductListing({ title, accent, category, basePath, cate
         <>
           {/* پنل همیشه در صفحه است و با تغییر ارتفاع از صفر (grid-rows 0fr -> 1fr) و محو شدن باز و بسته می‌شود؛ بسته: inert، یعنی کلیدها و خواننده‌ها از آن رد می‌شوند */}
           <div
+            ref={panelRef}
             id="product-filters"
             aria-hidden={!panelOpen}
             inert={!panelOpen}
-            className={`grid transition-[grid-template-rows,opacity,margin,transform] ${SOFT} ${
+            className={`lst-panel grid transition-[grid-template-rows,opacity,margin,transform] ${SOFT} ${
               panelOpen ? "mb-4 translate-y-0 grid-rows-[1fr] opacity-100" : "-translate-y-1 grid-rows-[0fr] opacity-0"
             }`}
           >
@@ -502,22 +600,33 @@ export default function ProductListing({ title, accent, category, basePath, cate
       )}
 
       {scopeTotal === 0 ? (
-        <p className="mt-10 text-center text-gray-500">{emptyMessage}</p>
+        <div className="lst-empty">
+          <span className="lst-empty-ic">
+            <PackageSearch size={34} aria-hidden="true" />
+          </span>
+          <h2>{emptyMessage}</h2>
+        </div>
       ) : total === 0 ? (
-        <div className="mt-10 text-center">
-          <p className="text-gray-600">هیچ محصولی با این فیلترها پیدا نشد.</p>
-          <Link href={clearHref} scroll={false} className="btn-lift mt-4 inline-flex items-center gap-2 rounded-xl bg-brand-600 px-5 py-2 text-sm font-medium text-white transition hover:bg-brand-700">
+        <div className="lst-empty">
+          <span className="lst-empty-ic">
+            <PackageSearch size={34} aria-hidden="true" />
+          </span>
+          <h2>هیچ محصولی با این فیلترها پیدا نشد</h2>
+          <p>قیمت یا شرط‌های فیلتر را کمی تغییر دهید، یا همهٔ فیلترها را پاک کنید.</p>
+          <Link href={clearHref} scroll={false} className="btn-lift mt-5 inline-flex items-center gap-2 rounded-xl bg-brand-600 px-5 py-2 text-sm font-medium text-white transition hover:bg-brand-700">
             <FunnelX className="h-4 w-4" aria-hidden="true" />
             پاک‌کردن فیلترها
           </Link>
         </div>
       ) : (
+        // key: با عوض شدن صفحه، دسته، مرتب‌سازی یا فیلتر کل شبکه از نو ساخته می‌شود و کارت‌ها یکی‌یکی بالا می‌آیند (.product-in)
         <div
+          key={`${basePath}|${page}|${params.sort}|${params.q}|${params.min}|${params.max}|${params.available}|${params.discount}`}
           aria-busy={pending}
-          className={`grid grid-cols-1 gap-6 transition-opacity sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 ${pending ? "opacity-60" : ""}`}
+          className={`lst-grid grid grid-cols-1 gap-6 transition-opacity sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 ${pending ? "opacity-60" : ""}`}
         >
           {items.map((product, index) => (
-            <div key={product.id} className="product-in h-full" style={{ animationDelay: `${Math.min(index, 8) * 0.05}s` }}>
+            <div key={product.id} className="product-in h-full" style={{ animationDelay: `${Math.min(index, 11) * 0.05}s` }}>
               <ProductCard product={product} priority={index < 4} />
             </div>
           ))}
@@ -525,6 +634,7 @@ export default function ProductListing({ title, accent, category, basePath, cate
       )}
 
       <Pagination basePath={basePath} params={params} page={page} pageCount={pageCount} />
+    </div>
     </div>
   );
 }

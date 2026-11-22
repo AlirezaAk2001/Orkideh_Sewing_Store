@@ -1,0 +1,250 @@
+/* ظاهر صفحهٔ فهرست محصولات (ProductListing.jsx؛ همان‌جا برای «همه محصولات» و هر دسته؛ پیشوند lst-): پس‌زمینهٔ ملایم بالای صفحه، نوار چسبان دسته‌ها/فیلتر/مرتب‌سازی،
+   قرص لغزندهٔ چیپ‌ها و صفحه‌بندی، موج رنگی هنگام بارگذاری فهرست و حالت خالی. عنوان صفحه همان کلاس‌های hs- صفحهٔ اصلی (home.css) را دارد.
+   همه‌ی حرکت‌ها transform و opacity‌اند و با «کاهش حرکت» خاموش می‌شوند. رنگ‌ها از تم سایت (--color-brand-*) می‌آیند. */
+
+/* ═════════ پس‌زمینه ═════════
+   ظرف کل صفحه overflow-x: clip دارد (نه hidden: clip ظرف اسکرول نمی‌سازد و نوار چسبان کار می‌کند) تا درخشش‌های بیرون‌زده افقی اسکرول نسازند.
+   لایهٔ تزئینی فقط بالای صفحه است (۷۸۰ پیکسل)، نه کل صفحه: دو درخشش صورتی که خیلی آرام جابه‌جا می‌شوند و نقطه‌چین ریزی که به پایین محو می‌شود (یادآور بخیه) */
+.lst-page {
+  position: relative;
+  isolation: isolate;
+  overflow-x: clip;
+}
+.lst-ambient {
+  position: absolute;
+  inset: 0 0 auto 0;
+  z-index: -1;
+  height: 780px;
+  pointer-events: none;
+}
+.lst-ambient::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.55;
+  background-image: radial-gradient(circle, color-mix(in srgb, var(--color-brand-400) 40%, transparent) 1.1px, transparent 1.7px);
+  background-size: 24px 24px;
+  -webkit-mask-image: radial-gradient(ellipse 85% 90% at 50% 0, #000 15%, transparent 75%);
+  mask-image: radial-gradient(ellipse 85% 90% at 50% 0, #000 15%, transparent 75%);
+}
+.lst-ambient i {
+  position: absolute;
+  border-radius: 50%;
+}
+.lst-ambient i:nth-child(1) {
+  top: -220px;
+  right: -120px;
+  width: 640px;
+  height: 520px;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--color-brand-300) 46%, transparent), transparent);
+}
+.lst-ambient i:nth-child(2) {
+  top: 120px;
+  left: -180px;
+  width: 560px;
+  height: 460px;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--color-brand-200) 55%, transparent), transparent);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .lst-ambient i:nth-child(1) {
+    animation: lst-drift 24s ease-in-out infinite alternate;
+  }
+  .lst-ambient i:nth-child(2) {
+    animation: lst-drift 30s ease-in-out -9s infinite alternate-reverse;
+  }
+}
+@keyframes lst-drift {
+  to {
+    translate: 56px 38px;
+  }
+}
+
+/* عنوان صفحه: همان .hs صفحهٔ اصلی؛ فقط فاصلهٔ زیرش کمی کمتر است چون نوار دسته‌ها پایین‌تر به‌عنوان بخش جدا می‌آید */
+.hs.lst-head {
+  margin-bottom: 18px;
+}
+
+/* ابزارهای خیاطی شناور (ProductListing.jsx).
+   نوار عنوان: .lst-tools یک آیتم flex میان عنوان و چیپ‌هاست و فقط فضای خالی آن‌ها را می‌گیرد (flex: 1 با پایهٔ صفر و سقف عرض)، پس هرگز روی نوشته نمی‌افتد؛
+   آیکون‌ها با فاصلهٔ مساوی و ارتفاع‌های متفاوت (alignSelf در خود آیکون) پخش‌اند. کنار صفحه: لایهٔ .lst-side پشت همه‌چیز است و آیکون‌هایش از ۱۵۳۶ پیکسل دیده می‌شوند (کلاس‌های Tailwind در JSX).
+   همه تزئینی‌اند: کلیک را رد می‌کنند و زیر lg اصلاً نیستند */
+.lst-tools {
+  display: none;
+}
+@media (min-width: 1024px) {
+  .lst-tools {
+    display: flex;
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: 440px;
+    align-self: stretch;
+    align-items: center;
+    justify-content: space-evenly;
+    padding-inline: 12px;
+    pointer-events: none;
+  }
+}
+.lst-tool {
+  flex: none;
+  width: 42px;
+  height: 42px;
+  color: color-mix(in srgb, var(--color-brand-300) 62%, transparent);
+}
+.lst-side {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* ═════════ نوار چسبان ═════════
+   دسته‌ها + فیلترها + مرتب‌سازی. از ۶۴۰ پیکسل به بالا زیر هدر می‌چسبد (top را خود کامپوننت از ارتفاع هدر می‌گذارد) و فقط وقتی واقعاً چسبیده است
+   (data-stuck؛ ProductListing با IntersectionObserver) زمینهٔ شیشه‌ای و سایه می‌گیرد. حاشیهٔ منفی و پدینگ هم‌اندازه‌اند تا چیدمان با چسبیدن نپرد.
+   روی موبایل چسبان نیست: نوار دو ردیفی است و جای زیادی از صفحهٔ کوچک می‌گرفت */
+.lst-bar {
+  margin: 0 -12px 16px;
+  padding: 10px 12px;
+  border-radius: 22px;
+  transition: background-color 0.3s, box-shadow 0.3s;
+}
+@media (min-width: 640px) {
+  .lst-bar {
+    position: sticky;
+    z-index: 30;
+  }
+  .lst-bar[data-stuck] {
+    background: rgb(255 255 255 / 0.82);
+    -webkit-backdrop-filter: blur(16px) saturate(1.5);
+    backdrop-filter: blur(16px) saturate(1.5);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.9), 0 0 0 1px rgb(80 30 90 / 0.08), 0 18px 34px -22px rgb(110 20 90 / 0.45);
+  }
+}
+/* دکمهٔ «فیلترها» وقتی نوار چسبیده است و پنل باز می‌شود، صفحه تا پنل می‌رود؛ پنل نباید زیر هدر و نوار بماند */
+.lst-panel {
+  scroll-margin-top: calc(var(--lst-top, 96px) + 84px);
+}
+
+/* ═════════ قرص لغزان (useSlidePill.js) ═════════
+   زیر عنصر فعال (چیپ دستهٔ جاری یا صفحهٔ جاری) می‌نشیند. ظرف‌هاش isolate هستند و قرص z-index منفی دارد، پس نوشتهٔ عنصرها همیشه بالای آن است.
+   تا قرص ننشسته (data-pill روی ظرف)، عنصر فعال پس‌زمینهٔ خودش را دارد؛ بعد شفاف می‌شود و قرص جایش را می‌گیرد */
+.lst-pill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  width: 0;
+  height: 0;
+  border-radius: 999px;
+  pointer-events: none;
+  background: linear-gradient(135deg, var(--color-brand-500), var(--color-brand-700));
+  box-shadow: 0 10px 18px -10px rgb(190 24 93 / 0.75), inset 0 1px 0 rgb(255 255 255 / 0.25);
+  transition: transform 0.55s cubic-bezier(0.34, 1.25, 0.5, 1), width 0.45s cubic-bezier(0.2, 0.7, 0.2, 1), height 0.45s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.lst-pill.lst-pill--sq {
+  border-radius: 12px;
+}
+[data-pill] > .lst-pill {
+  visibility: visible;
+}
+:not([data-pill]) > .lst-pill {
+  visibility: hidden;
+}
+[data-pill] .lst-chip[aria-current="page"],
+[data-pill] .lst-pg[aria-current="page"] {
+  background-color: transparent;
+  border-color: transparent;
+}
+/* چیپ فعال هنگام هاور بالا نمی‌آید (قرص پشتش تکان نمی‌خورد و از زیر نوشته جدا می‌شد) */
+[data-pill] .chip-3d[aria-current="page"]:hover {
+  transform: perspective(420px) translate3d(0, 0, 0);
+  box-shadow: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lst-pill {
+    transition: none;
+  }
+}
+
+/* ═════════ فهرست کارت‌ها ═════════
+   هنگام بارگذاری (فیلتر یا مرتب‌سازی که هنوز جواب نیامده) کارت‌های قبلی کم‌رنگ می‌مانند و یک موج روشن از آن‌ها می‌گذرد؛ جابه‌جایی صفحه/فیلتر کل شبکه را از نو می‌سازد (key)
+   و کارت‌ها یکی‌یکی بالا می‌آیند (.product-in در globals.css) */
+.lst-grid {
+  position: relative;
+}
+.lst-grid[aria-busy="true"]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  border-radius: 24px;
+  pointer-events: none;
+  background: linear-gradient(100deg, transparent 30%, rgb(255 255 255 / 0.6) 50%, transparent 70%) 120% 0 / 220% 100% no-repeat;
+  animation: lst-sweep 1.4s linear infinite;
+}
+@keyframes lst-sweep {
+  to {
+    background-position: -120% 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lst-grid[aria-busy="true"]::after {
+    display: none;
+  }
+}
+
+/* ═════════ حالت خالی ═════════ */
+.lst-empty {
+  max-width: 460px;
+  margin: 40px auto 0;
+  padding: 34px 26px 30px;
+  text-align: center;
+  border-radius: 28px;
+  background: #fff;
+  box-shadow: 0 0 0 1px rgb(80 30 90 / 0.09), 0 18px 40px -28px rgb(110 20 90 / 0.4);
+}
+.lst-empty-ic {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  place-items: center;
+  width: 88px;
+  height: 88px;
+  margin: 0 auto 16px;
+  color: var(--color-brand-600);
+}
+.lst-empty-ic::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px dashed var(--color-brand-300);
+}
+.lst-empty-ic::after {
+  content: "";
+  position: absolute;
+  inset: 9px;
+  z-index: -1;
+  border-radius: 50%;
+  background: var(--color-brand-50);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .lst-empty-ic::before {
+    animation: lst-spin 22s linear infinite;
+  }
+}
+@keyframes lst-spin {
+  to {
+    transform: rotate(-360deg);
+  }
+}
+.lst-empty h2 {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--color-gray-900);
+}
+.lst-empty p {
+  margin-top: 6px;
+  font-size: 14px;
+  line-height: 1.9;
+  color: var(--color-gray-600);
+}
