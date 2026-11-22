@@ -1,67 +1,53 @@
 import Link from "next/link";
-import { CheckCircle2, MapPin, Phone, Smartphone } from "lucide-react";
-import AppImage from "../AppImage";
+import { Cog, Droplets, MapPin, Phone, Smartphone, Star, Store, Wrench } from "lucide-react";
+import CountUp from "./CountUp";
 import { STORE } from "@/lib/contact";
+import "./service.css";
 
-// متن این بخش پیشنهادی است؛ مالک فروشگاه بازبینی کند
-const POINTS = ["عیب‌یابی و تعمیر چرخ خیاطی", "سرویس و روغن‌کاری دوره‌ای", "فروش لوازم جانبی و قطعات"];
+// خدمت‌های فروشگاه؛ متن این بخش پیشنهادی است و مالک فروشگاه بازبینی کند (ادعایی مثل «گارانتی» یا «تعمیر در همان روز» عمداً نیامده)
+const SERVICES = [
+  { icon: Wrench, title: "تعمیر و عیب‌یابی", text: "ایراد چرخ خیاطی‌تان را بررسی و برطرف می‌کنیم" },
+  { icon: Droplets, title: "سرویس و روغن‌کاری", text: "سرویس دوره‌ای برای کار روان‌تر چرخ" },
+  { icon: Cog, title: "لوازم جانبی و قطعات", text: "لوازم و قطعات موردنیاز چرخ خیاطی" },
+];
 
-export default function ServiceSection() {
+// مرکز فروش و خدمات: پنل آلبالویی (استایل در service.css)؛ سمت راست عنوان و آدرس و دکمه‌ها و سمت چپ کاشی‌های شیشه‌ای (عکسی از خود فروشگاه نداریم، پس عکس نیست).
+// reviewStats: { count, average } آمار واقعی نظرهای تأییدشدهٔ مشتریان است که HomeContent می‌دهد؛ کاشی آخر (با عدد شمارشی) فقط وقتی نظری ثبت شده باشد می‌آید
+// (آمار محصول و برند همان بالا در هیرو است و اینجا تکرار نمی‌شود).
+export default function ServiceSection({ reviewStats = { count: 0, average: 0 } }) {
+  const { count, average } = reviewStats;
+
   return (
-    <section aria-labelledby="home-service" className="overflow-hidden rounded-3xl bg-gray-900 text-white md:grid md:grid-cols-2">
-      <div className="relative min-h-60 md:min-h-full">
-        <AppImage
-          src="/image/back-auth.webp"
-          alt="سالن فروش و مرکز خدمات فروشگاه ارکیده"
-          fill
-          sizes="(min-width: 768px) 50vw, 100vw"
-          className="object-cover"
-        />
-        <div className="absolute inset-0 bg-linear-to-t from-gray-900/70 via-transparent to-transparent md:bg-linear-to-l md:from-transparent md:to-gray-900/30" />
-      </div>
-
-      <div className="p-6 sm:p-10">
-        <p className="text-sm font-medium text-brand-200">مرکز فروش و خدمات</p>
-        <h2 id="home-service" className="mt-2 text-2xl font-bold sm:text-3xl">
-          فروش و تعمیرات تخصصی چرخ خیاطی
-        </h2>
-        <p className="mt-3 leading-7 text-gray-300">
+    <section aria-labelledby="home-service" className="svc">
+      <div className="svc-text">
+        <span className="svc-eyebrow">
+          <Store size={16} aria-hidden="true" />
+          مرکز فروش و خدمات
+        </span>
+        <h2 id="home-service">فروش و تعمیرات تخصصی چرخ خیاطی</h2>
+        <p className="svc-p">
           چرخ خیاطی خود را برای تعمیر و سرویس به ما بسپارید، یا برای انتخاب مدل مناسب با کارشناسان فروشگاه مشورت کنید.
         </p>
 
-        <ul className="mt-5 space-y-2">
-          {POINTS.map((point) => (
-            <li key={point} className="flex items-center gap-2 text-sm text-gray-200">
-              <CheckCircle2 className="h-5 w-5 shrink-0 text-brand-500" aria-hidden="true" />
-              {point}
-            </li>
-          ))}
-        </ul>
-
-        <address className="mt-6 space-y-2 text-sm not-italic text-gray-300">
-          <p className="flex items-start gap-2">
-            <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-gray-400" aria-hidden="true" />
+        <address className="svc-addr">
+          <p>
+            <MapPin aria-hidden="true" />
             {STORE.address}
           </p>
           {STORE.phones.map((phone, index) => (
-            <p key={phone.href} className="flex items-center gap-2">
-              {index === 0 ? (
-                <Phone className="h-4 w-4 shrink-0 text-gray-400" aria-hidden="true" />
-              ) : (
-                <Smartphone className="h-4 w-4 shrink-0 text-gray-400" aria-hidden="true" />
-              )}
-              {phone.label}:{" "}
-              <a href={phone.href} className="font-medium text-white hover:underline">
-                {phone.display}
-              </a>
+            <p key={phone.href}>
+              {index === 0 ? <Phone aria-hidden="true" /> : <Smartphone aria-hidden="true" />}
+              <span>
+                {phone.label}: <a href={phone.href}>{phone.display}</a>
+              </span>
             </p>
           ))}
         </address>
 
-        <div className="mt-6 flex flex-wrap gap-3">
+        <div className="svc-ctas">
           <a
             href={STORE.phones[0].href}
-            className="btn-lift inline-flex items-center gap-2 rounded-xl bg-brand-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-brand-700 active:scale-[0.98]"
+            className="svc-btn btn-lift inline-flex items-center gap-2 rounded-xl bg-brand-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-brand-700 active:scale-[0.98]"
           >
             <Phone className="h-4 w-4" aria-hidden="true" />
             تماس و هماهنگی
@@ -75,6 +61,42 @@ export default function ServiceSection() {
           </Link>
         </div>
       </div>
+
+      <ul className="svc-tiles">
+        {SERVICES.map(({ icon: Icon, title, text }, index) => (
+          <li key={title} className="svc-tile" style={{ "--i": index }}>
+            <span className="svc-tile-i">
+              <Icon size={22} aria-hidden="true" />
+            </span>
+            <b>{title}</b>
+            <p>{text}</p>
+          </li>
+        ))}
+        {count > 0 && (
+          <li className="svc-tile" style={{ "--i": SERVICES.length }}>
+            <span className="svc-tile-i">
+              <Star size={22} className="fill-white" aria-hidden="true" />
+            </span>
+            {average > 0 ? (
+              <>
+                <b className="svc-num">
+                  <CountUp to={average} decimals={1} />
+                </b>
+                <p>
+                  میانگین امتیاز مشتریان، از <CountUp to={count} /> نظر ثبت‌شده
+                </p>
+              </>
+            ) : (
+              <>
+                <b className="svc-num">
+                  <CountUp to={count} />
+                </b>
+                <p>نظر ثبت‌شده از مشتریان</p>
+              </>
+            )}
+          </li>
+        )}
+      </ul>
     </section>
   );
 }

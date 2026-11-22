@@ -1,0 +1,42 @@
+/* جلوه‌های هاورِ کارت محصول (ProductCard.jsx؛ پیشوند pk-): برق جداگانهٔ روی عکس و نور صورتیِ دنبال‌کنندهٔ موس روی بدنهٔ کارت.
+   ProductCard متغیرهای --mx و --my (مکان موس در کارت) را با حرکت موس روی خود article می‌گذارد.
+   عکس هیچ transform سه‌بعدی یا کج شدنی ندارد (آن‌ها لایهٔ عکس را با همان اندازهٔ اولش رسترایز می‌کردند و عکس را تار می‌کردند)؛ فقط بزرگ شدن ساده‌ی group-hover:scale-105 خود عکس مانده است.
+   فقط برای دستگاه‌های دارای موس و بدون «کاهش حرکت»اند؛ در لمسی هاور می‌چسبد و با کاهش حرکت، برق نباید باشد. */
+.pk-shine,
+.pk::before {
+  display: none;
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  /* برق جدا روی عکس: همان برق دو طرفهٔ هیرو و چیپ تخفیف (transition، نه keyframe)؛ با هاور از راست به چپ می‌گذرد و با برداشتن موس برمی‌گردد.
+     z-index ۱۰ است: بالای عکس و اسلایدر و پایین چیپ تخفیف و قلب (آن‌ها بعد از این در DOM‌اند یا z-index بالاتر دارند)؛ کلیک را رد می‌کند */
+  .pk-shine {
+    display: block;
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    pointer-events: none;
+    background: linear-gradient(115deg, transparent 38%, rgb(255 255 255 / 0.55) 50%, transparent 62%);
+    translate: 130% 0;
+    transition: translate 1.6s cubic-bezier(0.37, 0, 0.63, 1);
+  }
+  .pk:hover .pk-shine {
+    translate: -130% 0;
+  }
+
+  /* نور صورتی دنبال موس پشت نوشته‌ها (z-index منفی در article که isolate است: بالای زمینهٔ سفید و زیر همهٔ محتوا) */
+  .pk::before {
+    content: "";
+    display: block;
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0;
+    background: radial-gradient(320px circle at var(--mx, 50%) var(--my, 50%), rgb(249 168 212 / 0.26), transparent 62%);
+    transition: opacity 0.4s;
+  }
+  .pk:hover::before {
+    opacity: 1;
+  }
+}

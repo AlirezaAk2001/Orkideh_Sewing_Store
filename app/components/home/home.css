@@ -1,0 +1,324 @@
+/* بخش‌های صفحهٔ اصلی بعد از هیرو: عنوان بخش با بخیهٔ کشیده‌شونده (SectionHeading.jsx) و دسته‌بندی‌های تصویری (CategoryGrid.jsx).
+   پیشوندها: hs- (عنوان بخش) و hc- (کارت دسته‌بندی)؛ گلوبال‌اند، پس با جای دیگر قاطی نشوند. رنگ‌ها از تم سایت (--color-brand-*) می‌آیند. */
+
+/* ═════════ عنوان بخش ═════════ */
+.hs {
+  --hs-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px 20px;
+  margin-bottom: 26px;
+}
+.hs-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 13px 5px 11px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--color-brand-700);
+  background: var(--color-brand-50);
+  box-shadow: inset 0 0 0 1px var(--color-brand-100);
+}
+.hs-title {
+  font-size: clamp(24px, 2.6vw, 32px);
+  font-weight: 900;
+  line-height: 1.4;
+  color: var(--color-gray-900);
+}
+.hs-eyebrow + .hs-title {
+  margin-top: 10px;
+}
+.hs-sub {
+  margin-top: 2px;
+  font-size: 14.5px;
+  color: var(--color-gray-600);
+}
+/* بخیهٔ زیر عنوان: خط‌چین صورتی که همیشه آرام از راست به چپ می‌دود و با رسیدن بخش به صفحه (Reveal.jsx: is-in روی لفافه) از راست کشیده می‌شود.
+   قاب بخیه عرض خودکار دارد، یعنی به اندازهٔ پهن‌ترین خط متن (عنوان یا زیرعنوان)؛ svg داخلش absolute است تا عرض ذاتی‌اش قاب را پهن نکند */
+.hs-stitch {
+  position: relative;
+  display: block;
+  height: 10px;
+  margin-top: 12px;
+}
+.hs-stitch svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+.hs-stitch path {
+  fill: none;
+  stroke: var(--color-brand-400);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-dasharray: 7 7;
+  animation: hs-march 1.6s linear infinite;
+}
+/* مسیر از چپ شروع می‌شود و آفست مثبت خط‌چین را به سمت ابتدای مسیر (چپ) می‌برد: جریان راست به چپ */
+@keyframes hs-march {
+  to {
+    stroke-dashoffset: 14;
+  }
+}
+@media (scripting: enabled) and (prefers-reduced-motion: no-preference) {
+  .hs-stitch {
+    clip-path: inset(-6px 0 -6px 100%);
+    transition: clip-path 1.2s var(--hs-ease) 0.35s;
+  }
+  /* صفحهٔ اصلی: Reveal.jsx کلاس is-in می‌گذارد؛ ردیف «محصولات مرتبط» صفحهٔ محصول: Reveal صفحهٔ محصول صفت data-in می‌گذارد */
+  [data-reveal].is-in .hs-stitch,
+  [data-in] .hs-stitch {
+    clip-path: inset(-6px 0 -6px 0);
+  }
+}
+.hs-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 42px;
+  padding-inline: 16px 12px;
+  border-radius: 14px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-brand-700);
+  background: #fff;
+  box-shadow: 0 0 0 1px rgb(80 30 90 / 0.09), 0 12px 26px -20px rgb(110 20 90 / 0.32);
+}
+.hs-more svg {
+  transition: translate 0.25s cubic-bezier(0.34, 1.5, 0.5, 1);
+}
+.hs-more:hover svg {
+  translate: -4px 0;
+}
+
+/* ═════════ دسته‌بندی‌های تصویری ═════════ */
+.hc-grid {
+  --hc-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --hc-spring: cubic-bezier(0.34, 1.5, 0.5, 1);
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+}
+/* تعداد ستون و نسبت کارت با تعداد دسته‌ها (data-n: ۱، ۲، ۳ یا ۴ و بیشتر) */
+.hc-grid[data-n="1"] {
+  grid-template-columns: 1fr;
+}
+.hc-grid[data-n="3"] {
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+.hc-grid[data-n="4"] {
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+}
+.hc-card {
+  position: relative;
+  display: block;
+  isolation: isolate;
+  overflow: hidden;
+  aspect-ratio: 16 / 10;
+  border-radius: 34px;
+  background: var(--color-brand-50);
+  box-shadow: 0 22px 44px -28px rgb(110 20 90 / 0.36);
+  transition: translate 0.55s var(--hc-ease), box-shadow 0.55s;
+}
+.hc-grid[data-n="1"] .hc-card {
+  aspect-ratio: 16 / 6.5;
+}
+.hc-grid[data-n="3"] .hc-card {
+  aspect-ratio: 4 / 4.4;
+  border-radius: 30px;
+}
+.hc-grid[data-n="4"] .hc-card {
+  aspect-ratio: 4 / 5;
+  border-radius: 28px;
+}
+.hc-img {
+  object-fit: cover;
+  transition: transform 1.2s var(--hc-ease);
+}
+/* دسته بدون عکس */
+.hc-ph {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: rgb(255 255 255 / 0.28);
+  background: linear-gradient(145deg, #3d1245, #6a1b6b);
+}
+.hc-ph svg {
+  width: 64px;
+  height: 64px;
+}
+/* سایهٔ پایین عکس پشت نوشته‌ها: روی هر عکسی خوانا می‌مانند */
+.hc-shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgb(42 11 48 / 0.9), rgb(42 11 48 / 0.28) 46%, transparent 72%);
+}
+/* نور دنبال‌کنندهٔ مکان‌نما (SpotLink.jsx متغیرهای --mx و --my را می‌گذارد) */
+.hc-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(340px circle at var(--mx, 50%) var(--my, 50%), rgb(255 255 255 / 0.3), transparent 62%);
+  opacity: 0;
+  transition: opacity 0.4s;
+  pointer-events: none;
+}
+@media (hover: hover) {
+  .hc-card:hover {
+    translate: 0 -8px;
+    box-shadow: 0 44px 72px -36px rgb(110 20 90 / 0.65);
+  }
+  .hc-card:hover .hc-img {
+    transform: scale(1.09);
+  }
+  .hc-card:hover::after {
+    opacity: 1;
+  }
+}
+.hc-b {
+  position: absolute;
+  z-index: 2;
+  inset-inline: 30px;
+  bottom: 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  color: #fff;
+}
+.hc-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px 4px 10px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  background: rgb(255 255 255 / 0.16);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.3);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+.hc-card h3 {
+  font-size: clamp(26px, 3vw, 38px);
+  font-weight: 900;
+  line-height: 1.3;
+}
+.hc-go {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  height: 46px;
+  padding: 0 8px 0 20px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-brand-700);
+  background: #fff;
+  transition: background-color 0.35s, color 0.35s;
+}
+.hc-arr {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  color: #fff;
+  background: var(--color-brand-600);
+  transition: transform 0.45s var(--hc-spring), background-color 0.35s, color 0.35s;
+}
+.hc-card:hover .hc-go {
+  color: #fff;
+  background: var(--color-brand-600);
+}
+.hc-card:hover .hc-arr {
+  transform: translateX(-5px) rotate(-8deg);
+  color: var(--color-brand-600);
+  background: #fff;
+}
+.hc-card:focus-visible {
+  outline: 3px solid var(--color-brand-300);
+  outline-offset: 3px;
+}
+
+/* کارت‌های کوچک‌تر (۳ یا ۴ دسته) نوشته‌های کوچک‌تر دارند */
+.hc-grid[data-n="3"] .hc-card h3,
+.hc-grid[data-n="4"] .hc-card h3 {
+  font-size: clamp(19px, 2vw, 26px);
+}
+.hc-grid[data-n="3"] .hc-b,
+.hc-grid[data-n="4"] .hc-b {
+  inset-inline: 22px;
+  bottom: 22px;
+}
+
+@media (max-width: 1023px) {
+  .hc-grid[data-n="4"] {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .hc-grid[data-n="4"] .hc-card {
+    aspect-ratio: 4 / 3.6;
+  }
+}
+@media (max-width: 767px) {
+  .hs {
+    margin-bottom: 20px;
+  }
+  .hc-grid,
+  .hc-grid[data-n="2"] {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .hc-grid[data-n="3"],
+  .hc-grid[data-n="4"] {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  .hc-card,
+  .hc-grid[data-n="1"] .hc-card {
+    aspect-ratio: 4 / 3.2;
+    border-radius: 28px;
+  }
+  .hc-grid[data-n="3"] .hc-card,
+  .hc-grid[data-n="4"] .hc-card {
+    aspect-ratio: 4 / 5;
+    border-radius: 24px;
+  }
+  .hc-b {
+    inset-inline: 22px;
+    bottom: 22px;
+  }
+  .hc-grid[data-n="3"] .hc-b,
+  .hc-grid[data-n="4"] .hc-b {
+    inset-inline: 14px;
+    bottom: 14px;
+  }
+  .hc-grid[data-n="3"] .hc-go,
+  .hc-grid[data-n="4"] .hc-go {
+    height: 40px;
+    padding-inline: 14px 6px;
+    font-size: 13px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hs-stitch path {
+    animation: none;
+  }
+  .hc-card,
+  .hc-img,
+  .hc-arr {
+    transition: none;
+  }
+  .hc-card::after {
+    display: none;
+  }
+}

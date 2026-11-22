@@ -1,0 +1,333 @@
+/* نوارهای متحرک صفحهٔ اصلی: کارت‌های نظر مشتریان (ReviewsSection.jsx؛ پیشوندهای mq- و rc-) و برندها (BrandStrip.jsx؛ پیشوند bm-).
+   هر نوار دو نسخهٔ پشت‌سرهم از آیتم‌ها دارد (نسخهٔ دوم aria-hidden و inert است) و تا نیمهٔ مسیر (۵۰٪) می‌رود تا حلقه بی‌پرش باشد؛ با ماندن موس یا فوکوس روی آن می‌ایستد.
+   با «کاهش حرکت» هیچ‌چیز حرکت نمی‌کند: نسخهٔ دوم پنهان است و خود نوار با کشیدن انگشت یا اسکرول افقی پیمایش می‌شود. */
+
+/* ═════════ نوار نظرها ═════════ */
+.mq {
+  position: relative;
+  overflow: hidden;
+  direction: ltr;
+  margin-inline: -16px;
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 6%, #000 94%, transparent);
+  mask-image: linear-gradient(to right, transparent, #000 6%, #000 94%, transparent);
+}
+.mq-track {
+  display: flex;
+  width: max-content;
+  padding: 14px 0 38px;
+  animation: mq-run var(--mq-dur, 90s) linear infinite;
+}
+.mq:hover .mq-track,
+.mq:focus-within .mq-track,
+.bm:hover .bm-track,
+.bm:focus-within .bm-track {
+  animation-play-state: paused;
+}
+@keyframes mq-run {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* کارت نظر (هم در نوار و هم در شبکهٔ کم‌نظر) */
+.rc {
+  position: relative;
+  direction: rtl;
+  padding: 24px;
+  border-radius: 26px;
+  background: #fff;
+  box-shadow: 0 0 0 1px rgb(80 30 90 / 0.09), 0 14px 28px -22px rgb(110 20 90 / 0.3);
+  transition: translate 0.45s cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 0.45s;
+}
+.mq-track .rc {
+  flex: 0 0 340px;
+  margin-inline-end: 20px;
+}
+.rc:hover {
+  translate: 0 -7px;
+  box-shadow: 0 0 0 1px var(--color-brand-200), 0 34px 50px -28px rgb(190 24 93 / 0.45);
+}
+.rc-q {
+  position: absolute;
+  top: 18px;
+  inset-inline-end: 20px;
+  color: var(--color-brand-100);
+  transition: color 0.3s, transform 0.5s cubic-bezier(0.34, 1.5, 0.5, 1);
+}
+.rc:hover .rc-q {
+  color: var(--color-brand-200);
+  transform: scale(1.12) rotate(-6deg);
+}
+.rc-stars {
+  display: flex;
+  gap: 2px;
+}
+.rc-text {
+  position: relative;
+  margin: 14px 0 18px;
+  min-height: 84px;
+  font-size: 14.5px;
+  line-height: 1.95;
+  color: var(--color-gray-800);
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.rc-by {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid rgb(80 30 90 / 0.08);
+}
+.rc-av {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  font-weight: 800;
+  color: var(--color-brand-700);
+  background: linear-gradient(145deg, var(--color-brand-50), var(--color-brand-200));
+}
+.rc-by b {
+  display: block;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--color-gray-900);
+}
+.rc-by a,
+.rc-by span.rc-prod {
+  display: block;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  color: var(--color-gray-500);
+}
+.rc-by a {
+  transition: color 0.2s;
+}
+.rc-by a:hover {
+  color: var(--color-brand-600);
+}
+
+/* کم‌تر از ۴ نظر: شبکهٔ ثابت به‌جای نوار */
+.rc-grid {
+  display: grid;
+  gap: 20px;
+  padding-top: 8px;
+}
+@media (min-width: 768px) {
+  .rc-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (min-width: 1024px) {
+  .rc-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* خلاصهٔ امتیاز کنار عنوان نظرها */
+.rc-sum {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 20px 10px 16px;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 0 0 1px rgb(80 30 90 / 0.09), 0 12px 26px -20px rgb(110 20 90 / 0.32);
+}
+.rc-sum b {
+  font-size: 32px;
+  font-weight: 900;
+  line-height: 1;
+  color: var(--color-brand-700);
+}
+.rc-sum small {
+  display: block;
+  margin-top: 3px;
+  font-size: 12px;
+  color: var(--color-gray-600);
+}
+
+/* ═════════ نوار برندها ═════════
+   جا باشد: برندها وسط‌چین و ثابت‌اند (و اگر هنوز جاوااسکریپت نیامده یا جا کم باشد، نوار با کشیدن پیمایش می‌شود)؛
+   جا نباشد: BrandStrip کلاس bm-loop را می‌گذارد و نوار برعکس نظرها (به راست) می‌رود. بالا و پایین فضای خالی دارد تا بالا آمدن کارت و سایه‌اش بریده نشود */
+.bm {
+  position: relative;
+  direction: ltr;
+  margin-block: -6px -28px;
+  padding-block: 12px 34px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+.bm::-webkit-scrollbar {
+  display: none;
+}
+.bm-track {
+  display: flex;
+  width: max-content;
+  margin-inline: auto;
+}
+.bm-list {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 14px;
+  padding-inline: 4px 18px;
+  direction: rtl;
+}
+.bm-loop {
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 6%, #000 94%, transparent);
+  mask-image: linear-gradient(to right, transparent, #000 6%, #000 94%, transparent);
+}
+.bm-loop .bm-track {
+  margin-inline: 0;
+  animation: mq-run var(--bm-dur, 60s) linear infinite reverse;
+}
+
+/* کارت برند (BrandStrip.jsx): بالا لوگو (یا نشان حرف اول)، زیرش نام فارسی و تعداد محصول. با هاور بالا می‌آید، لوگو رنگی می‌شود و همان برق دوطرفهٔ نرم کارت‌ها از رویش می‌گذرد */
+.bc {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  width: 150px;
+  padding: 14px 12px 13px;
+  border-radius: 22px;
+  background: #fff;
+  box-shadow: 0 0 0 1px rgb(80 30 90 / 0.09), 0 12px 24px -20px rgb(110 20 90 / 0.32);
+  transition: translate 0.35s cubic-bezier(0.34, 1.5, 0.5, 1), box-shadow 0.3s, background-color 0.3s;
+}
+.bc-mark {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 44px;
+  margin-bottom: 4px;
+}
+.bc-logo {
+  width: auto;
+  height: auto;
+  max-width: 116px;
+  max-height: 38px;
+  object-fit: contain;
+  filter: grayscale(1);
+  opacity: 0.8;
+  transition: filter 0.3s, opacity 0.3s, transform 0.5s cubic-bezier(0.34, 1.5, 0.5, 1);
+}
+.bc-mono {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 15px;
+  font-size: 21px;
+  font-weight: 900;
+  line-height: 1;
+  color: #fff;
+  background: linear-gradient(145deg, var(--color-brand-400), var(--color-brand-700));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.35), 0 8px 14px -8px rgb(190 24 93 / 0.8);
+  transition: transform 0.5s cubic-bezier(0.34, 1.5, 0.5, 1);
+}
+.bc b {
+  font-size: 14.5px;
+  font-weight: 800;
+  line-height: 1.5;
+  color: var(--color-gray-900);
+}
+.bc-n {
+  font-size: 11.5px;
+  color: var(--color-gray-500);
+}
+.bc::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(110deg, transparent 35%, rgb(249 168 212 / 0.4) 50%, transparent 65%);
+  translate: -130% 0;
+  transition: translate 2.4s cubic-bezier(0.37, 0, 0.63, 1);
+}
+.bc:focus-visible {
+  outline: 3px solid var(--color-brand-300);
+  outline-offset: 3px;
+}
+@media (hover: hover) {
+  .bc:hover {
+    translate: 0 -6px;
+    background-color: var(--color-brand-50);
+    box-shadow: 0 0 0 1px var(--color-brand-200), 0 24px 36px -22px rgb(190 24 93 / 0.5);
+  }
+  .bc:hover::after {
+    translate: 130% 0;
+  }
+  .bc:hover .bc-logo {
+    filter: none;
+    opacity: 1;
+    transform: scale(1.06);
+  }
+  .bc:hover .bc-mono {
+    transform: rotate(-10deg) scale(1.1);
+  }
+}
+/* ورود کارت‌ها یکی‌یکی با رسیدن بخش به صفحه (Reveal.jsx: is-in روی لفافه)؛ با animation است تا تأخیر پلکانی روی هاور اثر نگذارد. فقط وقتی جا هست و برندها ثابت‌اند
+   (نوار متحرک خودش حرکت دارد) و با جاوااسکریپت فعال و بدون «کاهش حرکت» */
+@media (scripting: enabled) and (prefers-reduced-motion: no-preference) {
+  [data-reveal].is-in .bm:not(.bm-loop) .bc {
+    animation: bc-in 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
+    animation-delay: calc(0.15s + var(--i, 0) * 0.07s);
+  }
+}
+@keyframes bc-in {
+  from {
+    opacity: 0;
+    translate: 0 22px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mq {
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+  .mq::-webkit-scrollbar {
+    display: none;
+  }
+  .mq-track,
+  .bm-loop .bm-track {
+    animation: none;
+  }
+  .mq-track [aria-hidden="true"],
+  .bm-track [aria-hidden="true"] {
+    display: none;
+  }
+  .bm-loop {
+    overflow-x: auto;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+  .rc,
+  .rc-q,
+  .bc,
+  .bc-logo,
+  .bc-mono {
+    transition: none;
+  }
+  .bc::after {
+    display: none;
+  }
+}

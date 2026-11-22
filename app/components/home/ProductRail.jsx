@@ -4,7 +4,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
 import ProductCard from "../ProductCard";
+import SectionHeading from "./SectionHeading";
 import { scrollBehavior } from "@/lib/motion";
+
+// عرض واقعی کارت در ردیف: ۶۴٪ صفحه (موبایل)، ۴۴٪، ۳۱٪ و از ۱۰۲۴ حدود ۲۹۰ پیکسل؛ این اندازه‌ها حدود ۳۰٪ بزرگ‌ترند تا عکس روی نمایشگر پرتراکم کش نیاید
+const RAIL_SIZES = "(min-width: 1024px) 380px, (min-width: 768px) 40vw, (min-width: 480px) 57vw, 84vw";
 
 const ARROW_CLASS =
   "grid h-10 w-10 cursor-pointer place-items-center rounded-full bg-white text-gray-700 shadow-sm ring-1 ring-gray-200 transition duration-200 enabled:hover:bg-brand-600 enabled:hover:text-white enabled:hover:shadow-md enabled:hover:ring-brand-600 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-300 disabled:shadow-none";
@@ -13,7 +17,7 @@ const ARROW_CLASS =
 // دکمه‌ها فقط وقتی جا برای حرکت در آن جهت هست فعال‌اند و اگر همهٔ کارت‌ها جا شوند نامرئی‌اند.
 // آخر ردیف یک کاشی «مشاهده همه» است (تنها لینک «مشاهده همه» هر بخش) که اگر کارت‌ها کم باشند، جای خالی را پر می‌کند.
 // ردیف کمی بالا و پایین فضای خالی دارد تا بالا آمدن کارت‌ها و سایه‌شان هنگام hover توسط overflow بریده نشود.
-export default function ProductRail({ id, title, subtitle, href, hint = "همهٔ محصولات فروشگاه", products }) {
+export default function ProductRail({ id, title, subtitle, eyebrow, icon, href, hint = "همهٔ محصولات فروشگاه", products }) {
   const scroller = useRef(null);
   const [edge, setEdge] = useState({ prev: false, next: false });
 
@@ -47,13 +51,7 @@ export default function ProductRail({ id, title, subtitle, href, hint = "همه�
 
   return (
     <section aria-labelledby={id}>
-      <div className="mb-5 flex items-end justify-between gap-4">
-        <div>
-          <h2 id={id} className="text-xl font-bold text-gray-900 sm:text-2xl">
-            {title}
-          </h2>
-          {subtitle && <p className="mt-1 text-sm text-gray-500">{subtitle}</p>}
-        </div>
+      <SectionHeading id={id} title={title} subtitle={subtitle} eyebrow={eyebrow} icon={icon}>
         <div className={`hidden shrink-0 items-center gap-2 md:flex ${canScroll ? "" : "invisible"}`}>
           <button
             type="button"
@@ -74,7 +72,7 @@ export default function ProductRail({ id, title, subtitle, href, hint = "همه�
             <ChevronLeft className="h-5 w-5" strokeWidth={2.25} aria-hidden="true" />
           </button>
         </div>
-      </div>
+      </SectionHeading>
 
       <ul
         ref={scroller}
@@ -86,7 +84,7 @@ export default function ProductRail({ id, title, subtitle, href, hint = "همه�
             key={product.id}
             className="w-[64%] shrink-0 snap-start min-[480px]:w-[44%] md:w-[31%] lg:w-[23.4%]"
           >
-            <ProductCard product={product} priority={false} />
+            <ProductCard product={product} priority={false} sizes={RAIL_SIZES} />
           </li>
         ))}
         {href && (

@@ -1,23 +1,43 @@
 import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
+import { BadgeCheck, ChevronLeft, Flame, Layers, MessageSquare, Sparkles, Tag } from "lucide-react";
+import "./home.css";
 
-// عنوان یک بخش صفحهٔ اصلی؛ id برای aria-labelledby بخش است، لینک «مشاهده همه» اختیاری
-export default function SectionHeading({ id, title, subtitle, href, linkText = "مشاهده همه" }) {
+// آیکون برچسبِ بالای عنوان با نام (ProductRail کلاینتی است و تابع نمی‌تواند به آن پاس شود)
+const ICONS = { layers: Layers, tag: Tag, sparkles: Sparkles, flame: Flame, message: MessageSquare, badge: BadgeCheck };
+
+// مسیر موج بخیه: ۶۰ قطعهٔ ۲۰ واحدی (۱۲۰۰ واحد)، بلندتر از هر عنوان؛ قاب بخیه از راست به اندازهٔ متن عنوان از آن برش می‌خورد (preserveAspectRatio="xMaxYMid slice")،
+// پس موج با هر طول کشیده نمی‌شود و فقط کوتاه یا بلند دیده می‌شود
+const STITCH_PATH = "M0 5 Q10 -1 20 5" + Array.from({ length: 59 }, (_, i) => ` T${40 + i * 20} 5`).join("");
+
+// عنوان یک بخش صفحهٔ اصلی: برچسب آیکون‌دار (اختیاری)، عنوان، زیرعنوان و بخیهٔ کشیده‌شونده (استایل و انیمیشن در home.css).
+// id برای aria-labelledby بخش است؛ لینک «مشاهده همه» اختیاری است و children (مثل دکمه‌های قبلی/بعدی ردیف) کنار آن، سمت چپ عنوان می‌نشیند.
+// بخیه با رسیدن بخش به صفحه کشیده می‌شود: Reveal.jsx روی لفافهٔ بخش is-in می‌گذارد و home.css آن را می‌خواند.
+export default function SectionHeading({ id, title, subtitle, href, linkText = "مشاهده همه", eyebrow, icon, children }) {
+  const Icon = ICONS[icon];
   return (
-    <div className="mb-5 flex items-end justify-between gap-4">
-      <div>
-        <h2 id={id} className="text-xl font-bold text-gray-900 sm:text-2xl">
+    <div className="hs">
+      <div className="hs-text">
+        {eyebrow && (
+          <span className="hs-eyebrow">
+            {Icon && <Icon size={15} aria-hidden="true" />}
+            {eyebrow}
+          </span>
+        )}
+        <h2 id={id} className="hs-title">
           {title}
         </h2>
-        {subtitle && <p className="mt-1 text-sm text-gray-500">{subtitle}</p>}
+        {subtitle && <p className="hs-sub">{subtitle}</p>}
+        <span className="hs-stitch" aria-hidden="true">
+          <svg viewBox="0 0 1200 10" preserveAspectRatio="xMaxYMid slice">
+            <path d={STITCH_PATH} />
+          </svg>
+        </span>
       </div>
+      {children}
       {href && (
-        <Link
-          href={href}
-          className="flex shrink-0 items-center gap-1 text-sm font-medium text-brand-600 transition-colors hover:text-brand-700"
-        >
+        <Link href={href} className="hs-more btn-lift">
           {linkText}
-          <ChevronLeft className="h-4 w-4" aria-hidden="true" />
+          <ChevronLeft size={18} aria-hidden="true" />
         </Link>
       )}
     </div>

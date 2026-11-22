@@ -147,10 +147,10 @@ export default function ImageSlider({ ref, images, variant = "page", label, rend
 
       {many && (
         <>
-          <button type="button" tabIndex={tab} aria-label="تصویر بعدی" onClick={() => step(1)} className={`${arrowClass} ${card ? "left-2" : "left-3"}`}>
+          <button type="button" tabIndex={tab} aria-label="تصویر بعدی" onClick={() => step(1)} className={`${arrowClass} left-3`}>
             <ChevronLeft className={arrowIcon} strokeWidth={2.5} aria-hidden="true" />
           </button>
-          <button type="button" tabIndex={tab} aria-label="تصویر قبلی" onClick={() => step(-1)} className={`${arrowClass} ${card ? "right-2" : "right-3"}`}>
+          <button type="button" tabIndex={tab} aria-label="تصویر قبلی" onClick={() => step(-1)} className={`${arrowClass} right-3`}>
             <ChevronRight className={arrowIcon} strokeWidth={2.5} aria-hidden="true" />
           </button>
           <div className={`img-slider-dots ${dotsClassName}`}>

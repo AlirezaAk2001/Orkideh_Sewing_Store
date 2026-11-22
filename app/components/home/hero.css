@@ -1,0 +1,609 @@
+/* هیرو صفحهٔ اصلی (HomeHero.jsx + HeroSlider.jsx): پنل آلبالویی با عنوان و آمار، و بنرها داخل قابی بخیه‌دار با کپشن و کنترل روی خود عکس.
+   کلاس‌ها همه پیشوند hh- دارند (گلوبال‌اند، پس با جای دیگر قاطی نشوند). انیمیشن‌های ورود فقط با CSS هستند تا بدون جاوااسکریپت هم کار کنند و عکس اول (LCP) پنهان نشود. */
+
+.hh {
+  --hh-plum: #2a0b30;
+  --hh-plum2: #3d1245;
+  --hh-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --hh-spring: cubic-bezier(0.34, 1.5, 0.5, 1);
+  --hh-dur: 6s; /* مدت ماندن هر بنر؛ همان نوار پیشرفت است و HeroSlider با پایانش اسلاید بعد را نشان می‌دهد */
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1.05fr;
+  gap: 56px;
+  align-items: center;
+  padding: 52px;
+  border-radius: 40px;
+  color: #fff;
+  overflow: hidden;
+  background: radial-gradient(90% 120% at 100% 0%, #6a1b6b 0%, transparent 60%), radial-gradient(80% 100% at 0% 100%, rgb(224 50 140 / 0.45), transparent 62%),
+    linear-gradient(135deg, var(--hh-plum), var(--hh-plum2) 60%, #4a1550);
+  box-shadow: 0 50px 90px -46px rgb(60 10 70 / 0.8);
+}
+/* بدون بنر (یا خطا در دریافتش) فقط ستون متن می‌ماند */
+.hh--solo {
+  grid-template-columns: 1fr;
+}
+.hh::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgb(255 255 255 / 0.1) 1px, transparent 1px);
+  background-size: 22px 22px;
+  mask-image: linear-gradient(to left, #000, transparent 70%);
+  pointer-events: none;
+}
+.hh > * {
+  position: relative;
+}
+
+/* ═════════ ستون متن ═════════ */
+.hh-text > * {
+  animation: hh-rise 0.85s var(--hh-ease) backwards;
+  animation-delay: calc(var(--k, 0) * 90ms);
+}
+@keyframes hh-rise {
+  from {
+    opacity: 0;
+    transform: translateY(26px);
+  }
+}
+/* عنوان همیشه در یک خط: اندازه‌اش از عرض خودِ ستون متن حساب می‌شود (cqi)، نه عرض صفحه، پس در هر عرضی (دسکتاپ، تبلت، گوشی) می‌ماند.
+   «فروشگاه چرخ خیاطی ارکیده» حدود ۱۳٫۳ برابر اندازهٔ فونت پهنا دارد و ۶٫۶٪ عرض ستون یعنی ≈ ۸۸٪ آن */
+.hh-text {
+  container-type: inline-size;
+  min-width: 0;
+}
+.hh-title {
+  font-size: clamp(20px, 6.6cqi, 44px);
+  font-weight: 900;
+  line-height: 1.35;
+  white-space: nowrap;
+}
+.hh-title em {
+  font-style: normal;
+  background: linear-gradient(90deg, #f9a8d4, #fff, #f472b6, #f9a8d4);
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: hh-shimmer 7s linear infinite;
+}
+@keyframes hh-shimmer {
+  to {
+    background-position: -300% 0;
+  }
+}
+.hh-sub {
+  margin-top: 14px;
+  font-size: clamp(16px, 1.6vw, 19px);
+  color: #e9d3ee;
+}
+.hh-ctas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 30px;
+}
+.hh-btn {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  height: 50px;
+  padding-inline: 24px;
+  border-radius: 16px;
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.hh-btn:active {
+  transform: scale(0.97);
+}
+/* دکمهٔ اصلی دقیقاً مثل «ثبت سفارش» پروفایل (.pf .btn-primary): با هاور نرم بلند می‌شود (قاعدهٔ btn-lift در globals.css) و سایه‌اش پررنگ‌تر می‌شود،
+   و برق نور (shine) با همان انیمیشن ۴٫۴ ثانیه‌ای از روی آن می‌گذرد؛ شبه‌عنصر پشت متن است و فقط هنگام هاور بالا می‌آید */
+.hh-btn--pri {
+  color: #fff;
+  background: linear-gradient(150deg, var(--color-brand-500), var(--color-brand-700));
+  box-shadow: 0 14px 26px -12px oklch(59% 0.25 0 / 0.8), inset 0 1px 0 rgb(255 255 255 / 0.3);
+}
+.hh-btn--pri:hover {
+  box-shadow: 0 18px 32px -12px oklch(59% 0.25 0 / 0.9), inset 0 1px 0 rgb(255 255 255 / 0.35);
+}
+.hh-btn--pri::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(100deg, transparent 25%, rgb(255 255 255 / 0.5) 50%, transparent 75%);
+  transform: translateX(-110%);
+}
+@media (hover: hover) {
+  .hh-btn--pri:hover::after {
+    z-index: 1;
+    animation: hh-shine 4.4s cubic-bezier(0.37, 0, 0.63, 1) infinite;
+  }
+}
+@keyframes hh-shine {
+  0% {
+    transform: translateX(-110%);
+  }
+  60%,
+  100% {
+    transform: translateX(110%);
+  }
+}
+.hh-btn--ghost {
+  color: #fff;
+  background: rgb(255 255 255 / 0.1);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.26);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+.hh-btn--ghost:hover {
+  background: rgb(255 255 255 / 0.2);
+}
+/* آمار: سه کاشی شیشه‌ای با نشان آیکون‌دار؛ هاور کاشی را بالا می‌آورد، نشان می‌چرخد و برقی از رویش می‌گذرد */
+.hh-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 34px;
+}
+.hh-stat {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px 12px 20px;
+  border-radius: 20px;
+  background: linear-gradient(145deg, rgb(255 255 255 / 0.13), rgb(255 255 255 / 0.05));
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.16);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  transition: translate 0.35s var(--hh-spring), box-shadow 0.3s, background 0.3s;
+}
+.hh-stat:hover {
+  translate: 0 -5px;
+  background: linear-gradient(145deg, rgb(255 255 255 / 0.2), rgb(255 255 255 / 0.08));
+  box-shadow: inset 0 0 0 1px rgb(249 168 212 / 0.5), 0 20px 30px -18px rgb(0 0 0 / 0.65);
+}
+/* برق کاشی: با هاور آهسته و نرم از یک سو می‌گذرد و با برداشتن موس، با همان سرعتِ نرم از همان مسیر برمی‌گردد (گذار دوطرفه) */
+.hh-stat::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(110deg, transparent 35%, rgb(255 255 255 / 0.18) 50%, transparent 65%);
+  translate: -130% 0;
+  transition: translate 2.4s cubic-bezier(0.37, 0, 0.63, 1);
+}
+.hh-stat:hover::after {
+  translate: 130% 0;
+}
+.hh-stat-i {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  background: linear-gradient(145deg, var(--color-brand-400), var(--color-brand-700));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.35), 0 8px 14px -8px rgb(190 24 93 / 0.9);
+  transition: transform 0.5s var(--hh-spring);
+}
+.hh-stat:hover .hh-stat-i {
+  transform: rotate(-10deg) scale(1.12);
+}
+.hh-stat b {
+  display: block;
+  font-size: 26px;
+  font-weight: 900;
+  line-height: 1.15;
+  background: linear-gradient(180deg, #fff 30%, #f9d5ea);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.hh-stat span:not(.hh-stat-i) {
+  font-size: 12.5px;
+  color: #d8b4e2;
+}
+
+/* ═════════ قاب بنرها ═════════ */
+.hh-stagewrap {
+  position: relative;
+}
+.hh-media {
+  position: relative;
+  aspect-ratio: 1 / 0.82;
+  /* فقط جابه‌جایی، بدون محو شدن، تا عکس اول از همان لحظهٔ اول دیده شود. backwards (نه both): بعد از پایان ورود هیچ انیمیشنی روی قاب نمی‌ماند تا لایهٔ جدا و نیم‌پیکسلی نسازد */
+  animation: hh-media-in 0.95s var(--hh-ease) 0.15s backwards;
+}
+@keyframes hh-media-in {
+  from {
+    transform: translateY(34px) scale(0.97);
+  }
+}
+/* سایهٔ قاب روی خود قاب نیست، چون clip-path آن را هم می‌برد؛ زیر قاب جدا کشیده می‌شود */
+.hh-media::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 30px;
+  box-shadow: 0 34px 60px -26px rgb(0 0 0 / 0.65);
+}
+/* لبه‌ها با clip-path بریده می‌شوند، نه فقط overflow + border-radius: عکسِ در حال زوم لایهٔ جدا دارد و برش گردِ معمولی گاهی ستونی از پیکسل‌های عکس را
+   در لبهٔ راست و پایین (اندازهٔ اعشاری قاب) بیرون می‌گذارد که با هر زوم چشمک می‌زد */
+.hh-frame {
+  position: absolute;
+  inset: 0;
+  isolation: isolate;
+  border-radius: 30px;
+  overflow: hidden;
+  clip-path: inset(0 round 30px);
+  background: var(--hh-plum2);
+}
+/* قاب بخیه: خط‌چین صورتی که دور قاب می‌دود */
+.hh-stitch {
+  position: absolute;
+  inset: -13px;
+  width: calc(100% + 26px);
+  height: calc(100% + 26px);
+  overflow: visible;
+  pointer-events: none;
+  will-change: transform; /* انیمیشن خط‌چین هر فریم دوباره‌کشی می‌شود؛ لایهٔ جدا یعنی این دوباره‌کشی به پنل و عکس زیرش نمی‌رسد */
+}
+.hh-stitch rect {
+  x: 1px;
+  y: 1px;
+  width: calc(100% - 2px);
+  height: calc(100% - 2px);
+  rx: 38px;
+  fill: none;
+  stroke: rgb(249 168 212 / 0.8);
+  stroke-width: 2;
+  stroke-dasharray: 9 9;
+  animation: hh-march 1.2s linear infinite;
+}
+@keyframes hh-march {
+  to {
+    stroke-dashoffset: -18;
+  }
+}
+
+/* اسلایدها: محو شدن روی هم + زوم آهستهٔ عکس فعال (Ken Burns) */
+.hh-sl {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 1s ease;
+}
+.hh-sl.on {
+  opacity: 1;
+  z-index: 1;
+}
+.hh-img {
+  object-fit: cover;
+}
+.hh-sl.on .hh-img {
+  animation: hh-kb calc(var(--hh-dur) + 1s) cubic-bezier(0.25, 0.6, 0.3, 1); /* زوم درست تا لحظهٔ محو شدن بنر ادامه دارد، پس با رفتن بنر پرشی در اندازهٔ عکس نیست */
+}
+@keyframes hh-kb {
+  from {
+    transform: scale(1.13);
+  }
+}
+/* سایهٔ پایین عکس: پشت کپشن و کنترل‌ها، تا روی هر عکسی خوانا باشند */
+.hh-sl::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgb(30 6 36 / 0.9) 0%, rgb(30 6 36 / 0.55) 34%, transparent 64%);
+}
+.hh-cap {
+  position: absolute;
+  z-index: 2;
+  inset-inline: 68px; /* دو طرف جا برای فلش‌ها (۱۴px فاصله + ۴۴px دکمه + ۱۰px) تا متن هیچ‌وقت زیر فلش نرود؛ روی گوشی که فلش نیست ۲۰px می‌شود */
+  bottom: 50px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+.hh-cap > * {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.7s var(--hh-ease), transform 0.7s var(--hh-ease);
+}
+/* بنر اول از همان HTML اولیه فعال است (بدون انتظار برای جاوااسکریپت)، پس کپشنش از اول دیده می‌شود؛ ورود پله‌ای برای اسلایدهای بعدی است */
+.hh-sl.on .hh-cap > * {
+  opacity: 1;
+  transform: none;
+  transition-delay: calc(0.25s + var(--k, 0) * 0.12s);
+}
+/* عنوان بنر: سفید که پایینش به صورتی روشن می‌رود، با سایهٔ نرم؛ بیش از دو خط نمی‌شود (زیرش «…» می‌آید) */
+.hh-cap h2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  max-width: 100%;
+  padding-bottom: 2px;
+  font-size: clamp(22px, 2.6vw, 34px);
+  font-weight: 900;
+  line-height: 1.45;
+  background: linear-gradient(180deg, #fff 35%, #fbcfe8);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 2px 14px rgb(30 6 36 / 0.55));
+}
+/* توضیح بنر: بلوک شیشه‌ای محو‌شونده با یک خط بخیهٔ صورتی (خط‌چین) در ابتدا؛ خط با ورود اسلاید از بالا کشیده می‌شود */
+.hh-cap p {
+  position: relative;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  max-width: 100%;
+  padding: 6px 18px 6px 14px;
+  border-radius: 6px 14px 14px 6px;
+  font-size: clamp(14px, 1.4vw, 17px);
+  color: #f3dcf7;
+  background: linear-gradient(to left, rgb(255 255 255 / 0.14), rgb(255 255 255 / 0) 90%);
+}
+.hh-cap p::before {
+  content: "";
+  position: absolute;
+  inset-block: 7px;
+  inset-inline-start: 0;
+  width: 3px;
+  border-radius: 3px;
+  background: linear-gradient(to bottom, var(--color-brand-400) 0 7px, transparent 7px 12px) 0 0 / 3px 12px repeat-y;
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: transform 0.7s var(--hh-ease) 0.6s;
+}
+/* تا وقتی بنر نمایش داده می‌شود خط‌چین مدام به پایین جریان دارد (مثل نخی که کشیده می‌شود)؛ یک دورش ۱۲px است و پیوسته تکرار می‌شود */
+.hh-sl.on .hh-cap p::before {
+  transform: scaleY(1);
+  animation: hh-flow 0.9s linear infinite;
+}
+@keyframes hh-flow {
+  to {
+    background-position: 0 12px;
+  }
+}
+/* دکمه داخل لفافه است تا ورود پله‌ای (گذار و تأخیرِ لفافه) با گذار هاورِ خودِ دکمه قاطی نشود و هاور نرم و بی‌تأخیر بماند */
+.hh-act {
+  margin-top: 6px;
+}
+.hh-act .hh-btn {
+  height: 46px;
+}
+
+/* ═════════ کنترل‌ها ═════════ */
+/* نوارها تمام عرضِ محتوای پایین بنر را می‌گیرند: از لبهٔ راست تا لبهٔ چپ کپشن، با همان حاشیه (inset-inline) که .hh-cap دارد، و بین بنرها مساوی تقسیم می‌شوند */
+.hh-ctrl {
+  position: absolute;
+  z-index: 3;
+  inset-inline: 68px;
+  bottom: 16px;
+}
+.hh-bars {
+  display: flex;
+  gap: 8px;
+}
+/* هر نوار یک دکمه است (ناحیهٔ لمس ۲۰ پیکسل)، خطش ۵ پیکسل */
+.hh-bar {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  height: 20px;
+}
+.hh-bar::before,
+.hh-fill {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: 50%;
+  height: 5px;
+  translate: 0 -50%;
+  border-radius: 5px;
+}
+.hh-bar::before {
+  background: rgb(255 255 255 / 0.32);
+}
+.hh-fill {
+  overflow: hidden;
+}
+.hh-fill::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  transform: scaleX(0);
+  transform-origin: right;
+}
+.hh-bar.done .hh-fill::after {
+  transform: scaleX(1);
+}
+.hh-bar.on .hh-fill::after {
+  animation: hh-fill var(--hh-dur) linear forwards;
+}
+@keyframes hh-fill {
+  to {
+    transform: scaleX(1);
+  }
+}
+/* موس روی قاب یا فوکوس صفحه‌کلید روی کنترل‌ها = نوار می‌ایستد و بنر عوض نمی‌شود (روی لمسی :hover می‌ماند، پس فقط وقتی موس واقعی هست) */
+@media (hover: hover) {
+  .hh-media:hover .hh-bar.on .hh-fill::after {
+    animation-play-state: paused;
+  }
+}
+.hh-media:has(:focus-visible) .hh-bar.on .hh-fill::after {
+  animation-play-state: paused;
+}
+.hh-arrow {
+  position: absolute;
+  z-index: 3;
+  top: 50%;
+  translate: 0 -50%;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  color: #fff;
+  background: rgb(255 255 255 / 0.14);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.35);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  transition: background-color 0.25s, scale 0.3s var(--hh-spring), box-shadow 0.25s;
+}
+.hh-arrow--prev {
+  inset-inline-start: 14px;
+}
+.hh-arrow--next {
+  inset-inline-end: 14px;
+}
+.hh-arrow:hover {
+  scale: 1.1;
+  background: var(--color-brand-600);
+  box-shadow: inset 0 0 0 1px var(--color-brand-600), 0 12px 22px -10px rgb(190 24 93 / 0.8);
+}
+.hh-arrow:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+/* ═════════ نشان‌های شیشه‌ای شناور ═════════ */
+.hh-fb {
+  position: absolute;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 16px 10px 12px;
+  border-radius: 18px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: #fff;
+  background: rgb(255 255 255 / 0.18);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.32), 0 18px 30px -14px rgb(0 0 0 / 0.5);
+  -webkit-backdrop-filter: blur(14px) saturate(1.7);
+  backdrop-filter: blur(14px) saturate(1.7);
+  animation: hh-bob 5.5s ease-in-out infinite;
+}
+.hh-fb b {
+  display: block;
+  font-size: 14px;
+}
+.hh-fb span:not(.hh-fb-i) {
+  color: #f3dcf7;
+}
+.hh-fb-i {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: linear-gradient(145deg, var(--color-brand-400), var(--color-brand-700));
+}
+.hh-fb1 {
+  top: 8%;
+  inset-inline-start: -34px;
+}
+.hh-fb2 {
+  bottom: 16%;
+  inset-inline-end: -30px;
+  animation-delay: -2.7s;
+}
+@keyframes hh-bob {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -10px;
+  }
+}
+
+/* ═════════ ریسپانسیو ═════════ */
+@media (max-width: 959px) {
+  .hh {
+    grid-template-columns: 1fr;
+    gap: 40px;
+    padding: 34px 26px;
+    border-radius: 32px;
+  }
+  .hh-stagewrap {
+    width: 100%;
+    max-width: 620px;
+    margin-inline: auto;
+  }
+  .hh-fb1 {
+    inset-inline-start: -8px;
+  }
+  .hh-fb2 {
+    inset-inline-end: -8px;
+  }
+}
+@media (max-width: 639px) {
+  .hh {
+    padding: 28px 18px;
+    border-radius: 28px;
+  }
+  /* سه کاشی هم‌اندازه در یک ردیف؛ نشان بالا و عدد زیرش */
+  .hh-stats {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    gap: 8px;
+  }
+  .hh-stat {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 12px;
+  }
+  .hh-stat b {
+    font-size: 22px;
+  }
+  .hh-fb,
+  .hh-arrow {
+    display: none; /* روی گوشی کشیدن انگشت و نوارها کافی‌اند، مثل بنر قبلی */
+  }
+  .hh-media {
+    aspect-ratio: 1 / 0.95;
+  }
+  .hh-cap {
+    inset-inline: 20px;
+    bottom: 44px;
+  }
+  .hh-ctrl {
+    inset-inline: 20px;
+    bottom: 12px;
+  }
+}
+
+/* ═════════ «کاهش حرکت» سیستم: بدون حرکت؛ بنرها با نوارها و کنترل‌ها دستی عوض می‌شوند ═════════ */
+@media (prefers-reduced-motion: reduce) {
+  .hh *,
+  .hh *::before,
+  .hh *::after {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
+  }
+  .hh-bar.on .hh-fill::after {
+    transform: scaleX(1);
+  }
+}

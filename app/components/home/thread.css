@@ -1,0 +1,50 @@
+/* پس‌زمینهٔ نخ و سوزن صفحهٔ اصلی (HomeThread.jsx؛ پیشوند ht-): نخی که با اسکرول دوخته می‌شود و سوزنی که نوک آن را می‌برد، با سه ابزار خیاطی معلق در حاشیهٔ صفحه‌های عریض.
+   پشت همهٔ بخش‌هاست (ریشهٔ صفحه isolate است و این لایه z-index منفی دارد) و کلیک را رد می‌کند؛ مسیر را HomeThread.jsx از اندازهٔ واقعی صفحه می‌سازد. */
+.ht {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+.ht-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.ht-svg path {
+  fill: none;
+  stroke-linecap: round;
+}
+/* بخش هنوز دوخته‌نشده: خط‌چین کم‌رنگ؛ بخش دوخته‌شده: خط پررنگ تا نوک سوزن */
+.ht-ghost {
+  stroke: var(--color-brand-200);
+  stroke-width: 1.6;
+  stroke-dasharray: 3 9;
+  opacity: 0.8;
+}
+.ht-drawn {
+  stroke: var(--color-brand-400);
+  stroke-width: 2.4;
+  opacity: 0.85;
+}
+.ht-needle {
+  position: absolute;
+  top: 0;
+  left: 0;
+  color: var(--color-brand-600);
+  opacity: 0;
+  transition: opacity 0.4s;
+  will-change: transform;
+}
+.ht-needle.on {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ht-needle {
+    display: none;
+  }
+}

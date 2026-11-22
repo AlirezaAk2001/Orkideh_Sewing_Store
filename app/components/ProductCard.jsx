@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import Link from "next/link";
 import AppImage from "./AppImage";
 import ImageSlider from "./ImageSlider";
@@ -13,11 +14,33 @@ import { toLatinSlug } from "@/lib/slug";
 import { flyToCart } from "@/lib/flyToCart";
 import toast from "react-hot-toast";
 import { ImageOff, ShoppingCart, Star } from "lucide-react";
+import "./product-card.css";
 
-export default function ProductCard({ product, priority = false }) {
+// اندازهٔ نمایش عکس برای انتخاب نسخهٔ بهینه (next/image): فهرست محصولات ۱ ستون زیر ۶۴۰، سپس ۲ و ۳ و ۴ ستون. عمداً حدود ۳۰٪ بزرگ‌تر از عرض واقعی کارت است:
+// وگرنه روی نمایشگرهای با تراکم بالا (۱٫۲۵ برابر و بیشتر) یا عکس‌های کم‌عرض‌تر از ۴:۳ که برش می‌خورند، مرورگر نسخهٔ کوچک‌تر از نیاز را می‌گرفت و عکس را کش می‌داد (تار).
+// ردیف‌های صفحهٔ اصلی عرض کارتشان کمتر است و sizes خودشان را می‌دهند.
+const DEFAULT_SIZES = "(min-width: 1024px) 380px, (min-width: 768px) 44vw, (min-width: 640px) 64vw, 100vw";
+
+export default function ProductCard({ product, priority = false, sizes = DEFAULT_SIZES }) {
   const router = useRouter();
   const { currentUser } = useAuth();
   const { addToCart } = useCart();
+  const rafRef = useRef(0);
+  useEffect(() => () => cancelAnimationFrame(rafRef.current), []);
+
+  // نور دنبال‌کنندهٔ موس روی بدنهٔ کارت (استایلش در product-card.css): فقط موس (روی لمسی هاور نیست). فقط متغیر CSS عوض می‌شود، نه state،
+  // و در هر فریم نهایتاً یک بار
+  const handlePointerMove = (event) => {
+    if (event.pointerType !== "mouse") return;
+    const card = event.currentTarget;
+    const { clientX, clientY } = event;
+    cancelAnimationFrame(rafRef.current);
+    rafRef.current = requestAnimationFrame(() => {
+      const box = card.getBoundingClientRect();
+      card.style.setProperty("--mx", `${clientX - box.left}px`);
+      card.style.setProperty("--my", `${clientY - box.top}px`);
+    });
+  };
   // میانگین امتیاز و تعداد رای را صفحهٔ سروری حساب کرده (lib/products.js یا lib/categories.js + lib/comments.js)
   const averageRating = product.averageRating ?? 0;
   const totalVotes = product.totalVotes ?? 0;
@@ -37,7 +60,7 @@ export default function ProductCard({ product, priority = false }) {
   const slug = product.slug || toLatinSlug(product.name);
   const photos = productImages(product);
   const imageClass = `object-cover transition duration-500 group-hover:scale-105 ${isOutOfStock ? "opacity-50 grayscale" : ""}`;
-  const imageSizes = "(min-width: 1024px) 300px, (min-width: 640px) 36vw, 64vw";
+  const imageSizes = sizes;
 
   const handleAddToCart = (event) => {
     // رویداد را همین‌جا می‌خوانیم: currentTarget بعد از پایان کنترل‌کننده دیگر در دسترس نیست
@@ -67,7 +90,10 @@ export default function ProductCard({ product, priority = false }) {
 
   return (
     // کل کارت قابل کلیک است: لینک روی نام محصول با ::after تمام کارت را می‌پوشاند و دکمهٔ سبد (z-10) بالاتر از آن می‌ماند
-    <article className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white transition duration-300 hover:-translate-y-1 hover:shadow-xl has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-brand-500">
+    <article
+      onPointerMove={handlePointerMove}
+      className="pk group relative isolate flex h-full flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white transition duration-300 hover:-translate-y-1 hover:border-brand-200 hover:shadow-xl has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-brand-500"
+    >
       <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-b from-gray-50 to-white">
         {photos.length > 1 ? (
           // چند تصویر: اسلایدر (خودکار عوض نمی‌شود). از کل کارت-لینک بالاتر است (z-10) تا کشیدن و فلش‌ها کار کنند و خود تصویر هم همان لینک محصول است
@@ -100,6 +126,8 @@ export default function ProductCard({ product, priority = false }) {
             <span className="text-xs">بدون تصویر</span>
           </div>
         )}
+        {/* برق جدای هاور روی عکس (استایل در product-card.css): زیر چیپ تخفیف و قلب، بالای عکس */}
+        <i aria-hidden="true" className="pk-shine" />
         {/* قلب علاقه‌مندی گوشهٔ بالا-چپ (z-20: بالاتر از لینک تمام‌کارت و اسلایدر)؛ سکهٔ تخفیف برای جا دادن به آن به گوشهٔ بالا-راست رفته است */}
         <FavoriteButton
           product={{ id: product.id, name: product.name, slug, image: product.image, price, discount, finalPrice }}
@@ -154,7 +182,7 @@ export default function ProductCard({ product, priority = false }) {
           className={`relative z-10 mt-1 flex w-full items-center justify-center gap-2 rounded-xl py-2 text-sm font-medium transition ${
             isOutOfStock
               ? "cursor-not-allowed bg-gray-200 text-gray-500"
-              : "cursor-pointer bg-brand-600 text-white hover:bg-brand-700 active:scale-[0.98]"
+              : "bar-sheen cursor-pointer bg-brand-600 text-white hover:bg-brand-700 active:scale-[0.98]"
           }`}
         >
           <ShoppingCart className="h-4 w-4" aria-hidden="true" />
