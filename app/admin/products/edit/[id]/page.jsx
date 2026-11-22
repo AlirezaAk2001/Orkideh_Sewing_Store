@@ -5,13 +5,14 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { AlignLeft, Banknote, ClipboardList, ImagePlus, PackageCheck, Ruler } from "lucide-react";
+import { AlignLeft, Banknote, Clapperboard, ClipboardList, ImagePlus, PackageCheck, Ruler } from "lucide-react";
 import PageHeader from "@/app/admin/_shell/PageHeader";
 import FormSection from "@/app/admin/_form/FormSection";
 import { TextInput, TextArea, SelectInput } from "@/app/admin/_form/Fields";
 import SaveBar from "@/app/admin/_form/SaveBar";
 import ProductCardPreview from "@/app/admin/_form/ProductCardPreview";
 import ProductImagesField from "@/app/components/ProductImagesField";
+import ProductVideoField from "@/app/components/ProductVideoField";
 import { productImages } from "@/lib/productImages";
 
 const fa = (n) => Number(n).toLocaleString("fa-IR");
@@ -26,6 +27,8 @@ export default function EditProduct() {
   const [categoryId, setCategoryId] = useState("");
   const [gallery, setGallery] = useState([]); // تصویرها؛ اولی تصویر اصلی (image)، بقیه گالری (images)
   const [uploading, setUploading] = useState(false);
+  const [video, setVideo] = useState(""); // ویدیوی کوتاه اختیاری (مسیر فایل آپلودشده)
+  const [videoUploading, setVideoUploading] = useState(false);
   const [additionalFeatures, setAdditionalFeatures] = useState("");
   const [material, setMaterial] = useState("");
   const [size, setSize] = useState("");
@@ -74,6 +77,7 @@ export default function EditProduct() {
           stock: data.stock ?? "",
           categoryId: data.categoryId || "",
           gallery: productImages(data).join("\n"),
+          video: data.video || "",
           additionalFeatures: data.additionalFeatures || "",
           material: data.material || "",
           size: data.size || "",
@@ -89,6 +93,7 @@ export default function EditProduct() {
         setStock(loaded.stock);
         setCategoryId(loaded.categoryId);
         setGallery(productImages(data));
+        setVideo(loaded.video);
         setAdditionalFeatures(loaded.additionalFeatures);
         setMaterial(loaded.material);
         setSize(loaded.size);
@@ -111,7 +116,7 @@ export default function EditProduct() {
 
   // اگر هر فیلد قابل‌ویرایشی عوض شده باشد دکمهٔ ذخیره فعال می‌شود (قبلاً فقط نام، قیمت، دسته و تصویر حساب می‌شد)
   const current = {
-    name, price, stock, categoryId, gallery: gallery.join("\n"), additionalFeatures, material,
+    name, price, stock, categoryId, gallery: gallery.join("\n"), video, additionalFeatures, material,
     size, color, suitableFor, discount, weight, voltage, powerConsumption,
   };
   const hasChanged = Object.keys(initialData).some(
@@ -133,6 +138,8 @@ export default function EditProduct() {
         categoryId: categoryId ? parseInt(categoryId) : null,
         image: gallery[0],
         images: gallery.slice(1),
+        // ویدیو فقط وقتی عوض شده فرستاده می‌شود ("" = حذف)؛ فرستاده نشدنش یعنی ویدیوی فعلی همان می‌ماند
+        ...(video !== (initialData.video ?? "") && { video }),
         additionalFeatures,
         material,
         size,
@@ -169,8 +176,9 @@ export default function EditProduct() {
 
   // نوار پایین می‌گوید تغییری هست یا نه، و اگر چیزی از موارد الزامی خالی شده، کدام
   const missing = [!String(name).trim() && "نام", !String(price).trim() && "قیمت", !String(categoryId).trim() && "دسته‌بندی", gallery.length === 0 && "تصویر"].filter(Boolean);
-  const status = uploading
-    ? "در حال آپلود تصویر؛ ذخیره بعد از پایان آپلود فعال می‌شود"
+  const busy = uploading || videoUploading;
+  const status = busy
+    ? `در حال آپلود ${videoUploading ? "ویدیو" : "تصویر"}؛ ذخیره بعد از پایان آپلود فعال می‌شود`
     : missing.length
     ? `هنوز لازم است: ${missing.join("، ")}`
     : hasChanged
@@ -233,7 +241,11 @@ export default function EditProduct() {
               <ProductImagesField value={gallery} onChange={setGallery} onBusyChange={setUploading} disabled={isSaving} />
             </FormSection>
 
-            <FormSection index={3} icon={Ruler} title="مشخصات" hint="همه اختیاری‌اند و در صفحهٔ محصول نشان داده می‌شوند">
+            <FormSection index={3} icon={Clapperboard} title="ویدیوی محصول" hint="اختیاری؛ یک ویدیوی کوتاه که در صفحهٔ محصول نشان داده می‌شود">
+              <ProductVideoField value={video} onChange={setVideo} onBusyChange={setVideoUploading} disabled={isSaving} />
+            </FormSection>
+
+            <FormSection index={4} icon={Ruler} title="مشخصات" hint="همه اختیاری‌اند و در صفحهٔ محصول نشان داده می‌شوند">
               <div className="grid gap-4 sm:grid-cols-2 2xl:grid-cols-3">
                 <TextInput label="جنس محصول" placeholder="مثال: فولادی" value={material} onChange={(e) => setMaterial(e.target.value)} />
                 <TextInput label="ابعاد محصول" placeholder="مثال: ۱۲ × ۱۸ × ۱۶ سانتی‌متر" value={size} onChange={(e) => setSize(e.target.value)} />
@@ -244,7 +256,7 @@ export default function EditProduct() {
               </div>
             </FormSection>
 
-            <FormSection index={4} icon={AlignLeft} title="توضیحات" hint="متن آزاد؛ زیر عکس در صفحهٔ محصول می‌آید">
+            <FormSection index={5} icon={AlignLeft} title="توضیحات" hint="متن آزاد؛ زیر عکس در صفحهٔ محصول می‌آید">
               <div className="grid gap-4 lg:grid-cols-2">
                 <TextArea label="ویژگی‌های اضافی محصول" rows={4} placeholder="توضیحات تکمیلی دربارهٔ محصول" value={additionalFeatures} onChange={(e) => setAdditionalFeatures(e.target.value)} />
                 <TextArea label="مناسب برای" rows={4} placeholder="مثال: مناسب برای دوخت‌ودوز خانگی" value={suitableFor} onChange={(e) => setSuitableFor(e.target.value)} />
@@ -259,8 +271,8 @@ export default function EditProduct() {
           label="ذخیرهٔ تغییرات"
           backHref="/admin/products"
           saving={isSaving}
-          disabled={uploading || !hasChanged}
-          tone={uploading || missing.length || hasChanged ? "dirty" : "idle"}
+          disabled={busy || !hasChanged}
+          tone={busy || missing.length || hasChanged ? "dirty" : "idle"}
           status={status}
         />
       </form>

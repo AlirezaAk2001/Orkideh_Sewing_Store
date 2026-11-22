@@ -11,12 +11,13 @@ import ProductRail from "./home/ProductRail";
 import ProductBackdrop from "./product/ProductBackdrop";
 import Reveal from "./product/Reveal";
 import SectionNav from "./product/SectionNav";
+import ProductVideo from "./product/ProductVideo";
 import QuantityStepper from "./QuantityStepper";
-import { Award, BadgePercent, BaggageClaim, ChevronDown, ChevronLeft, Gauge, Info, Layers, MessageSquare, PackageCheck, PackageX, Palette, Phone, Ruler, Sparkles, Star, Tag, Truck, Weight, Zap, ZoomIn } from "lucide-react";
+import { Award, BadgePercent, BaggageClaim, ChevronDown, ChevronLeft, Clapperboard, Gauge, Info, Layers, MessageSquare, PackageCheck, PackageX, Palette, Phone, Play, Ruler, Sparkles, Star, Tag, Truck, Weight, Zap, ZoomIn } from "lucide-react";
 import { STORE } from "@/lib/contact";
 import { brandOf } from "@/lib/brands";
-import { useChangeKey } from "@/lib/motion";
-import { productImages } from "@/lib/productImages";
+import { scrollBehavior, useChangeKey } from "@/lib/motion";
+import { imageSrc, productImages } from "@/lib/productImages";
 import { Tooltip } from 'react-tooltip';
 import { useCart, useFavorites, useAuth } from "@/lib/context";
 import { authUrl } from "@/lib/redirect";
@@ -145,6 +146,9 @@ export default function ProductDetails({ product, initialComments = [], related 
   // گالری: تصویر اصلی + بقیه به ترتیب. active شمارهٔ تصویر جاری است؛ اسلایدر هنگام کشیدن یا فلش خبرش می‌دهد (onIndexChange)
   // و کوچک‌نماها و دیالوگ بزرگ‌نمایی با sliderRef.goTo اسلایدر را می‌برند
   const photos = productImages(product);
+  // ویدیوی کوتاه اختیاری محصول (مسیر /uploads/…): کوچک‌نمای کنار تصویرها و بخش «ویدیوی محصول» پایین‌تر
+  const video = product.video || null;
+  const goToVideo = () => document.getElementById("video")?.scrollIntoView({ behavior: scrollBehavior(), block: "start" });
   const [active, setActive] = useState(0);
   const sliderRef = useRef(null);
   const stageRef = useRef(null);
@@ -410,6 +414,7 @@ export default function ProductDetails({ product, initialComments = [], related 
 
   // تب‌های نوار بخش‌ها: فقط بخش‌هایی که در صفحه هستند
   const navItems = [
+    video && { id: "video", label: "ویدیو" },
     specs.length > 0 && { id: "specs", label: "مشخصات" },
     extras.length > 0 && { id: "more", label: "ویژگی‌های بیشتر" },
     related.length > 0 && { id: "related", label: "محصولات مرتبط" },
@@ -464,8 +469,8 @@ export default function ProductDetails({ product, initialComments = [], related 
                   </button>
                 )}
               />
-              {many && (
-                <ul className="pd-thumbs no-scrollbar" aria-label="تصویرهای محصول">
+              {(many || video) && (
+                <ul className="pd-thumbs no-scrollbar" aria-label="تصویرها و ویدیوی محصول">
                   {photos.map((src, index) => (
                     <li key={src} className="shrink-0">
                       <button
@@ -479,6 +484,16 @@ export default function ProductDetails({ product, initialComments = [], related 
                       </button>
                     </li>
                   ))}
+                  {video && (
+                    <li className="shrink-0">
+                      <button type="button" onClick={goToVideo} aria-label="مشاهده ویدیوی محصول" className="pd-thumb pd-thumb--video btn-flat">
+                        <AppImage src={photos[0]} alt="" fill sizes="78px" className="object-cover" />
+                        <span className="pd-thumb-play" aria-hidden="true">
+                          <Play />
+                        </span>
+                      </button>
+                    </li>
+                  )}
                 </ul>
               )}
               <ImageLightbox open={zoomOpen} onClose={() => setZoomOpen(false)} images={photos} index={current} onIndexChange={(index) => showPhoto(index, { instant: true })} onExited={focusZoomButton} alt={product.name} />
@@ -644,6 +659,17 @@ export default function ProductDetails({ product, initialComments = [], related 
         </SectionNav>
       )}
       <div className={`pd-sections ${navItems.length > 1 ? "" : "mt-8"}`}>
+        {video && (
+          <Reveal as="section" id="video" aria-labelledby="video-h" className="pd-anchor pd-panel">
+            <div className="pd-sec-h">
+              <span className="pd-sec-i" aria-hidden="true">
+                <Clapperboard />
+              </span>
+              <h2 id="video-h">ویدیوی محصول</h2>
+            </div>
+            <ProductVideo src={video} poster={imageSrc(photos[0])} name={product.name} />
+          </Reveal>
+        )}
         {specs.length > 0 && (
           <Reveal as="section" id="specs" aria-labelledby="specs-h" className="pd-anchor pd-panel">
             <div className="pd-sec-h">

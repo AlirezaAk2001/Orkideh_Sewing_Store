@@ -5,6 +5,7 @@ import { parseStock } from "@/lib/stock";
 import { toLatinSlug } from "@/lib/slug";
 import { shapeProduct } from "@/lib/products";
 import { MAX_PRODUCT_IMAGES, parseImageList, productImages } from "@/lib/productImages";
+import { parseVideoRef } from "@/lib/productVideo";
 import { removeUnusedUploads } from "@/lib/uploads";
 
 // گالری ارسالی ادمین را بررسی می‌کند: { gallery } (undefined = فرستاده نشده) یا { error } برای پاسخ ۴۰۰
@@ -60,7 +61,7 @@ export async function POST(req) {
   if (auth.error) return auth.error;
 
   const body = await req.json();
-  const { name, price, stock, categoryId, image, images, additionalFeatures, material, size, weight, color, suitableFor, discount, voltage, powerConsumption } = body;
+  const { name, price, stock, categoryId, image, images, video, additionalFeatures, material, size, weight, color, suitableFor, discount, voltage, powerConsumption } = body;
 
   if (!name || !price || isNaN(parseFloat(price))) {
     console.warn("Invalid input in POST:", { name, price });
@@ -69,6 +70,8 @@ export async function POST(req) {
 
   const galleryCheck = checkGallery(image, images);
   if (galleryCheck.error) return NextResponse.json({ error: galleryCheck.error }, { status: 400 });
+  const videoRef = parseVideoRef(video);
+  if (videoRef === false) return NextResponse.json({ error: "ویدیوی محصول نامعتبر است" }, { status: 400 });
 
   const slug = `${toLatinSlug(name)}-${Date.now()}`;
 
@@ -99,6 +102,8 @@ export async function POST(req) {
         categoryName: categoryId ? (await prisma.category.findUnique({ where: { id: parseInt(categoryId) } }))?.name : null,
         image: image ? image.replace(/\/$/, '') : null,
         ...(galleryCheck.gallery && { images: galleryCheck.gallery }),
+        // ستون video فقط وقتی ویدیو هست نوشته می‌شود؛ محصول بدون ویدیو به ستون دست نمی‌زند
+        ...(videoRef && { video: videoRef }),
         additionalFeatures,
         material,
         size,
@@ -131,7 +136,7 @@ export async function PUT(req) {
       return NextResponse.json({ error: "شناسه محصول نامعتبر است" }, { status: 400 });
     }
 
-    const { name, price, stock, categoryId, image, images, additionalFeatures, material, size, weight, color, suitableFor, discount, voltage, powerConsumption } = body;
+    const { name, price, stock, categoryId, image, images, video, additionalFeatures, material, size, weight, color, suitableFor, discount, voltage, powerConsumption } = body;
     const parsedPrice = parseFloat(price);
     if (!name || isNaN(parsedPrice)) {
       return NextResponse.json({ error: "نام و قیمت محصول الزامی و معتبر هستند" }, { status: 400 });
@@ -139,10 +144,17 @@ export async function PUT(req) {
     // images فرستاده نشده باشد (فرم‌ها و درخواست‌های قدیمی) گالری همان می‌ماند
     const galleryCheck = checkGallery(image, images);
     if (galleryCheck.error) return NextResponse.json({ error: galleryCheck.error }, { status: 400 });
+    // video هم همین‌طور: فرستاده نشده = بدون تغییر، null یا "" = حذف ویدیو، مسیر آپلودشده = ویدیوی تازه
+    const videoRef = parseVideoRef(video);
+    if (videoRef === false) return NextResponse.json({ error: "ویدیوی محصول نامعتبر است" }, { status: 400 });
     const parsedDiscount = discount && !isNaN(parseInt(discount)) ? parseInt(discount) : null;
     const finalPrice = parsedDiscount ? parsedPrice * (1 - parsedDiscount / 100) : parsedPrice;
 
-    const existing = await prisma.product.findUnique({ where: { id: productId }, select: { slug: true, image: true, images: true } });
+    // ستون video فقط وقتی خوانده می‌شود که ویدیو در درخواست آمده باشد (تا ویرایش‌های بدون ویدیو به آن وابسته نباشند)
+    const existing = await prisma.product.findUnique({
+      where: { id: productId },
+      select: { slug: true, image: true, images: true, ...(videoRef !== undefined && { video: true }) },
+    });
     if (!existing) {
       return NextResponse.json({ error: "محصول یافت نشد" }, { status: 404 });
     }
@@ -153,6 +165,7 @@ export async function PUT(req) {
       stock: parseStock(stock),
       image: image ? image.replace(/\/$/, '') : null,
       ...(galleryCheck.gallery && { images: galleryCheck.gallery }),
+      ...(videoRef !== undefined && { video: videoRef }),
       additionalFeatures,
       material,
       size,
@@ -180,6 +193,8 @@ export async function PUT(req) {
     // تصویرهای آپلودشده‌ای که از محصول برداشته شده‌اند (و جای دیگری استفاده نمی‌شوند) از دیسک هم پاک می‌شوند
     const kept = new Set(productImages(updatedProduct));
     await removeUnusedUploads(productImages(existing).filter((src) => !kept.has(src)));
+    // ویدیوی قبلی که برداشته یا عوض شده هم از دیسک پاک می‌شود
+    if (existing.video && existing.video !== videoRef) await removeUnusedUploads([existing.video]);
 
     return NextResponse.json(updatedProduct);
   } catch (error) {
@@ -227,7 +242,7 @@ export async function DELETE(req) {
       prisma.comment.deleteMany({ where: { productId } }),
       prisma.product.delete({ where: { id: productId } }),
     ]);
-    await removeUnusedUploads(productImages(existingProduct));
+    await removeUnusedUploads([...productImages(existingProduct), existingProduct.video].filter(Boolean));
     return NextResponse.json({ message: "محصول حذف شد" });
   } catch (error) {
     console.error("Error deleting product:", {
