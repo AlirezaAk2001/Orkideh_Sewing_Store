@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Heart, Info, LogIn, LogOut } from "lucide-react";
 import Icon from '@mdi/react';
-import { mdiCartOutline } from '@mdi/js';
+import { mdiAccountTieOutline, mdiCartOutline } from '@mdi/js';
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth, useFavorites, useCart } from "../../lib/context";
 import { AnimatePresence, motion } from "framer-motion";
@@ -145,7 +145,14 @@ export default function Header() {
                     data-tooltip-id="profile-tooltip"
                     data-tooltip-content={loading ? "در حال بارگذاری..." : currentUser.is_admin ? "پنل مدیریت" : "پروفایل کاربری"}
                   >
-                    <Avatar value={currentUser.avatar} name={currentUser.name} className="[--s:34px] sm:[--s:38px]" />
+                    {/* مدیر سایت به‌جای آواتار شخصی‌اش همیشه نشان «مدیر» (آدمک کراوات‌دار) را می‌بیند: همان دایرهٔ گرادیانی آواتار (.av) با آیکون سفید */}
+                    {currentUser.is_admin ? (
+                      <span className="av [--s:34px] sm:[--s:38px]" data-type="admin" aria-hidden="true">
+                        <Icon path={mdiAccountTieOutline} size="62%" />
+                      </span>
+                    ) : (
+                      <Avatar value={currentUser.avatar} name={currentUser.name} className="[--s:34px] sm:[--s:38px]" />
+                    )}
                   </Link>
                   <button
                     onClick={() => !loading && logout("/")}

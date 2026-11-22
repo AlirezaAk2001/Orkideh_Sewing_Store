@@ -2528,6 +2528,12 @@ html.sb-dragging * {
     linear-gradient(135deg, var(--c0), var(--c1));
   box-shadow: none;
 }
+/* نشان مدیر در هدر (Header.js): همان دایرهٔ گرادیانی برند با آیکون سفید که ۶۲٪ دایره را می‌گیرد */
+.av[data-type="admin"] > svg {
+  width: 62%;
+  height: 62%;
+  fill: currentColor;
+}
 /* آواتار هدر: لینک گرد به پروفایل؛ با هاور یک حلقهٔ برند دورش می‌افتد */
 .av-link {
   display: grid;
