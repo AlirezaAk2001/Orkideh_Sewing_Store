@@ -1,4 +1,6 @@
+import { ArrowUp, ArrowUpDown } from "lucide-react";
 import ScrollArea from "@/app/components/ScrollArea";
+import "./list.css";
 
 // جدول مشترک لیست‌ها. از md به بالا جدول روشن (سرستون کم‌رنگ، ردیف‌ها با خط نازک و هاور صورتی)، زیر md هر ردیف یک کارت که صفحه‌ها با renderCard
 // می‌سازند (جدول با ۷ ستون روی موبایل جا نمی‌شود). هر دو از یک rows ساخته می‌شوند و CSS یکی را پنهان می‌کند، پس دادهٔ تکراری دریافت نمی‌شود.
@@ -9,7 +11,9 @@ import ScrollArea from "@/app/components/ScrollArea";
 // ظاهر سرستون برای پوششی که کنار سرستون، روی مسیر شست می‌نشیند (ScrollArea lane + capClassName)؛ همان رنگ‌های th
 const CAP = "bg-white bg-gradient-to-b from-gray-50 to-gray-100/70 shadow-[inset_0_-1px_0_var(--color-gray-200)]";
 
-export default function DataTable({ label, columns, rows, rowKey, renderCard, loading = false, busy = false, skeletonRows = 3 }) {
+// ستون‌های مرتب‌شدنی (اختیاری): ستونی که sortable: true دارد و صفحه sort و onSort داده باشد سرستونش دکمه می‌شود. sort = { id, dir: "asc" | "desc" } یا null.
+// خود مرتب‌کردن کار صفحه است (جدول فقط ردیف‌های مرتب‌شده را می‌گیرد)؛ aria-sort برای صفحه‌خوان روی همان th می‌نشیند
+export default function DataTable({ label, columns, rows, rowKey, renderCard, loading = false, busy = false, skeletonRows = 3, sort = null, onSort }) {
   const stagger = (i) => ({ animationDelay: `${Math.min(i, 12) * 30}ms` });
 
   if (loading) {
@@ -55,18 +59,35 @@ export default function DataTable({ label, columns, rows, rowKey, renderCard, lo
   }
 
   return (
-    <div aria-busy={busy} className={`transition-opacity duration-200 md:flex md:min-h-0 md:flex-col ${busy ? "opacity-60" : ""}`}>
+    <div aria-busy={busy} className={`relative transition-opacity duration-200 md:flex md:min-h-0 md:flex-col ${busy ? "opacity-60" : ""}`}>
+      {busy && <span className="alst-busy" aria-hidden="true" />}
       <ScrollArea className="max-md:hidden md:min-h-0" innerClassName="overflow-x-auto" topSelector="thead" lane capClassName={CAP}>
         <table className="w-full text-sm">
           <caption className="sr-only">{label}</caption>
           <thead>
             <tr>
               {/* پس‌زمینه روی خود th است و زیرش سفید: th چسبان است و ردیف‌هایی که زیرش اسکرول می‌شوند نباید از گرادیان نیمه‌شفاف دیده شوند */}
-              {columns.map((c) => (
-                <th key={c.id} scope="col" className={`sticky top-0 z-10 whitespace-nowrap bg-white bg-gradient-to-b from-gray-50 to-gray-100/70 px-4 py-3 shadow-[inset_0_-1px_0_var(--color-gray-200)] ${c.align === "center" ? "text-center" : "text-start"} text-xs font-semibold text-gray-500 ${c.th || ""}`}>
-                  {c.label}
-                </th>
-              ))}
+              {columns.map((c) => {
+                const sortable = c.sortable && onSort;
+                const dir = sort?.id === c.id ? sort.dir : undefined;
+                return (
+                  <th
+                    key={c.id}
+                    scope="col"
+                    aria-sort={sortable ? (dir === "asc" ? "ascending" : dir === "desc" ? "descending" : "none") : undefined}
+                    className={`sticky top-0 z-10 whitespace-nowrap bg-white bg-gradient-to-b from-gray-50 to-gray-100/70 px-4 py-3 shadow-[inset_0_-1px_0_var(--color-gray-200)] ${c.align === "center" ? "text-center" : "text-start"} text-xs font-semibold text-gray-500 ${c.th || ""}`}
+                  >
+                    {sortable ? (
+                      <button type="button" onClick={() => onSort(c.id)} data-dir={dir} className="alst-sort btn-flat">
+                        {c.label}
+                        {dir ? <ArrowUp aria-hidden="true" /> : <ArrowUpDown aria-hidden="true" />}
+                      </button>
+                    ) : (
+                      c.label
+                    )}
+                  </th>
+                );
+              })}
             </tr>
           </thead>
           <tbody>

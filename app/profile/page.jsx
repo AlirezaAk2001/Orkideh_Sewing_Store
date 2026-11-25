@@ -123,8 +123,9 @@ function ProfileView() {
     window.history.replaceState(null, "", tabHref(tab));
   }, [paid, currentUser, tab]);
 
+  // لودینگ هم‌قد خود پنل (همان min-height: calc(100vh - 5rem) در .pf که زیر هدر چسبانِ ۵rem است) تا وسط صفحه بنشیند، نه بالای آن
   if (loading || !currentUser) {
-    return <PageLoader className="min-h-[60vh]" label="در حال بارگذاری اطلاعات کاربر..." />;
+    return <PageLoader className="min-h-[calc(100vh-5rem)]" label="در حال بارگذاری اطلاعات کاربر..." />;
   }
 
   // anchor (اختیاری): شناسهٔ کارتی که بعد از رسیدن به بخش باید به آن رفت
@@ -224,7 +225,7 @@ function ProfileView() {
 // useSearchParams (بخش فعال در آدرس) باید پشت Suspense باشد تا ساخت صفحه نشکند
 export default function ProfilePage() {
   return (
-    <Suspense fallback={<PageLoader className="min-h-[60vh]" label="در حال بارگذاری اطلاعات کاربر..." />}>
+    <Suspense fallback={<PageLoader className="min-h-[calc(100vh-5rem)]" label="در حال بارگذاری اطلاعات کاربر..." />}>
       <ProfileView />
     </Suspense>
   );

@@ -1,0 +1,189 @@
+/* انتخاب «تعداد در صفحه»ی صفحه‌بندی جدول‌ها (PageSizeSelect.jsx؛ پیشوند alst-ps-): جای <select> بومی که لیستش را سیستم‌عامل می‌کشد (خاکستری و بی‌انیمیشن).
+   دکمه‌ای کپسولی با کاشی آیکون صورتی، عددِ پررنگ و فلشی که با باز شدن می‌چرخد؛ منو رو به پایین کارت شیشه‌ای است که با جهش از بالا باز می‌شود
+   و گزینه‌ها پلکانی یکی‌یکی وارد می‌شوند. هاور و فوکوس همان زبان سلکت‌های فرم (select.css) و پروفایل را دارند. با «کاهش حرکت» انیمیشن‌ها خاموش‌اند */
+.alst-ps {
+  position: relative;
+}
+.alst-ps-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 38px;
+  padding: 0 10px 0 7px;
+  border: 0;
+  border-radius: 12px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-gray-800);
+  background: #fff;
+  cursor: pointer;
+  box-shadow: inset 0 0 0 1px var(--color-gray-200), 0 1px 2px rgb(0 0 0 / 0.04);
+  transition: box-shadow 0.25s, translate 0.2s;
+}
+.alst-ps-btn:hover {
+  box-shadow: inset 0 0 0 1px var(--color-brand-300), 0 8px 16px -10px rgb(190 24 93 / 0.5);
+  translate: 0 -1px;
+}
+.alst-ps-btn:active {
+  translate: 0 0;
+}
+.alst-ps-btn[data-open],
+.alst-ps-btn:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 1.5px var(--color-brand-500), 0 0 0 4px var(--color-brand-100);
+}
+.alst-ps-ic {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 9px;
+  background: linear-gradient(145deg, var(--color-brand-50), var(--color-brand-100));
+  box-shadow: inset 0 0 0 1px rgb(224 50 140 / 0.14);
+  transition: background 0.25s;
+}
+.alst-ps-btn[data-open] .alst-ps-ic {
+  background: linear-gradient(145deg, var(--color-brand-500), var(--color-brand-700));
+}
+.alst-ps-ic svg {
+  width: 15px;
+  height: 15px;
+  color: var(--color-brand-600);
+  transition: color 0.25s;
+}
+.alst-ps-btn[data-open] .alst-ps-ic svg {
+  color: #fff;
+}
+.alst-ps-val {
+  min-width: 1.4ch;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.alst-ps-chev {
+  width: 16px;
+  height: 16px;
+  color: var(--color-gray-400);
+  transition: rotate 0.35s cubic-bezier(0.34, 1.5, 0.5, 1), color 0.25s;
+}
+.alst-ps-btn:hover .alst-ps-chev {
+  color: var(--color-brand-600);
+}
+.alst-ps-btn[data-open] .alst-ps-chev {
+  rotate: 180deg;
+  color: var(--color-brand-600);
+}
+
+/* منو داخل portal روی body و با position:fixed است (PageSizeSelect.jsx جای top و left را از جای دکمه می‌نویسد): کارت جدول overflow:hidden دارد و صفحه‌بندی ته آن است،
+   پس منوی داخل کارت زیر دکمه بریده می‌شد. z-index بالاتر از محتوای پنل و پایین‌تر از دیالوگ‌های MUI (۱۳۰۰) و راهنمای دکمه‌هاست (۹۹۹۹) */
+.alst-ps-pop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1200;
+  min-width: 9.5rem;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  border-radius: 16px;
+  background: rgb(255 255 255 / 0.97);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  backdrop-filter: blur(16px) saturate(1.4);
+  box-shadow: 0 0 0 1px rgb(80 30 90 / 0.09), 0 26px 46px -20px rgb(110 20 90 / 0.4), 0 8px 18px -10px rgb(110 20 90 / 0.18);
+  transform-origin: top center;
+  animation: alst-ps-down 0.28s cubic-bezier(0.34, 1.35, 0.5, 1) both;
+}
+@keyframes alst-ps-down {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.alst-ps-opt {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  border-radius: 12px;
+  font-size: 14px;
+  color: var(--color-gray-700);
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+  animation: alst-ps-in 0.3s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation-delay: calc(var(--i, 0) * 40ms + 40ms);
+}
+@keyframes alst-ps-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.alst-ps-opt + .alst-ps-opt {
+  margin-top: 2px;
+}
+.alst-ps-num {
+  display: grid;
+  place-items: center;
+  flex: none;
+  min-width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-gray-600);
+  background: #f6f1f8;
+  transition: background 0.15s, color 0.15s, scale 0.25s cubic-bezier(0.34, 1.5, 0.5, 1);
+}
+.alst-ps-unit {
+  flex: 1;
+  font-size: 12.5px;
+  color: var(--color-gray-500);
+}
+.alst-ps-opt[data-active] {
+  background: var(--color-brand-50);
+}
+.alst-ps-opt[data-active] .alst-ps-num {
+  color: var(--color-brand-700);
+  background: linear-gradient(145deg, #fff, var(--color-brand-100));
+  scale: 1.08;
+}
+.alst-ps-opt[aria-selected="true"] {
+  color: var(--color-brand-700);
+}
+.alst-ps-opt[aria-selected="true"] .alst-ps-num {
+  color: #fff;
+  background: linear-gradient(145deg, var(--color-brand-500), var(--color-brand-700));
+  box-shadow: 0 6px 12px -6px color-mix(in oklab, var(--color-brand-600) 80%, transparent);
+}
+.alst-ps-opt[aria-selected="true"] .alst-ps-unit {
+  font-weight: 700;
+  color: var(--color-brand-700);
+}
+.alst-ps-tick {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  color: var(--color-brand-600);
+}
+@media (prefers-reduced-motion: reduce) {
+  .alst-ps-pop,
+  .alst-ps-opt {
+    animation: none;
+  }
+  .alst-ps-btn,
+  .alst-ps-chev,
+  .alst-ps-num {
+    transition: none;
+  }
+  .alst-ps-btn:hover {
+    translate: none;
+  }
+}

@@ -15,6 +15,7 @@ import Pagination from "@/app/admin/_list/Pagination";
 import AddButton from "@/app/admin/_list/AddButton";
 import EmptyState from "@/app/admin/_list/EmptyState";
 import Thumb from "@/app/admin/_list/Thumb";
+import IdChip from "@/app/admin/_list/IdChip";
 import { RowActions } from "@/app/admin/_list/IconAction";
 
 const PAGE_SIZE_OPTIONS = [3, 5, 10];
@@ -94,7 +95,7 @@ export default function AdminBannersPage() {
   );
 
   const columns = [
-    { id: "id", label: "شناسه", align: "center", th: "w-20", td: "tabular-nums text-gray-400", sk: "h-4 w-8", cell: (r) => fa(r.id) },
+    { id: "id", label: "شناسه", align: "center", th: "w-20", sk: "h-8 w-8 rounded-full", cell: (r) => <IdChip id={r.id} /> },
     {
       id: "img",
       label: "تصویر",
@@ -103,13 +104,29 @@ export default function AdminBannersPage() {
       sk: "h-14 w-24 rounded-xl",
       cell: (r) => <Thumb src={r.img ? getImagePath(r.img) : null} alt={r.title || "بنر"} className="h-14 w-24" sizes="96px" />,
     },
-    { id: "title", label: "عنوان", td: "min-w-44 font-bold leading-6 text-gray-900", sk: "h-4 w-40", cell: (r) => r.title || "—" },
+    // عنوان و توضیحات: وسط‌چین، با هر نوشته دقیقاً روی محور وسط ستون و زیر وسط سرستون. نوشتهٔ کوتاه و بلند هر دو وسط خودِ بلوک می‌نشینند (text-center)، پس نوشتهٔ ردیف‌ها
+    // دیگر در گوشهٔ بلوک جمع نمی‌شود (با text-start نوشتهٔ کوتاه کنار ابتدا می‌ماند و مرکزش از مرکز سرستون دور می‌شد). عرض بلوک ثابت است (۱۳rem و ۲۲rem، در جای کم تمام ستون)
+    {
+      id: "title",
+      label: "عنوان",
+      align: "center",
+      td: "min-w-44 font-bold leading-6 text-gray-900",
+      sk: "h-4 w-52 max-w-full",
+      cell: (r) => <p className="line-clamp-2 w-52 max-w-full text-center">{r.title || "—"}</p>,
+    },
+    // هر توضیح در یک چیپ خاکستری هم‌عرض (۲۲rem) با نوشتهٔ وسط‌چین؛ گوشهٔ rounded-2xl برای چیپ دوخطی (تک‌خطی خودبه‌خود کاملاً گرد می‌شود)
     {
       id: "desc",
       label: "توضیحات",
+      align: "center",
       td: "w-full max-w-0",
-      sk: "h-4 w-56",
-      cell: (r) => <p className="line-clamp-2 leading-6 text-gray-500">{r.desc || "—"}</p>,
+      sk: "h-7 w-[22rem] max-w-full rounded-2xl",
+      cell: (r) =>
+        r.desc ? (
+          <span className="line-clamp-2 block w-[22rem] max-w-full rounded-2xl bg-gray-100 px-3.5 py-1 text-center text-sm leading-6 text-gray-600 ring-1 ring-gray-200">{r.desc}</span>
+        ) : (
+          <span className="text-gray-400">—</span>
+        ),
     },
     { id: "actions", label: "عملیات", align: "center", th: "w-28", sk: "h-9 w-20 rounded-xl", cell: actions },
   ];

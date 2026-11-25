@@ -162,6 +162,8 @@ export default function CommentsForm({ productId, onSubmit }) {
               value={text}
               onChange={(e) => setText(e.target.value)}
               required
+              // required فقط ستارهٔ برچسب را می‌گذارد؛ ویژگی بومی روی فیلد نمی‌نشیند، چون مرورگر برای فیلد خالی با هاور راهنمای پیش‌فرضش («Please fill out this field.») را نشان می‌داد. خالی بودن متن را handleSubmit با پیام فارسی می‌گیرد
+              inputProps={{ required: false }}
               className="bg-white rounded-lg"
               // استفاده از sx برای تنظیم فاصله و فوکوس هماهنگ با تم سایت
               sx={{

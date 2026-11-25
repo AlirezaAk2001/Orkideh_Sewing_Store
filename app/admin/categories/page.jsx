@@ -16,6 +16,7 @@ import AddButton from "@/app/admin/_list/AddButton";
 import EmptyState from "@/app/admin/_list/EmptyState";
 import Thumb from "@/app/admin/_list/Thumb";
 import Chip from "@/app/admin/_list/Chip";
+import IdChip from "@/app/admin/_list/IdChip";
 import { RowActions } from "@/app/admin/_list/IconAction";
 import { imageSrc } from "@/lib/productImages";
 
@@ -106,15 +107,18 @@ export default function AdminCategories() {
   const slug = (r) => (r.slug ? <Chip tone="gray"><span dir="ltr">{r.slug}</span></Chip> : "—");
 
   const columns = [
-    { id: "id", label: "شناسه", align: "center", th: "w-20", td: "tabular-nums text-gray-400", sk: "h-4 w-8", cell: (r) => fa(r.id) },
+    { id: "id", label: "شناسه", align: "center", th: "w-20", sk: "h-8 w-8 rounded-full", cell: (r) => <IdChip id={r.id} /> },
     {
       id: "name",
       label: "دسته‌بندی",
-      sk: "h-11 w-48 rounded-xl",
+      align: "center",
+      sk: "h-11 w-36 max-w-full rounded-xl",
+      // وسط‌چین با بلوک هم‌عرضِ ثابت تا تصویرها زیر هم و نام‌ها هم‌تراز باشند. عرض عمداً کم است (۹rem = ۴۴px تصویر + ۱۲px فاصله + حدود ۸۸px نوشته، در جای کم تمام ستون):
+      // هر چه بلوک پهن‌تر باشد، نوشتهٔ کوتاه در گوشهٔ آن می‌ماند و مرکز دیده‌شده از مرکز سرستون دور می‌شود (با ۱۴rem همین شده بود). نام بلندتر در دو خط می‌شکند
       cell: (r) => (
-        <div className="flex min-w-0 items-center gap-3">
-          <Thumb src={r.image} alt={r.name || "دسته‌بندی"} className="h-11 w-11" sizes="48px" />
-          <span className="truncate font-bold text-gray-900">{r.name || "—"}</span>
+        <div className="flex w-36 min-w-0 max-w-full items-center gap-3 text-start">
+          <Thumb src={r.image} alt={r.name || "دسته‌بندی"} className="h-11 w-11 shrink-0" sizes="48px" />
+          <span className="line-clamp-2 min-w-0 flex-1 font-bold leading-6 text-gray-900">{r.name || "—"}</span>
         </div>
       ),
     },

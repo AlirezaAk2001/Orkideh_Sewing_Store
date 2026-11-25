@@ -6,15 +6,16 @@ import { useEffect, useLayoutEffect } from "react";
 // قرص از جای قبلی‌اش به جای تازه می‌لغزد، نه این‌که ناگهان آنجا ظاهر شود. تا قرص نشسته، ظرف data-pill ندارد و عنصر فعال خودش پس‌زمینهٔ ثابت دارد (CSS: listing.css).
 // موقعیت‌ها offsetLeft/offsetTop هستند (نسبت به ظرف) و قرص با left:0/top:0 و translate می‌نشیند، پس با پیمایش افقی ظرف و در RTL هم درست می‌مانند.
 // با «کاهش حرکت» گذار CSS خاموش است و قرص فوراً می‌پرد.
+// selector: عنصر فعال را چه چیزی مشخص می‌کند (پیش‌فرض aria-current="page"؛ نوار بخش‌های فرم‌های پنل از "location" استفاده می‌کند)
 const memory = new Map();
 const useIsoLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
-export default function useSlidePill(box, pill, dep, remember) {
+export default function useSlidePill(box, pill, dep, remember, selector = '[aria-current="page"]') {
   useIsoLayoutEffect(() => {
     const root = box.current;
     const el = pill.current;
     if (!root || !el) return undefined;
-    const active = () => root.querySelector('[aria-current="page"]');
+    const active = () => root.querySelector(selector);
     const measure = (node) => ({ x: node.offsetLeft, y: node.offsetTop, w: node.offsetWidth, h: node.offsetHeight });
     const place = (r, animate) => {
       el.style.transition = animate ? "" : "none";
@@ -55,7 +56,7 @@ export default function useSlidePill(box, pill, dep, remember) {
       if (remember) memory.set(remember, r);
     });
     observer.observe(root);
-    root.querySelectorAll('[aria-current="page"]').forEach((item) => observer.observe(item));
+    root.querySelectorAll(selector).forEach((item) => observer.observe(item));
     return () => observer.disconnect();
-  }, [box, pill, dep, remember]);
+  }, [box, pill, dep, remember, selector]);
 }

@@ -2,8 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
-import { CheckCircle2, Loader2, LogIn, MailCheck, UserPlus } from "lucide-react";
+import { CheckCircle2, Loader2, LogIn, UserPlus } from "lucide-react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../lib/context";
@@ -12,8 +11,6 @@ import { NON_LATIN } from "../../lib/latinInput";
 import { useSegmentSlide } from "@/app/admin/_ui/useSegmentSlide";
 import AuthShell from "./auth/AuthShell";
 import { AuthCard, AuthTitle, Field, PasswordInput, SubmitButton, TextInput } from "./auth/AuthUI";
-
-const allowedAdmins = ["poshtibani.orkideh@gmail.com"];
 
 // بدون پرانتز و نماد در انتها: در متن راست‌به‌چپ جابه‌جا نشان داده می‌شدند
 const PASSWORD_HINT = "حداقل ۸ کاراکتر شامل حرف انگلیسی، عدد و یک نماد مانند @";
@@ -27,10 +24,10 @@ const KEYBOARD_MSG = {
 };
 
 export default function AuthPage() {
-  const { login, loading } = useAuth();
+  const { login } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
-  const [isVerifying, setIsVerifying] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [leaving, setLeaving] = useState(false); // ثبت‌نام موفق: تا باز شدن صفحهٔ تأیید ایمیل دکمه در حال بارگذاری می‌ماند
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -45,8 +42,6 @@ export default function AuthPage() {
   const [usernameExists, setUsernameExists] = useState(false);
   const [isCheckingUsername, setIsCheckingUsername] = useState(false);
   const [usernameAvailable, setUsernameAvailable] = useState(false);
-  const [verificationCode, setVerificationCode] = useState("");
-  const [tempAuth, setTempAuth] = useState(null);
   const [shakeFields, setShakeFields] = useState({}); // برای افکت لرزش
   const [keyboardField, setKeyboardField] = useState(null); // فیلدی که حرف فارسی در آن تایپ یا چسبانده شد و پذیرفته نشد
   const router = useRouter();
@@ -338,11 +333,7 @@ export default function AuthPage() {
         if (!resp.ok) throw new Error(data.error || "Signup failed");
 
         localStorage.setItem("signupEmail", data.email);
-        setTempAuth({
-          email: data.email,
-          role: allowedAdmins.includes(formData.email) ? "admin" : "user",
-        });
-        setIsVerifying(true);
+        setLeaving(true);
         router.push("/verify");
       }
     } catch (error) {
@@ -350,33 +341,6 @@ export default function AuthPage() {
     }
     finally {
       setIsSubmitting(false);
-    }
-  };
-
-  const handleVerifyCode = async (e) => {
-    e.preventDefault();
-    if (!tempAuth || !tempAuth.email) {
-      toast.error("اطلاعات یافت نشد");
-      return;
-    }
-
-    try {
-      const resp = await fetch("/api/auth/verify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: tempAuth.email, code: verificationCode }),
-      });
-
-      const data = await resp.json();
-      if (!resp.ok) throw new Error(data.error || "Verification failed");
-
-      setIsVerifying(false);
-      toast.success("ایمیل شما تأیید شد");
-      setTimeout(() => {
-        router.push("/auth");
-      }, 2000);
-    } catch (error) {
-      toast.error(error.message || "کد تأیید اشتباه است.");
     }
   };
 
@@ -420,259 +384,215 @@ export default function AuthPage() {
       }
     >
       <AuthCard wide={!isLogin}>
-        <AnimatePresence mode="wait" initial={false}>
-          {!isVerifying ? (
-            <motion.div
-              key="auth"
-              initial={{ opacity: 0, x: 24 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -24 }}
-              transition={{ duration: 0.3 }}
-            >
-              <AuthTitle
-                title={isLogin ? "ورود به حساب کاربری" : "ساخت حساب کاربری"}
-                text={isLogin ? "برای ادامه، اطلاعات حساب خود را وارد کنید." : "چند ثانیه وقت بگذارید و عضو ارکیده شوید."}
-              />
+        <AuthTitle
+          title={isLogin ? "ورود به حساب کاربری" : "ساخت حساب کاربری"}
+          text={isLogin ? "برای ادامه، اطلاعات حساب خود را وارد کنید." : "چند ثانیه وقت بگذارید و عضو ارکیده شوید."}
+        />
 
-              {/* زبانهٔ ورود/ثبت‌نام: همان تب‌های قطعه‌ای پنل مدیریت (.seg و .seg-tab در globals.css): قرص سفید خود تب فعال است و هنگام هاور همراه تب بالا می‌آید */}
-              <div ref={switchRef} role="group" aria-label="ورود یا ثبت‌نام" className="seg mb-5 grid grid-cols-2 gap-1 rounded-xl bg-gray-100 p-1">
-                {[
-                  { toLogin: true, label: "ورود", Icon: LogIn },
-                  { toLogin: false, label: "ثبت‌نام", Icon: UserPlus },
-                ].map(({ toLogin, label, Icon }) => {
-                  const on = isLogin === toLogin;
-                  return (
-                    <button
-                      key={label}
-                      type="button"
-                      aria-pressed={on}
-                      data-on={on ? "" : undefined}
-                      onClick={() => switchMode(toLogin)}
-                      className={`seg-tab inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 ${
-                        on ? "text-brand-700" : "text-gray-600 hover:bg-white/60 hover:text-gray-900"
-                      }`}
-                    >
-                      <Icon className="h-4 w-4" aria-hidden="true" />
-                      {label}
-                    </button>
-                  );
-                })}
-              </div>
+        {/* زبانهٔ ورود/ثبت‌نام: همان تب‌های قطعه‌ای پنل مدیریت (.seg و .seg-tab در globals.css): قرص سفید خود تب فعال است و هنگام هاور همراه تب بالا می‌آید */}
+        <div ref={switchRef} role="group" aria-label="ورود یا ثبت‌نام" className="seg mb-5 grid grid-cols-2 gap-1 rounded-xl bg-gray-100 p-1">
+          {[
+            { toLogin: true, label: "ورود", Icon: LogIn },
+            { toLogin: false, label: "ثبت‌نام", Icon: UserPlus },
+          ].map(({ toLogin, label, Icon }) => {
+            const on = isLogin === toLogin;
+            return (
+              <button
+                key={label}
+                type="button"
+                aria-pressed={on}
+                data-on={on ? "" : undefined}
+                onClick={() => switchMode(toLogin)}
+                className={`seg-tab inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 ${
+                  on ? "text-brand-700" : "text-gray-600 hover:bg-white/60 hover:text-gray-900"
+                }`}
+              >
+                <Icon className="h-4 w-4" aria-hidden="true" />
+                {label}
+              </button>
+            );
+          })}
+        </div>
 
-              <form key={isLogin ? "login" : "register"} onSubmit={handleSubmit} noValidate className="space-y-5">
-                {!isLogin && (
-                  <div className="grid items-start gap-x-4 gap-y-5 sm:grid-cols-2">
-                    <Field index={0} id="auth-fullName" label="نام و نام خانوادگی" error={nameError} shake={shakeFields.firstName || shakeFields.lastName}>
-                      <TextInput
-                        id="auth-fullName"
-                        type="text"
-                        name="fullName"
-                        autoComplete="name"
-                        placeholder="مثال: محسن عزیزی"
-                        value={formData.fullName}
-                        onChange={handleChange}
-                        onBlur={(e) => {
-                          const parts = e.target.value.trim().split(/\s+/);
-                          const first = parts[0] || "";
-                          const last = parts.slice(1).join(" ") || "";
+        <form key={isLogin ? "login" : "register"} onSubmit={handleSubmit} noValidate className="space-y-5">
+          {!isLogin && (
+            <div className="grid items-start gap-x-4 gap-y-5 sm:grid-cols-2">
+              <Field index={0} id="auth-fullName" label="نام و نام خانوادگی" error={nameError} shake={shakeFields.firstName || shakeFields.lastName}>
+                <TextInput
+                  id="auth-fullName"
+                  type="text"
+                  name="fullName"
+                  autoComplete="name"
+                  placeholder="مثال: محسن عزیزی"
+                  value={formData.fullName}
+                  onChange={handleChange}
+                  onBlur={(e) => {
+                    const parts = e.target.value.trim().split(/\s+/);
+                    const first = parts[0] || "";
+                    const last = parts.slice(1).join(" ") || "";
 
-                          if (!first && !last) {
-                            setErrors((prev) => ({ ...prev, firstName: "نام و نام خانوادگی نمی‌تواند خالی باشد" }));
-                            setTouched((prev) => ({ ...prev, firstName: true }));
-                          } else if (first && !last) {
-                            setErrors((prev) => ({ ...prev, lastName: "نام خانوادگی نمی‌تواند خالی باشد" }));
-                            setTouched((prev) => ({ ...prev, lastName: true }));
-                          } else if (!first && last) {
-                            setErrors((prev) => ({ ...prev, firstName: "نام نمی‌تواند خالی باشد" }));
-                            setTouched((prev) => ({ ...prev, firstName: true }));
-                          }
-                        }}
-                        invalid={!!nameError}
-                      />
-                    </Field>
+                    if (!first && !last) {
+                      setErrors((prev) => ({ ...prev, firstName: "نام و نام خانوادگی نمی‌تواند خالی باشد" }));
+                      setTouched((prev) => ({ ...prev, firstName: true }));
+                    } else if (first && !last) {
+                      setErrors((prev) => ({ ...prev, lastName: "نام خانوادگی نمی‌تواند خالی باشد" }));
+                      setTouched((prev) => ({ ...prev, lastName: true }));
+                    } else if (!first && last) {
+                      setErrors((prev) => ({ ...prev, firstName: "نام نمی‌تواند خالی باشد" }));
+                      setTouched((prev) => ({ ...prev, firstName: true }));
+                    }
+                  }}
+                  invalid={!!nameError}
+                />
+              </Field>
 
-                    <Field
-                      index={1}
-                      id="auth-username"
-                      label="نام کاربری"
-                      error={keyboardField === "username" ? KEYBOARD_MSG.username : shown("username") ? errors.username : ""}
-                      hint={usernameHint}
-                      shake={shakeFields.username}
-                    >
-                      <TextInput
-                        id="auth-username"
-                        ltr
-                        type="text"
-                        name="username"
-                        autoComplete="username"
-                        placeholder="aaa_123"
-                        value={formData.username}
-                        onChange={handleChange}
-                        onBeforeInput={blockNonLatin("username")}
-                        onBlur={handleBlur}
-                        invalid={keyboardField === "username" || shown("username") || usernameExists}
-                      />
-                    </Field>
-                  </div>
-                )}
-
-                <Field
-                  index={isLogin ? 0 : 2}
-                  id="auth-email"
-                  label={isLogin ? "ایمیل یا نام کاربری" : "ایمیل"}
-                  error={keyboardField === "email" ? (isLogin ? KEYBOARD_MSG.identifier : KEYBOARD_MSG.email) : shown("email") ? errors.email : ""}
-                  shake={shakeFields.email}
-                >
-                  <TextInput
-                    id="auth-email"
-                    ltr
-                    type={isLogin ? "text" : "email"}
-                    name="email"
-                    autoComplete={isLogin ? "username" : "email"}
-                    placeholder={isLogin ? "example@gmail.com یا aaa_123" : "example@gmail.com"}
-                    value={formData.email}
-                    onChange={handleChange}
-                    onBeforeInput={blockNonLatin("email")}
-                    onBlur={handleBlur}
-                    invalid={keyboardField === "email" || shown("email")}
-                  />
-                </Field>
-
-                {isLogin ? (
-                  <div>
-                    <Field
-                      index={1}
-                      id="auth-password"
-                      label="رمز عبور"
-                      error={shown("password") ? errors.password : ""}
-                      shake={shakeFields.password}
-                    >
-                      <PasswordInput
-                        id="auth-password"
-                        name="password"
-                        autoComplete="current-password"
-                        placeholder="••••••••"
-                        value={formData.password}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        invalid={shown("password")}
-                      />
-                    </Field>
-                    <div className="mt-1.5">
-                      <Link
-                        href="/auth/forgot-password"
-                        className="inline-block rounded-md py-1 text-sm font-medium text-brand-700 transition hover:text-brand-600 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
-                      >
-                        آیا رمز عبور خود را فراموش کرده‌اید؟
-                      </Link>
-                    </div>
-                  </div>
-                ) : (
-                  <div>
-                    <div className="grid items-start gap-x-4 gap-y-5 sm:grid-cols-2">
-                      <Field index={3} id="auth-password" label="رمز عبور" shake={shakeFields.password}>
-                        <PasswordInput
-                          id="auth-password"
-                          name="password"
-                          autoComplete="new-password"
-                          placeholder="A@123456"
-                          meter
-                          value={formData.password}
-                          onChange={handleChange}
-                          onBlur={handleBlur}
-                          invalid={shown("password")}
-                        />
-                      </Field>
-                      <Field index={4} id="auth-confirmPassword" label="تأیید رمز عبور" shake={shakeFields.confirmPassword}>
-                        <PasswordInput
-                          id="auth-confirmPassword"
-                          name="confirmPassword"
-                          autoComplete="new-password"
-                          placeholder="A@123456"
-                          value={formData.confirmPassword}
-                          onChange={handleChange}
-                          onBlur={handleBlur}
-                          invalid={shown("confirmPassword")}
-                        />
-                      </Field>
-                    </div>
-                    {passwordError ? (
-                      <p role="alert" className="auth-message mt-1.5 text-xs leading-5 text-red-600">
-                        {passwordError}
-                      </p>
-                    ) : (
-                      <p className="mt-1.5 text-xs leading-5 text-gray-500">{PASSWORD_HINT}</p>
-                    )}
-                  </div>
-                )}
-
-                <SubmitButton
-                  loading={isSubmitting}
-                  disabled={!formComplete}
-                  loadingText={isLogin ? "در حال ورود..." : "در حال ثبت‌نام..."}
-                  icon={isLogin ? LogIn : UserPlus}
-                >
-                  {isLogin ? "ورود" : "ثبت‌نام"}
-                </SubmitButton>
-
-                {isLogin && (
-                  <>
-                    <div className="flex items-center gap-3" aria-hidden="true">
-                      <div className="h-px flex-1 bg-gray-200" />
-                      <span className="text-xs text-gray-400">یا</span>
-                      <div className="h-px flex-1 bg-gray-200" />
-                    </div>
-                    <button
-                      type="button"
-                      onClick={handleGoogleLogin}
-                      className="flex h-12 w-full cursor-pointer items-center justify-center gap-2.5 rounded-xl border border-gray-300 bg-white text-sm font-medium text-gray-700 shadow-sm transition hover:border-gray-400 hover:bg-gray-50 active:scale-[0.985] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-gray-200"
-                    >
-                      <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true">
-                        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
-                        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
-                        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
-                        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
-                      </svg>
-                      ورود با گوگل
-                    </button>
-                  </>
-                )}
-              </form>
-            </motion.div>
-          ) : (
-            <motion.div
-              key="verification"
-              initial={{ opacity: 0, x: -24 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 24 }}
-              transition={{ duration: 0.3 }}
-            >
-              <AuthTitle
-                icon={MailCheck}
-                title="تأیید ایمیل"
-                text={`کد تأیید به ایمیل ${tempAuth?.email || formData.email} ارسال شده است. لطفاً آن را بررسی کنید.`}
-              />
-              <form onSubmit={handleVerifyCode} className="space-y-5">
-                <Field id="auth-code" label="کد تأیید">
-                  <TextInput
-                    id="auth-code"
-                    ltr
-                    type="text"
-                    inputMode="numeric"
-                    autoComplete="one-time-code"
-                    placeholder="------"
-                    className="text-center text-xl tracking-[0.4em]"
-                    value={verificationCode}
-                    onChange={(e) => setVerificationCode(e.target.value)}
-                  />
-                </Field>
-                <SubmitButton loading={loading} loadingText="در حال تأیید...">
-                  تأیید
-                </SubmitButton>
-              </form>
-            </motion.div>
+              <Field
+                index={1}
+                id="auth-username"
+                label="نام کاربری"
+                error={keyboardField === "username" ? KEYBOARD_MSG.username : shown("username") ? errors.username : ""}
+                hint={usernameHint}
+                shake={shakeFields.username}
+              >
+                <TextInput
+                  id="auth-username"
+                  ltr
+                  type="text"
+                  name="username"
+                  autoComplete="username"
+                  placeholder="aaa_123"
+                  value={formData.username}
+                  onChange={handleChange}
+                  onBeforeInput={blockNonLatin("username")}
+                  onBlur={handleBlur}
+                  invalid={keyboardField === "username" || shown("username") || usernameExists}
+                />
+              </Field>
+            </div>
           )}
-        </AnimatePresence>
+
+          <Field
+            index={isLogin ? 0 : 2}
+            id="auth-email"
+            label={isLogin ? "ایمیل یا نام کاربری" : "ایمیل"}
+            error={keyboardField === "email" ? (isLogin ? KEYBOARD_MSG.identifier : KEYBOARD_MSG.email) : shown("email") ? errors.email : ""}
+            shake={shakeFields.email}
+          >
+            <TextInput
+              id="auth-email"
+              ltr
+              type={isLogin ? "text" : "email"}
+              name="email"
+              autoComplete={isLogin ? "username" : "email"}
+              placeholder={isLogin ? "example@gmail.com یا aaa_123" : "example@gmail.com"}
+              value={formData.email}
+              onChange={handleChange}
+              onBeforeInput={blockNonLatin("email")}
+              onBlur={handleBlur}
+              invalid={keyboardField === "email" || shown("email")}
+            />
+          </Field>
+
+          {isLogin ? (
+            <div>
+              <Field
+                index={1}
+                id="auth-password"
+                label="رمز عبور"
+                error={shown("password") ? errors.password : ""}
+                shake={shakeFields.password}
+              >
+                <PasswordInput
+                  id="auth-password"
+                  name="password"
+                  autoComplete="current-password"
+                  placeholder="••••••••"
+                  value={formData.password}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  invalid={shown("password")}
+                />
+              </Field>
+              <div className="mt-1.5">
+                <Link
+                  href="/auth/forgot-password"
+                  className="inline-block rounded-md py-1 text-sm font-medium text-brand-700 transition hover:text-brand-600 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+                >
+                  آیا رمز عبور خود را فراموش کرده‌اید؟
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <div>
+              <div className="grid items-start gap-x-4 gap-y-5 sm:grid-cols-2">
+                <Field index={3} id="auth-password" label="رمز عبور" shake={shakeFields.password}>
+                  <PasswordInput
+                    id="auth-password"
+                    name="password"
+                    autoComplete="new-password"
+                    placeholder="A@123456"
+                    meter
+                    value={formData.password}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    invalid={shown("password")}
+                  />
+                </Field>
+                <Field index={4} id="auth-confirmPassword" label="تأیید رمز عبور" shake={shakeFields.confirmPassword}>
+                  <PasswordInput
+                    id="auth-confirmPassword"
+                    name="confirmPassword"
+                    autoComplete="new-password"
+                    placeholder="A@123456"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    invalid={shown("confirmPassword")}
+                  />
+                </Field>
+              </div>
+              {passwordError ? (
+                <p role="alert" className="auth-message mt-1.5 text-xs leading-5 text-red-600">
+                  {passwordError}
+                </p>
+              ) : (
+                <p className="mt-1.5 text-xs leading-5 text-gray-500">{PASSWORD_HINT}</p>
+              )}
+            </div>
+          )}
+
+          <SubmitButton
+            loading={isSubmitting || leaving}
+            disabled={!formComplete}
+            loadingText={isLogin ? "در حال ورود..." : "در حال ثبت‌نام..."}
+            icon={isLogin ? LogIn : UserPlus}
+          >
+            {isLogin ? "ورود" : "ثبت‌نام"}
+          </SubmitButton>
+
+          {isLogin && (
+            <>
+              <div className="flex items-center gap-3" aria-hidden="true">
+                <div className="h-px flex-1 bg-gray-200" />
+                <span className="text-xs text-gray-400">یا</span>
+                <div className="h-px flex-1 bg-gray-200" />
+              </div>
+              <button
+                type="button"
+                onClick={handleGoogleLogin}
+                className="flex h-12 w-full cursor-pointer items-center justify-center gap-2.5 rounded-xl border border-gray-300 bg-white text-sm font-medium text-gray-700 shadow-sm transition hover:border-gray-400 hover:bg-gray-50 active:scale-[0.985] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-gray-200"
+              >
+                <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true">
+                  <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
+                  <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
+                  <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
+                  <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
+                </svg>
+                ورود با گوگل
+              </button>
+            </>
+          )}
+        </form>
       </AuthCard>
     </AuthShell>
   );

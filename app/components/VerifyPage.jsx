@@ -3,12 +3,17 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
-import { CheckCircle, MailCheck, RefreshCw } from "lucide-react";
+import { CheckCircle, CircleAlert, Clock, Mail } from "lucide-react";
 import AuthShell from "./auth/AuthShell";
-import { AuthCard, AuthTitle, Field, SubmitButton, TextInput } from "./auth/AuthUI";
+import { AuthCard, SubmitButton } from "./auth/AuthUI";
+import OtpInput, { CODE_LENGTH } from "./auth/OtpInput";
+import { ResendButton, VerifyEnvelope, VerifySteps, VerifySuccess } from "./auth/VerifyParts";
+import "./auth/verify.css";
 
 // حداقل فاصلهٔ دو بار ارسال کد (سرور هم همین‌قدر فاصله می‌خواهد)
 const RESEND_COOLDOWN_SEC = 60;
+// مکث بعد از تأیید موفق تا رفتن به صفحهٔ ورود (نوار پیشرفت نمای موفقیت هم همین مدت پر می‌شود)
+const REDIRECT_MS = 2000;
 
 export default function VerifyPage({ tempAuth }) {
   const [verificationCode, setVerificationCode] = useState("");
@@ -16,6 +21,11 @@ export default function VerifyPage({ tempAuth }) {
   const [email, setEmail] = useState(tempAuth?.email || "");
   const [isVerifying, setIsVerifying] = useState(false);
   const [isResending, setIsResending] = useState(false);
+  const [verified, setVerified] = useState(false);
+  const [sentCount, setSentCount] = useState(0); // با هر کد تازه پاکت‌نامه از نو می‌رسد
+  const inputRef = useRef(null);
+  const busyRef = useRef(false); // درخواست تأیید در راه است (برخلاف state همان لحظه معلوم می‌شود)
+  const rejectedRef = useRef(null); // آخرین کدی که سرور نپذیرفت، همراه پیامش
   // زمان پایان فاصلهٔ ارسال مجدد؛ ثانیه‌های باقی‌مانده از ساعت محاسبه می‌شود (نه با کم‌کردن در هر تیک)،
   // چون وقتی کاربر برای دیدن ایمیل به تب دیگری می‌رود تایمر این تب کند می‌شود
   const [cooldownEnd, setCooldownEnd] = useState(0);
@@ -29,7 +39,7 @@ export default function VerifyPage({ tempAuth }) {
     setNow(t);
     setCooldownEnd(t + seconds * 1000);
   }, []);
-  const [shakeCode, setShakeCode] = useState(false); // برای لرزش فیلد کد
+  const [shakeCode, setShakeCode] = useState(false); // برای لرزش خانه‌های کد
   const [touched, setTouched] = useState(false); // برای tracking لمس فیلد
   const router = useRouter();
 
@@ -70,6 +80,12 @@ export default function VerifyPage({ tempAuth }) {
       if (resp.ok) {
         toast.success(data.message || "کد تأیید جدید ارسال شد.");
         startCooldown(RESEND_COOLDOWN_SEC);
+        // کد قبلی دیگر معتبر نیست: خانه‌ها خالی و آمادهٔ کد تازه می‌شوند
+        rejectedRef.current = null;
+        setVerificationCode("");
+        setCodeError("");
+        setSentCount((c) => c + 1);
+        inputRef.current?.focus();
       } else {
         toast.error(data.error || "ارسال کد ناموفق بود.");
         if (data.retryAfter) startCooldown(Math.min(data.retryAfter, RESEND_COOLDOWN_SEC));
@@ -96,18 +112,19 @@ export default function VerifyPage({ tempAuth }) {
     return () => clearInterval(timer);
   }, [counting]);
 
-  const handleVerifyCode = async (e) => {
-    e.preventDefault();
+  // بررسی کد؛ هم با دکمه (یا Enter) و هم خودکار با رقم ششم
+  const verifyCode = async (code) => {
+    if (busyRef.current || verified) return;
 
     // اعتبارسنجی کد تأیید
-    if (!verificationCode.trim()) {
+    if (!code) {
       setCodeError("کد تأیید نمی‌تواند خالی باشد");
       setTouched(true);
       triggerShake();
       return;
     }
 
-    if (verificationCode.length !== 6) {
+    if (code.length !== CODE_LENGTH) {
       setCodeError("کد تأیید باید ۶ رقم باشد");
       setTouched(true);
       triggerShake();
@@ -126,53 +143,70 @@ export default function VerifyPage({ tempAuth }) {
 
     setCodeError("");
     setIsVerifying(true);
+    busyRef.current = true;
 
     try {
       const resp = await fetch("/api/auth/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, code: verificationCode }),
+        body: JSON.stringify({ email, code }),
       });
 
       const data = await resp.json();
-      if (!resp.ok) throw new Error(data.error || "Verification failed");
+      if (!resp.ok) {
+        const message = data.error || "Verification failed";
+        // فقط ردِ خود کد (نه خطای سرور یا محدودیت تعداد) به یاد می‌ماند
+        if (resp.status === 400 || resp.status === 404) rejectedRef.current = { code, message };
+        throw new Error(message);
+      }
 
+      setVerified(true);
       toast.success("ایمیل شما با موفقیت تأیید شد!");
 
       setTimeout(() => {
         localStorage.removeItem("signupEmail");
         router.push("/auth");
-      }, 2000);
+      }, REDIRECT_MS);
     } catch (error) {
       setCodeError(error.message || "کد تأیید اشتباه است.");
       setTouched(true);
       triggerShake(); // لرزش هنگام خطا
       toast.error(error.message || "کد تأیید اشتباه است.");
+      inputRef.current?.focus();
     } finally {
+      busyRef.current = false;
       setIsVerifying(false);
     }
   };
 
-  const handleCodeChange = (e) => {
-    const value = e.target.value;
-    // فقط اعداد مجاز هستند
-    if (/^\d*$/.test(value) && value.length <= 6) {
-      setVerificationCode(value);
-      if (codeError) {
-        setCodeError("");
-      }
-    }
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    verifyCode(verificationCode);
   };
 
-  const handleBlur = () => {
-    setTouched(true);
-    if (!verificationCode.trim()) {
-      setCodeError("کد تأیید نمی‌تواند خالی باشد");
-    } else if (verificationCode.length !== 6) {
-      setCodeError("کد تأیید باید ۶ رقم باشد");
-    } else {
-      setCodeError("");
+  // رقم ششم (تایپ، چسباندن یا پر کردن خودکار) کد را بدون زدن دکمه می‌فرستد؛ هنگام بررسی خانه‌ها تغییر نمی‌کنند.
+  // کدی که همین حالا رد شده خودکار دوباره فرستاده نمی‌شود تا از تعداد محدود تلاش‌ها کم نکند؛ فقط همان پیام برمی‌گردد
+  const handleCodeChange = (value) => {
+    if (busyRef.current || value === verificationCode) return;
+    setVerificationCode(value);
+    setCodeError("");
+    if (value.length !== CODE_LENGTH) return;
+
+    const rejected = rejectedRef.current;
+    if (rejected?.code === value) {
+      setCodeError(rejected.message);
+      setTouched(true);
+      triggerShake();
+      return;
     }
+    verifyCode(value);
+  };
+
+  // خالی‌ماندن خانه‌ها خطا نیست (مثلاً وقتی کاربر برای دیدن ایمیل بیرون می‌رود)؛ فقط کد نیمه‌کاره پیام می‌گیرد
+  const handleBlur = () => {
+    if (!verificationCode || verificationCode.length === CODE_LENGTH) return;
+    setTouched(true);
+    setCodeError("کد تأیید باید ۶ رقم باشد");
   };
 
   const showError = !!codeError && touched;
@@ -182,53 +216,68 @@ export default function VerifyPage({ tempAuth }) {
       heading="یک قدم تا ورود"
       lead="کد ۶ رقمی که به ایمیل شما فرستادیم را وارد کنید تا حساب شما فعال شود."
     >
-      <AuthCard>
-        <AuthTitle
-          icon={MailCheck}
-          title="تأیید ایمیل"
-          text={
-            <>
-              کد تأیید به ایمیل <strong dir="ltr" className="font-semibold text-gray-700">{email || "نامشخص"}</strong> ارسال شده است.
-            </>
-          }
-        />
+      <AuthCard className="vf-card">
+        <VerifySteps done={verified} />
 
-        <form onSubmit={handleVerifyCode} noValidate className="space-y-5">
-          <Field id="verify-code" label="کد تأیید (۶ رقم)" error={showError ? codeError : ""} shake={shakeCode}>
-            <TextInput
-              id="verify-code"
-              ltr
-              type="text"
-              name="code"
-              autoComplete="one-time-code"
-              placeholder="------"
-              className="text-center text-xl tracking-[0.4em]"
-              value={verificationCode}
-              onChange={handleCodeChange}
-              onBlur={handleBlur}
-              invalid={showError}
-              maxLength={6}
-              inputMode="numeric"
-              pattern="[0-9]*"
-            />
-          </Field>
+        <div className="vf-stage" data-done={verified || undefined}>
+          <div className="vf-main" inert={verified}>
+            <VerifyEnvelope key={sentCount} filled={verificationCode.length} total={CODE_LENGTH} invalid={showError} />
 
-          <SubmitButton loading={isVerifying} loadingText="در حال تأیید..." icon={CheckCircle}>
-            تأیید
-          </SubmitButton>
+            <div className="auth-rise text-center" style={{ "--i": 1 }}>
+              <h1 className="text-2xl font-extrabold text-gray-900">تأیید ایمیل</h1>
+              <p className="mt-1 text-sm leading-6 text-gray-500">کد ۶ رقمی را به این نشانی فرستادیم</p>
+              <p className="vf-mail">
+                <span className="vf-mail-icon" aria-hidden="true">
+                  <Mail className="h-3.5 w-3.5" />
+                </span>
+                <strong dir="ltr">{email || "نامشخص"}</strong>
+              </p>
+            </div>
 
-          <button
-            type="button"
-            onClick={sendNewCode}
-            disabled={isResending || cooldown > 0}
-            className="flex h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-xl text-sm font-medium text-brand-700 transition enabled:hover:bg-brand-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 disabled:cursor-not-allowed disabled:text-gray-400"
-          >
-            <RefreshCw className={`h-4 w-4 ${isResending ? "animate-spin" : ""}`} aria-hidden="true" />
-            {cooldown > 0
-              ? `ارسال مجدد کد (${cooldown.toLocaleString("fa-IR")} ثانیه)`
-              : "ارسال مجدد کد"}
-          </button>
-        </form>
+            <form onSubmit={handleSubmit} noValidate className="auth-rise mt-5" style={{ "--i": 2 }}>
+              <label htmlFor="verify-code" className="sr-only">
+                کد تأیید ۶ رقمی
+              </label>
+              <OtpInput
+                ref={inputRef}
+                id="verify-code"
+                name="code"
+                autoFocus
+                aria-describedby="verify-note"
+                value={verificationCode}
+                onChange={handleCodeChange}
+                onBlur={handleBlur}
+                invalid={showError}
+                shake={shakeCode}
+              />
+
+              {showError ? (
+                <p id="verify-note" role="alert" className="vf-note auth-message text-red-600">
+                  <CircleAlert className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                  {codeError}
+                </p>
+              ) : (
+                <p id="verify-note" className="vf-note text-gray-500">
+                  <Clock className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                  کد تا ۵ دقیقه اعتبار دارد
+                </p>
+              )}
+
+              <div className="mt-3">
+                <SubmitButton loading={isVerifying} loadingText="در حال تأیید..." icon={CheckCircle} disabled={verificationCode.length !== CODE_LENGTH}>
+                  تأیید
+                </SubmitButton>
+              </div>
+            </form>
+
+            <div className="vf-resend auth-rise" style={{ "--i": 3 }}>
+              <p className="text-xs leading-5 text-gray-500">کدی دریافت نکردید؟ پوشهٔ هرزنامه (Spam) را هم ببینید.</p>
+              <ResendButton cooldown={cooldown} total={RESEND_COOLDOWN_SEC} sending={isResending} onClick={sendNewCode} />
+            </div>
+          </div>
+
+          {verified && <VerifySuccess ms={REDIRECT_MS} />}
+        </div>
       </AuthCard>
     </AuthShell>
   );

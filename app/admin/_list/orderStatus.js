@@ -5,8 +5,9 @@ import { Hourglass, PackageCheck, Truck, Undo2 } from "lucide-react";
 const ink = (color) => `color-mix(in srgb, ${color} 62%, black)`;
 
 export const ORDER_STATUS = {
-  processing: { id: "processing", label: "جاری", tab: "جاری", noun: "سفارش جاری", color: "var(--viz-st-processing)", ink: ink("var(--viz-st-processing)"), icon: Truck },
-  delivered: { id: "delivered", label: "تحویل شده", tab: "تحویل داده شده", noun: "سفارش تحویل داده شده", color: "var(--viz-st-delivered)", ink: ink("var(--viz-st-delivered)"), icon: PackageCheck },
+  // flip: آیکون در صفحه‌های راست‌به‌چپ آینه می‌شود تا کامیون رو به چپ (جهت راه سفارش) باشد؛ lucide آن را رو به راست می‌کشد (تب‌ها و چیپ وضعیت)
+  processing: { id: "processing", label: "جاری", tab: "جاری", noun: "سفارش جاری", color: "var(--viz-st-processing)", ink: ink("var(--viz-st-processing)"), icon: Truck, flip: true },
+  delivered: { id: "delivered", label: "تحویل‌داده‌شده", tab: "تحویل‌داده‌شده", noun: "سفارش تحویل‌داده‌شده",color: "var(--viz-st-delivered)", ink: ink("var(--viz-st-delivered)"), icon: PackageCheck },
   returned: { id: "returned", label: "مرجوع شده", tab: "مرجوع شده", noun: "سفارش مرجوع شده", color: "var(--viz-st-returned)", ink: ink("var(--viz-st-returned)"), icon: Undo2 },
   pending: { id: "pending", label: "منتظر پرداخت", tab: "ناتمام", noun: "سفارش ناتمام", color: "var(--viz-st-pending)", ink: ink("var(--viz-st-pending)"), icon: Hourglass },
 };

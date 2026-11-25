@@ -1,24 +1,28 @@
 "use client";
 
-import { useEffect, useId, useMemo, useRef, useState } from "react";
-import { Banknote, CalendarCheck, Check, ChartLine, ChartNoAxesColumn, Crown, Sigma, Table2, TrendingDown, TrendingUp } from "lucide-react";
+import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { Banknote, CalendarCheck, Check, ChartLine, ChartNoAxesColumn, Crown, Download, History, Sigma, Table2, TrendingDown, TrendingUp } from "lucide-react";
 import { Empty } from "./Panel";
 import ScrollArea from "@/app/components/ScrollArea";
 import { compactText, dayLong, dayShort, fa, niceScale, rtl } from "./format";
 import { useReveal } from "@/app/admin/_ui/useReveal";
 import { useSegmentSlide } from "@/app/admin/_ui/useSegmentSlide";
 import { usePulseClock } from "@/app/admin/_ui/usePulseClock";
+import "./summary.css";
 
 // نمودار فروش روزانه (یک سری → منحنی نرم + ناحیهٔ شیب‌دار به رنگ برند، بدون legend چون عنوان پنل همین را می‌گوید).
 // جهت نمودار به خواست مالک چپ‌به‌راست است (جهت استاندارد نمودار): قدیمی‌ترین روز سمت چپ و امروز سمت راست، و محور عمودی با مبدأ پایین-چپ کنار چپ. نوشتهٔ برچسب‌ها فارسی و راست‌به‌چپ می‌ماند.
 // بالای نمودار نوار خلاصه (مجموع، میانگین روزانه که خط‌چین آن هم روی نمودار است، و بهترین روز) و روی نمودار نشانگر اوج با حلقهٔ ضربان‌دار است.
 // هر مقدار از سه راه در دسترس است: tooltip با موس/لمس (با تغییر نسبت به روز قبل)، همان tooltip با کلیدهای جهت‌دار، و نمای جدول با نوار داده.
-// حرکت (کشیده‌شدن خط، باز شدن ناحیه) وقتی شروع می‌شود که نمودار به صفحه برسد. ارتفاع: روی صفحهٔ پهن کمی بلندتر (هم‌قد پنل کناری)، روی گوشی کوتاه‌تر
-const H_WIDE = 364;
+// حرکت (کشیده‌شدن خط، باز شدن ناحیه) وقتی شروع می‌شود که نمودار به صفحه برسد. ارتفاع: روی صفحهٔ پهن کمی بلندتر، روی گوشی کوتاه‌تر (قبلاً ۳۶۴ بود؛ به خواست مالک کوتاه‌تر شد تا ردیف پنل‌ها در قاب داشبورد کم‌ارتفاع‌تر باشد)
+const H_WIDE = 300;
 const H_NARROW = 240;
+const TABLE_MAX = 336; // بلندترین ارتفاع جدول (۲۱rem)؛ روی قاب کوتاه‌تر جدول کوتاه می‌شود (useTableFit)
+const TABLE_MIN = 180; // کوتاه‌تر از این نمی‌شود: سرستون و دو سه ردیف
 const PAD = { top: 18, right: 10, bottom: 30, left: 54 };
 const TIP_W = 192;
 const TIP_H = 112;
+const TIP_PREV_H = 26; // ردیف اضافهٔ «هم‌روز دورهٔ قبل» وقتی لایهٔ مقایسه روشن است
 
 // منحنی یکنوای مکعبی (Fritsch–Carlson): بدون فرو رفتن زیر صفر یا بالاتر از اوج واقعی. نقطه‌ها به ترتیب رسم‌شدن‌اند (x یکنوا، اینجا نزولی)
 function smoothPath(pts) {
@@ -106,14 +110,17 @@ const TONES = {
   total: { tile: "bg-brand-50 text-brand-600 ring-brand-100", on: "ring-2 ring-brand-500/45", check: "bg-brand-600", stroke: "var(--viz-series)" },
   avg: { tile: "bg-violet-50 text-violet-600 ring-violet-100", on: "ring-2 ring-violet-300", check: "bg-violet-600", stroke: "var(--viz-avg)" },
   best: { tile: "bg-amber-50 text-amber-600 ring-amber-100", on: "ring-2 ring-amber-300", check: "bg-amber-600", stroke: "var(--viz-best)" },
+  // مقایسه با دورهٔ قبل (خط خاکستری) و خروجی CSV: رنگ خنثی، نه هشدار
+  prev: { tile: "bg-gray-100 text-gray-600 ring-gray-200", on: "ring-2 ring-gray-300", check: "bg-gray-600", stroke: "var(--viz-ink-3)" },
 };
 
 // نمونهٔ خط هر لایه همان‌طور که روی نمودار کشیده می‌شود: منحنی پیوسته، خط‌چین، نقطه‌چین با نشانگر
 function Swatch({ kind, on }) {
   const c = on ? TONES[kind].stroke : "var(--color-gray-300)";
   return (
-    <svg width="26" height="8" viewBox="0 0 26 8" aria-hidden="true" className="shrink-0">
+    <svg width="26" height="8" viewBox="0 0 26 8" aria-hidden="true" className="scs-sw shrink-0">
       {kind === "total" && <path d="M1 6.2 C 6 6.2, 8 2, 13 3.2 S 20 1.8, 25 1.8" fill="none" stroke={c} strokeWidth="2.2" strokeLinecap="round" />}
+      {kind === "prev" && <path d="M1 6.2 C 6 6.2, 8 2, 13 3.2 S 20 1.8, 25 1.8" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" />}
       {kind === "avg" && <line x1="1" x2="25" y1="4" y2="4" stroke={c} strokeWidth="1.8" strokeDasharray="5 3.5" strokeLinecap="round" />}
       {kind === "best" && (
         <>
@@ -125,17 +132,22 @@ function Swatch({ kind, on }) {
   );
 }
 
-function SummaryStrip({ stats, daily, layers = null, onToggle }) {
+// کارت چهارم (اگر باشد): در نمای نمودار «مقایسه با دورهٔ قبل» (prev = فروش دورهٔ قبل، و کلیدش مثل سه کارت دیگر لایه را روشن/خاموش می‌کند) و
+// در نمای جدول «خروجی CSV» (action) که جای همان کارت می‌نشیند تا در بالای پنل و بدون اسکرول در دسترس باشد
+function SummaryStrip({ stats, daily, layers = null, onToggle, prev = null, action = null }) {
   const best = stats.peak >= 0 ? daily[stats.peak] : null;
   const cards = [
     { id: "total", label: "مجموع فروش", value: stats.total, icon: Sigma },
     { id: "avg", label: "میانگین هر روز", value: stats.avg, icon: TrendingUp },
     { id: "best", label: `بهترین روز${best ? `: ${dayShort(best.date)}` : ""}`, value: stats.max, icon: Crown },
   ];
-  const card = "btn-flat flex w-full min-w-0 items-center gap-3 rounded-xl bg-gradient-to-l from-gray-50 to-white px-3 py-2.5 text-start";
-  const badge = "grid h-9 w-9 shrink-0 place-items-center rounded-xl ring-1 transition";
+  if (prev) cards.push({ id: "prev", label: "مقایسه با دورهٔ قبل", value: prev.total, icon: History });
+  const count = cards.length + (action ? 1 : 0);
+  const card = "scs-card btn-flat flex h-full w-full min-w-0 items-center gap-3 rounded-xl bg-gradient-to-l from-gray-50 to-white px-3 py-2.5 text-start";
+  const badge = "scs-badge grid h-9 w-9 shrink-0 place-items-center rounded-xl ring-1 transition";
   return (
-    <ul className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-3" aria-label="خلاصهٔ فروش دوره">
+    <div className="scs-wrap mb-4">
+    <ul className={`scs-grid grid grid-cols-1 gap-3 ${count === 3 ? "sm:grid-cols-3" : ""}`} data-n={count} aria-label="خلاصهٔ فروش دوره">
       {cards.map(({ id, label, value, icon: Icon }) => {
         const t = TONES[id];
         const on = !layers || layers[id];
@@ -145,18 +157,18 @@ function SummaryStrip({ stats, daily, layers = null, onToggle }) {
               <Icon className="h-[18px] w-[18px]" aria-hidden="true" />
             </span>
             <span className={`min-w-0 flex-1 transition-opacity ${on ? "" : "opacity-55"}`}>
-              <span className="flex items-center gap-1.5 text-xs text-gray-500">
+              <span className="scs-lbl flex flex-wrap items-center gap-x-1.5 text-xs text-gray-500">
                 {label}
                 {layers && <Swatch kind={id} on={on} />}
               </span>
-              <span className="block truncate text-sm font-extrabold text-gray-900">
+              <span className="scs-val block truncate text-sm font-extrabold text-gray-900">
                 {fa(Math.round(value))} <span className="text-xs font-medium text-gray-500">تومان</span>
               </span>
             </span>
             {layers && (
               <span
                 aria-hidden="true"
-                className={`grid h-[18px] w-[18px] shrink-0 place-items-center rounded-full transition-colors ${on ? `${t.check} text-white` : "bg-white text-transparent ring-1 ring-inset ring-gray-300"}`}
+                className={`scs-check grid h-[18px] w-[18px] shrink-0 place-items-center rounded-full transition-colors ${on ? `${t.check} text-white` : "bg-white text-transparent ring-1 ring-inset ring-gray-300"}`}
               >
                 <Check className="h-3 w-3" strokeWidth={3.2} />
               </span>
@@ -170,24 +182,111 @@ function SummaryStrip({ stats, daily, layers = null, onToggle }) {
                 type="button"
                 aria-pressed={on}
                 onClick={() => onToggle(id)}
+                style={{ "--sc": t.stroke }}
                 className={`${card} cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 ${on ? t.on : "ring-1 ring-gray-200"}`}
               >
                 {body}
               </button>
             ) : (
-              <div className={`${card} ring-1 ring-gray-100`}>{body}</div>
+              <div style={{ "--sc": t.stroke }} className={`${card} ring-1 ring-gray-100`}>
+                {body}
+              </div>
             )}
           </li>
         );
       })}
+      {action && (
+        <li>
+          <button
+            type="button"
+            onClick={action.onClick}
+            style={{ "--sc": TONES.prev.stroke }}
+            className={`${card} cursor-pointer ring-1 ring-gray-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500`}
+          >
+            <span className={`${badge} ${TONES.prev.tile}`}>
+              <Download className="h-[18px] w-[18px]" aria-hidden="true" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="scs-lbl block text-xs text-gray-500">{action.label}</span>
+              <span className="scs-val block truncate text-sm font-extrabold text-gray-900">
+                {fa(action.days)} روز <span className="text-xs font-medium text-gray-500">فروش و سفارش</span>
+              </span>
+            </span>
+          </button>
+        </li>
+      )}
     </ul>
+    </div>
   );
 }
 
-// نمای جدول: هر روز یک ردیف؛ زیر عدد فروش یک نوار داده (به نسبت بهترین روز) که با دیده‌شدن جدول از راست باز می‌شود، و بهترین روز تاج دارد
+// جمعه تعطیل است: کلید روز تهران ("2026-11-20") ظهر UTC می‌شود تا اختلاف ساعت روز را عوض نکند (مثل format.js)
+const isFriday = (key) => new Date(`${key}T12:00:00Z`).getUTCDay() === 5;
+
+// خروجی CSV نمای جدول (همان روزها و ترتیب جدول: جدیدترین اول). BOM اول فایل می‌آید تا اکسل فارسی را درست بخواند؛ عددها لاتین و بدون جداکننده‌اند تا اکسل عدد حسابشان کند.
+// همهٔ مقدارها را خود سیستم ساخته (تاریخ و عدد)، پس نیازی به پاک‌سازی علامت‌های فرمول نیست
+function downloadCsv(daily) {
+  const rows = [...daily].reverse();
+  const lines = [["تاریخ شمسی", "تاریخ میلادی", "فروش (تومان)", "تعداد سفارش"].join(",")];
+  for (const d of rows) lines.push([`"${dayLong(d.date)}"`, d.date, Math.round(d.revenue), d.orders].join(","));
+  const blob = new Blob([`\uFEFF${lines.join("\r\n")}`], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `sales-${daily[0].date}_${daily[daily.length - 1].date}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+// نمای جدول: هر روز یک ردیف؛ زیر عدد فروش یک نوار داده (به نسبت بهترین روز) که با دیده‌شدن جدول از راست باز می‌شود، و بهترین روز تاج دارد.
+// جمعه‌ها زمینهٔ زرد خیلی کم‌رنگ دارند و روز بدون فروش کم‌رنگ می‌شود. راهنمایشان بالای جدول است (نه زیر آن) تا برای دیدنش لازم نباشد صفحه اسکرول شود؛
+// دکمهٔ «خروجی CSV» هم کارت چهارم نوار خلاصهٔ بالاست.
+// ارتفاع جدول با قاب اسکرول داشبورد هماهنگ می‌شود (useTableFit): وقتی بالای پنل را به بالای قاب می‌آورند، پایین جدول هم دیده می‌شود و بقیه‌اش را اسکرول خود جدول نشان می‌دهد
+function useTableFit(scrollerRef) {
+  const [maxH, setMaxH] = useState(TABLE_MAX);
+  useLayoutEffect(() => {
+    const outer = scrollerRef.current?.parentElement; // لفاف بیرونی ScrollArea
+    const panel = outer?.closest("section");
+    const frame = outer?.closest(".sb-hide"); // اسکرولر صفحهٔ داشبورد (نزدیک‌ترین بالادستی؛ اسکرولر خود جدول زیرمجموعهٔ outer است)
+    if (!outer || !panel || !frame) return undefined;
+    // فضای لازم بالای جدول (سرتیتر پنل، کارت‌ها، راهنما) و پایین آن (padding پنل) از اختلاف مستطیل‌ها می‌آید، نه از ارتفاع خود پنل
+    // (پنل ممکن است هم‌قد پنل کناری کشیده شده باشد و آن وقت ارتفاعش به جدول بستگی ندارد). ۸ پیکسل = padding بالا و پایین اسکرولر داشبورد
+    const fit = () => {
+      const above = outer.getBoundingClientRect().top - panel.getBoundingClientRect().top;
+      const below = parseFloat(getComputedStyle(panel).paddingBottom) || 0;
+      setMaxH(Math.round(Math.min(TABLE_MAX, Math.max(TABLE_MIN, frame.clientHeight - 8 - above - below))));
+    };
+    fit();
+    const ro = new ResizeObserver(fit);
+    ro.observe(frame);
+    ro.observe(panel);
+    panel.querySelectorAll(".scs-wrap").forEach((el) => ro.observe(el)); // کارت‌ها وقتی عرض عوض شود و ردیفشان دو سطر شود
+    const legend = outer.parentElement.previousElementSibling; // راهنمای جمعه و روز بدون فروش
+    if (legend) ro.observe(legend);
+    return () => ro.disconnect();
+  }, [scrollerRef]);
+  return maxH;
+}
+
 function SalesTable({ daily, stats }) {
+  const scrollerRef = useRef(null);
+  const maxH = useTableFit(scrollerRef);
   return (
-    <ScrollArea className="max-h-[19rem] overflow-hidden rounded-xl ring-1 ring-gray-200" innerClassName="overflow-x-auto" topSelector="thead" lane capClassName="bg-gradient-to-b from-gray-50 to-gray-100/80">
+    <>
+    <p className="mb-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500">
+      <span className="inline-flex items-center gap-1.5">
+        <span aria-hidden="true" className="h-3 w-3 rounded bg-amber-100 ring-1 ring-amber-200" />
+        جمعه
+      </span>
+      <span className="inline-flex items-center gap-1.5">
+        <span aria-hidden="true" className="h-3 w-3 rounded bg-gray-100 opacity-60 ring-1 ring-gray-200" />
+        روز بدون فروش
+      </span>
+    </p>
+    <div style={{ "--tbl-max": `${maxH}px` }}>
+    <ScrollArea innerRef={scrollerRef} className="max-h-[var(--tbl-max)] overflow-hidden rounded-xl ring-1 ring-gray-200" innerClassName="overflow-x-auto" topSelector="thead" lane capClassName="bg-gradient-to-b from-gray-50 to-gray-100/80">
       <table className="w-full text-sm">
         <caption className="sr-only">فروش و تعداد سفارش پرداخت‌شدهٔ هر روز</caption>
         <thead className="sticky top-0 z-10 bg-gradient-to-b from-gray-50 to-gray-100/80 text-xs text-gray-500 backdrop-blur">
@@ -201,8 +300,10 @@ function SalesTable({ daily, stats }) {
           {[...daily].reverse().map((d, i) => {
             const share = stats.max > 0 ? (d.revenue / stats.max) * 100 : 0;
             const best = stats.peak >= 0 && d.date === daily[stats.peak].date;
+            const friday = isFriday(d.date);
+            const idle = d.revenue === 0 && d.orders === 0;
             return (
-              <tr key={d.date} className="transition-colors hover:bg-brand-50/50">
+              <tr key={d.date} className={`transition-colors hover:bg-brand-50/50 ${friday ? "bg-amber-50/50" : ""} ${idle ? "opacity-55" : ""}`}>
                 <th scope="row" className="whitespace-nowrap px-3 py-2 text-start font-normal text-gray-600">
                   <span className="inline-flex items-center gap-1.5">
                     {dayLong(d.date)}
@@ -226,17 +327,20 @@ function SalesTable({ daily, stats }) {
         </tbody>
       </table>
     </ScrollArea>
+    </div>
+    </>
   );
 }
 
-export default function SalesChart({ daily, view }) {
+export default function SalesChart({ daily, previousDaily, view }) {
   const [wrapRef, width] = useWidth();
   const [revealRef, shown] = useReveal();
   const H = width < 480 ? H_NARROW : H_WIDE;
   const [active, setActive] = useState(null);
   // لایه‌های نمودار که کارت‌های بالا روشن/خاموششان می‌کنند؛ plays با هر روشن‌شدنِ دوباره بالا می‌رود تا ورود لایه (کشیده‌شدن) از نو اجرا شود
-  const [layers, setLayers] = useState({ total: true, avg: true, best: true });
-  const [plays, setPlays] = useState({ total: 0, avg: 0, best: 0 });
+  // prev (خط مقایسه با دورهٔ قبل) به‌طور پیش‌فرض خاموش است تا نمودار همان شکل همیشگی را داشته باشد
+  const [layers, setLayers] = useState({ total: true, avg: true, best: true, prev: false });
+  const [plays, setPlays] = useState({ total: 0, avg: 0, best: 0, prev: 0 });
   const svgRef = useRef(null);
   const descId = useId();
   const gid = `sc${useId().replace(/:/g, "")}`;
@@ -249,13 +353,22 @@ export default function SalesChart({ daily, view }) {
     const orders = daily.reduce((a, d) => a + d.orders, 0);
     return { max, total, orders, avg: n ? total / n : 0, peak: max > 0 ? revenues.indexOf(max) : -1, scale: niceScale(max) };
   }, [daily, n]);
+  // دورهٔ قبل: فقط وقتی هم‌طول این دوره و دست‌کم یک روز فروش‌دار باشد مقایسه معنی دارد. سقف محور فقط وقتی خط روشن است به آن هم نگاه می‌کند
+  // (خاموش، نمودار دقیقاً همان مقیاس همیشگی را دارد)
+  const prevStats = useMemo(() => {
+    const revenues = (previousDaily ?? []).map((d) => d.revenue);
+    return { total: revenues.reduce((a, b) => a + b, 0), max: Math.max(0, ...revenues) };
+  }, [previousDaily]);
+  const hasPrev = Array.isArray(previousDaily) && previousDaily.length === n && prevStats.total > 0;
+  const showPrev = hasPrev && layers.prev;
+  const scale = useMemo(() => niceScale(showPrev ? Math.max(stats.max, prevStats.max) : stats.max), [showPrev, stats.max, prevStats.max]);
   usePulseClock(stats.peak >= 0 && view === "chart" && layers.best); // حلقهٔ نشانگر اوج هر چند ثانیه یک‌بار می‌زند
   const toggle = (id) => {
     if (!layers[id]) setPlays((p) => ({ ...p, [id]: p[id] + 1 }));
     if (id === "total" && layers.total) setActive(null); // بدون منحنی، tooltip روز معنی ندارد
     setLayers((l) => ({ ...l, [id]: !l[id] }));
   };
-  const nothing = !layers.total && !layers.avg && !layers.best;
+  const nothing = !layers.total && !layers.avg && !layers.best && !showPrev;
 
   if (stats.total === 0) {
     return (
@@ -268,7 +381,7 @@ export default function SalesChart({ daily, view }) {
   if (view === "table") {
     return (
       <div ref={wrapRef}>
-        <SummaryStrip stats={stats} daily={daily} />
+        <SummaryStrip stats={stats} daily={daily} action={{ label: "خروجی CSV", days: n, onClick: () => downloadCsv(daily) }} />
         <div ref={revealRef} data-in={shown ? "" : undefined}>
           <SalesTable daily={daily} stats={stats} />
         </div>
@@ -280,9 +393,12 @@ export default function SalesChart({ daily, view }) {
   const plotH = H - PAD.top - PAD.bottom;
   const stepX = n > 1 ? plotW / (n - 1) : 0;
   const x = (i) => PAD.left + i * stepX;
-  const y = (v) => PAD.top + plotH - (v / stats.scale.max) * plotH;
-  const ticks = Array.from({ length: Math.round(stats.scale.max / stats.scale.step) + 1 }, (_, k) => k * stats.scale.step);
+  const y = (v) => PAD.top + plotH - (v / scale.max) * plotH;
+  const ticks = Array.from({ length: Math.round(scale.max / scale.step) + 1 }, (_, k) => k * scale.step);
   const line = smoothPath(daily.map((d, i) => [x(i), y(d.revenue)]));
+  // خط مقایسه: فروش روزانهٔ دورهٔ قبل، روز i روی همان x روز i این دوره (همان منحنی یکنوا)
+  const prevLine = hasPrev ? smoothPath(previousDaily.map((d, i) => [x(i), y(d.revenue)])) : null;
+  const prevChange = hasPrev ? Math.round(((stats.total - prevStats.total) / prevStats.total) * 100) : null;
   const area = `${line} L${x(n - 1).toFixed(1)} ${y(0).toFixed(1)} L${x(0).toFixed(1)} ${y(0).toFixed(1)} Z`;
 
   const every = Math.max(1, Math.round((n - 1) / 5));
@@ -309,9 +425,12 @@ export default function SalesChart({ daily, view }) {
   // تغییر نسبت به روز قبل از آن (قدیمی‌تر = اندیس بعدی)؛ بدون روز قبل یا با فروش صفر روز قبل، درصدی معنی ندارد
   const prev = active !== null && active + 1 < n ? daily[active + 1] : null;
   const dayChange = a && prev && prev.revenue > 0 ? Math.round(((a.revenue - prev.revenue) / prev.revenue) * 100) : null;
+  // هم‌روز دورهٔ قبل برای tooltip (فقط وقتی خط مقایسه روشن است)
+  const pa = a && showPrev ? previousDaily[active] : null;
+  const tipH = TIP_H + (pa ? TIP_PREV_H : 0);
   const tipX = a ? Math.min(width - TIP_W / 2, Math.max(TIP_W / 2, x(active))) : 0;
   // tooltip بالای نقطه می‌نشیند و اگر جا نبود زیر آن، تا خط را نپوشاند
-  const tipTop = a ? (y(a.revenue) - TIP_H - 14 < 0 ? y(a.revenue) + 16 : y(a.revenue) - TIP_H - 14) : 0;
+  const tipTop = a ? (y(a.revenue) - tipH - 14 < 0 ? y(a.revenue) + 16 : y(a.revenue) - tipH - 14) : 0;
 
   const peakX = stats.peak >= 0 ? x(stats.peak) : 0;
   const peakY = stats.peak >= 0 ? y(stats.max) : 0;
@@ -322,7 +441,31 @@ export default function SalesChart({ daily, view }) {
 
   return (
     <div ref={wrapRef}>
-      <SummaryStrip stats={stats} daily={daily} layers={layers} onToggle={toggle} />
+      <SummaryStrip stats={stats} daily={daily} layers={layers} onToggle={toggle} prev={hasPrev ? { total: prevStats.total } : null} />
+      {/* وقتی خط مقایسه روشن است، زیر کارت‌ها تغییر مجموع فروش نسبت به دورهٔ قبل با درصد می‌آید. ردیف با گذار ارتفاع (grid-rows) باز و بسته می‌شود تا نمودار نپرد */}
+      {hasPrev && (
+        <div className={`grid transition-[grid-template-rows,opacity] duration-300 ${showPrev ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`} aria-live="polite">
+          <div className="min-h-0 overflow-hidden">
+            <p className="flex flex-wrap items-center gap-x-2 gap-y-1 pb-3 text-xs text-gray-500">
+              {showPrev && prevChange !== null && prevChange !== 0 && (
+                <span
+                  className="inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[11px] font-bold"
+                  style={
+                    prevChange > 0
+                      ? { background: "color-mix(in srgb, var(--viz-st-delivered) 14%, white)", color: "var(--viz-good-text)" }
+                      : { background: "color-mix(in srgb, var(--viz-st-returned) 12%, white)", color: "color-mix(in srgb, var(--viz-bad-text) 82%, black)" }
+                  }
+                >
+                  {prevChange > 0 ? <TrendingUp className="h-3 w-3" aria-hidden="true" /> : <TrendingDown className="h-3 w-3" aria-hidden="true" />}
+                  {fa(Math.abs(prevChange))}٪ {prevChange > 0 ? "بیشتر" : "کمتر"} از دورهٔ قبل
+                </span>
+              )}
+              {showPrev && prevChange === 0 && <span className="font-semibold text-gray-600">بدون تغییر نسبت به دورهٔ قبل</span>}
+              {showPrev && <span>مقایسهٔ {fa(n)} روز اخیر با {fa(n)} روز پیش از آن</span>}
+            </p>
+          </div>
+        </div>
+      )}
       <div
         ref={revealRef}
         data-in={shown ? "" : undefined}
@@ -336,7 +479,9 @@ export default function SalesChart({ daily, view }) {
         onBlur={() => setActive(null)}
       >
         <span id={descId} className="sr-only" aria-live="polite">
-          {a ? `${dayLong(a.date)}: ${fa(a.revenue)} تومان فروش، ${fa(a.orders)} سفارش` : `مجموع ${fa(stats.total)} تومان در ${fa(stats.orders)} سفارش`}
+          {a
+            ? `${dayLong(a.date)}: ${fa(a.revenue)} تومان فروش، ${fa(a.orders)} سفارش${pa ? `؛ هم‌روز دورهٔ قبل ${fa(pa.revenue)} تومان` : ""}`
+            : `مجموع ${fa(stats.total)} تومان در ${fa(stats.orders)} سفارش`}
         </span>
         {width > 0 && (
           <svg
@@ -419,6 +564,21 @@ export default function SalesChart({ daily, view }) {
               </g>
             )}
 
+            {/* خط مقایسه با دورهٔ قبل: منحنی نازک خاکستری زیر منحنی اصلی (شکل منحنی با خط‌چین‌های میانگین و بهترین روز فرق دارد و رنگ خنثی است، نه هشدار) */}
+            {hasPrev && (
+              <g
+                key={`prev${plays.prev}`}
+                className="chart-layer chart-wipe"
+                data-layer="prev"
+                data-off={layers.prev ? undefined : ""}
+                style={{ "--wipe-delay": "0s" }}
+                pointerEvents="none"
+              >
+                <rect x={PAD.left} y={PAD.top} width={plotW} height={plotH} fill="none" />
+                <path d={prevLine} fill="none" stroke="var(--viz-ink-3)" strokeOpacity="0.85" strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round" />
+              </g>
+            )}
+
             <g key={`total${plays.total}`} className="chart-layer" data-layer="total" data-off={layers.total ? undefined : ""}>
               <path className="dash-area" d={area} fill={`url(#${gid}a)`} />
               <path
@@ -465,6 +625,7 @@ export default function SalesChart({ daily, view }) {
                   fill={`url(#${gid}b)`}
                 />
                 <line x1={x(active)} x2={x(active)} y1={PAD.top} y2={y(0)} stroke="var(--viz-ink-3)" strokeWidth="1" strokeDasharray="3 3" />
+                {pa && <circle cx={x(active)} cy={y(pa.revenue)} r="4" fill="var(--viz-ink-3)" stroke="var(--viz-surface)" strokeWidth="2" />}
                 <circle cx={x(active)} cy={y(a.revenue)} r="9" fill="var(--viz-series)" fillOpacity="0.18" />
                 <circle cx={x(active)} cy={y(a.revenue)} r="5" fill="var(--viz-series)" stroke="var(--viz-surface)" strokeWidth="2.5" />
               </g>
@@ -490,6 +651,15 @@ export default function SalesChart({ daily, view }) {
               <span className="text-base font-extrabold tabular-nums text-gray-900">{fa(a.revenue)}</span>
               <span className="text-gray-500">تومان</span>
             </p>
+            {pa && (
+              <p className="mt-1.5 flex items-center justify-between gap-2 text-[11px] text-gray-500">
+                <span className="inline-flex items-center gap-1.5">
+                  <span aria-hidden="true" className="h-2 w-2 rounded-full bg-gray-500" />
+                  دورهٔ قبل · {dayShort(pa.date)}
+                </span>
+                <b className="font-bold tabular-nums text-gray-700">{fa(pa.revenue)}</b>
+              </p>
+            )}
             <div className="mt-2 flex items-center justify-between gap-2 border-t border-gray-100 pt-2 text-gray-500">
               <span>
                 سفارش‌ها: <span className="inline-block min-w-6 rounded-full bg-gray-100 px-2 py-0.5 text-center align-middle text-[11px] font-bold tabular-nums text-gray-700 ring-1 ring-inset ring-gray-200">{fa(a.orders)}</span>

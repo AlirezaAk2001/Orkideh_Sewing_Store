@@ -9,8 +9,9 @@ export default function StatusChip({ status, className = "" }) {
   const Icon = s.icon;
   return (
     <span className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-bold leading-none ${className}`} style={statusTint(s)}>
-      <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full" style={{ background: s.color }} />
-      <Icon className="h-3.5 w-3.5" aria-hidden="true" />
+      {/* نقطهٔ «جاری» مثل نقطه‌های وضعیت دیگر سایت می‌تپد و هاله می‌دهد (beat-dot در globals.css)؛ بقیهٔ وضعیت‌ها ساکن‌اند */}
+      <span aria-hidden="true" className={`h-1.5 w-1.5 rounded-full ${status === "processing" ? "beat-dot" : ""}`} style={{ background: s.color }} />
+      <Icon className={`h-3.5 w-3.5 ${s.flip ? "-scale-x-100" : ""}`} aria-hidden="true" />
       {s.label}
     </span>
   );

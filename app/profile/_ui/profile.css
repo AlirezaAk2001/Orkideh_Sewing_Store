@@ -297,6 +297,12 @@
 .pf .steps li.future .tx b { color: rgb(255 255 255 / 0.55); }
 /* جهت‌دار بودن آیکون کامیون: صفحه راست‌به‌چپ است و مراحل به چپ می‌روند، پس کامیون هم رو به چپ می‌رود (lucide آن را رو به راست می‌کشد) */
 .pf svg.lucide-truck { scale: -1 1; }
+/* سفارش جاری: کامیونِ مرحلهٔ در انتظار «ارسال» کمی به سمت مقصد (چپ) می‌رود و برمی‌گردد (همان حرکت کامیون خط زمان سفارش‌های پنل ادمین: ۲٫۲ ثانیه، ۲٫۵ پیکسل).
+   translate از scale آینه‌سازی جداست، پس جابه‌جایی واقعاً به چپ است؛ با «کاهش حرکت» ثابت است */
+@media (prefers-reduced-motion: no-preference) {
+  .pf .steps[data-status="processing"] .dot svg.lucide-truck { animation: pf-drive 2.2s ease-in-out infinite; }
+}
+@keyframes pf-drive { 0%, 100% { translate: 0 0; } 50% { translate: -2.5px 0; } }
 /* آیکون تحویل (جعبه و دست): همان منطق کامیون، دست بسته را به سمت چپ تحویل می‌دهد (در طرح اصلی به راست بود). دو تکهٔ توپُر دارد و خطش باید نازک بماند؛ در نقطهٔ مرحله و کنار عنوان کاشی چند پیکسل بزرگ‌تر از آیکون‌های دیگر کشیده می‌شود تا جزئیاتش باز بماند */
 .pf svg.handover { scale: -1 1; }
 .pf .dot svg.handover { width: 26px; height: 26px; stroke-width: 1.4; }

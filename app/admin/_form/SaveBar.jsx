@@ -4,7 +4,8 @@ import Link from "next/link";
 import { Loader2, Save, X } from "lucide-react";
 
 // نوار ذخیرهٔ چسبان پایین فرم‌ها: همیشه در دسترس است (حتی وسط فرم بلند محصول). سمت شروع وضعیت را می‌گوید (چه چیزی لازم است، تغییر ذخیره‌نشده، آپلود در جریان)،
-// سمت پایان «انصراف» (برگشت به فهرست، بدون ذخیره) و دکمهٔ اصلی. tone: "ready" سبز، "dirty" کهربایی، "idle" خاکستری. وقتی disabled است، status دلیلش را می‌گوید.
+// سمت پایان «انصراف» (برگشت به فهرست، بدون ذخیره) و دکمهٔ اصلی. tone: "ready" سبز و "dirty" کهربایی (نقطهٔ هر دو می‌تپد: همان تپش beat-dot نقطه‌های وضعیت
+// داشبورد و سفارش‌ها)، "idle" خاکستری و ثابت. وقتی disabled است، status دلیلش را می‌گوید.
 // داخل <form> قرار می‌گیرد، پس دکمهٔ ذخیره type=submit است و همان handleSubmit صفحه کار می‌کند
 const DOT = { ready: "bg-emerald-500", dirty: "bg-amber-500", idle: "bg-gray-300" };
 
@@ -13,7 +14,7 @@ export default function SaveBar({ saving = false, disabled = false, label, backH
     <div className="sticky bottom-0 z-20 mt-5">
       <div className="flex flex-wrap items-center gap-3 rounded-2xl bg-white/90 px-4 py-3 shadow-[0_14px_34px_-14px_rgb(0_0_0/0.3)] ring-1 ring-gray-200 backdrop-blur-sm">
         <p role="status" aria-live="polite" className="flex min-w-0 flex-1 basis-48 items-center gap-2 text-sm text-gray-600">
-          <span aria-hidden="true" className={`h-2.5 w-2.5 shrink-0 rounded-full ${DOT[tone]}`} />
+          <span aria-hidden="true" className={`h-2.5 w-2.5 shrink-0 rounded-full ${DOT[tone]} ${tone === "idle" ? "" : "beat-dot"}`} />
           <span className="min-w-0">{status}</span>
         </p>
         <div className="flex w-full items-center gap-2 sm:w-auto">

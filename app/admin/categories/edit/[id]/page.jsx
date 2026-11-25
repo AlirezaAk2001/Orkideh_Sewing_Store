@@ -10,6 +10,7 @@ import PageHeader from "@/app/admin/_shell/PageHeader";
 import FormSection from "@/app/admin/_form/FormSection";
 import { TextInput } from "@/app/admin/_form/Fields";
 import SaveBar from "@/app/admin/_form/SaveBar";
+import UnsavedGuard from "@/app/admin/_form/UnsavedGuard";
 import ImagePreviewField from "@/app/admin/_form/ImagePreviewField";
 import { useImagePreview } from "@/app/admin/_form/useImagePreview";
 
@@ -98,7 +99,7 @@ export default function EditCategory() {
   // ⏳ حالت لودینگ
   if (loading) {
     return (
-      <PageLoader className="min-h-[60vh]" label="در حال بارگذاری جزئیات دسته‌بندی..." />
+      <PageLoader className="h-[100cqh]" label="در حال بارگذاری جزئیات دسته‌بندی..." />
     );
   }
 
@@ -113,8 +114,8 @@ export default function EditCategory() {
         subtitle={initialData.name ? <>در حال ویرایش «<b>{initialData.name}</b>»</> : undefined}
       />
 
-      <form onSubmit={handleSubmit}>
-        <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,26rem)]">
+      <form onSubmit={handleSubmit} noValidate>
+        <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)]">
           <FormSection index={0} icon={Shapes} title="اطلاعات دسته‌بندی" hint="نام در منوی فروشگاه و آدرس صفحه در لینک‌ها دیده می‌شود">
             <div className="grid gap-4">
               <TextInput label="نام دسته‌بندی" required placeholder="مثال: چرخ خیاطی" value={name} onChange={(e) => setName(e.target.value)} />
@@ -138,7 +139,6 @@ export default function EditCategory() {
               preview={img}
               label="آدرس تصویر"
               placeholder="مثال: y.png"
-              hint="اختیاری. با آپلود خودکار پر می‌شود؛ یا نام فایلی از پوشهٔ public/image را بنویسید، یا آدرس کامل"
               removable
               onBusyChange={setUploading}
               disabled={isSaving}
@@ -146,6 +146,7 @@ export default function EditCategory() {
           </FormSection>
         </div>
 
+        <UnsavedGuard when={Boolean(hasChanged) && !isSaving} />
         <SaveBar label="ذخیرهٔ تغییرات" backHref="/admin/categories" saving={isSaving} disabled={uploading || !hasChanged} tone={uploading || missing.length || hasChanged ? "dirty" : "idle"} status={status} />
       </form>
     </>

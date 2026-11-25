@@ -1,0 +1,151 @@
+/* حلقهٔ وضعیت سفارش‌های داشبورد ادمین (StatusDonut.jsx؛ پیشوند sdn-): دقیقاً همان ظاهر و حرکت حلقهٔ «آمار سفارش‌ها» در پنل کاربر (.pf .donut در app/profile/_ui/profile.css):
+   حلقهٔ نازک با سر گرد و شکاف میان قطعه‌ها، خط نور سفیدی که هر چند ثانیه یک دور می‌گردد و عدد درشت وسط. اگر آنجا چیزی عوض شد، اینجا هم عوض شود.
+   فقط خود حلقه است؛ لجند زیر آن (ردیف‌های آیکون‌دار با نوار درصد) استایل قبلی ادمین را دارد و در StatusDonut.jsx با Tailwind و .bar-row نوشته شده.
+   نام‌ها پیشوند دارند چون .seg و .trk و ... در جاهای دیگر سایت معنی دارند. */
+.sdn {
+  --sdn-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --sdn-ink: var(--color-gray-900);
+  --sdn-ink3: #93849d;
+}
+
+.sdn-ring {
+  position: relative;
+  width: 176px;
+  height: 176px;
+  flex: none;
+}
+
+/* لجند زیر حلقه (ردیف‌های آیکون‌دار با نوار درصد؛ ظاهر هر ردیف همان قبلی است): لفاف container است و وقتی از ۲۱ rem پهن‌تر باشد، چهار ردیف دوتا‌دوتا در دو سطر
+   می‌نشینند (ردیف اول سمت راست: تحویل شده، جاری؛ ردیف دوم: مرجوع شده، منتظر پرداخت). باریک‌تر از آن همان یک ستون است. margin: 0 فاصلهٔ space-y-1 را برای شبکه خنثی می‌کند */
+.sdn-leg {
+  container: sdnleg / inline-size;
+}
+@container sdnleg (min-width: 21rem) {
+  .sdn-leg .bar-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.25rem 0.5rem;
+  }
+  .sdn-leg .bar-list > li {
+    margin: 0;
+  }
+}
+.sdn-ring svg {
+  width: 100%;
+  height: 100%;
+  rotate: -90deg;
+  overflow: visible;
+}
+.sdn-ring circle {
+  fill: none;
+  stroke-width: 5.2;
+  transition: stroke-width 0.25s, opacity 0.25s;
+}
+.sdn-ring .sdn-trk {
+  stroke: rgb(80 30 90 / 0.07);
+}
+.sdn-ring .sdn-seg {
+  stroke-linecap: round;
+  stroke-dasharray: 0 100;
+  transition: stroke-dasharray 1.2s var(--sdn-ease), stroke-width 0.25s, opacity 0.25s;
+}
+.sdn-ring.dim .sdn-seg {
+  opacity: 0.25;
+}
+.sdn-ring.dim .sdn-seg.hot {
+  opacity: 1;
+  stroke-width: 6.6;
+}
+
+/* خط نور حلقه: یک خط باریک سفید با دُم کم‌رنگ، روی خط مرکزی قطعه‌ها، که هر چند ثانیه یک بار یک دور در جهت عقربه‌ها می‌چرخد. سه دایرهٔ هم‌مرکز با طول‌های متفاوت (هسته، میانه، دُم)
+   سر خط را روی یک نقطه دارند و با هم می‌روند. ماسکش کپی خود قطعه‌هاست (.sdn-mk)، پس فقط روی رنگ‌ها دیده می‌شود، نه شکاف‌ها. با هاور روی یک قطعه (یا کارتش) فقط ماسک همان قطعه می‌ماند
+   و خط از ابتدا تا انتهای آن می‌گذرد. --s سر خط در شروع و --e در پایان (درصد محیط؛ شعاع ۱۵٫۹۱۵۵ یعنی محیط ۱۰۰)، --d طول چرخه، --w تأخیر شروع و --o طول همان دایره (تا سر خط روی یک
+   نقطه بماند). فاصلهٔ dashها ۱۰۰۰ است تا الگو روی دایره تکرار نشود. حرکت تا ۶۰٪ چرخه و بقیه مکث (SWEEP_MOVE در StatusDonut.jsx). با «کاهش حرکت» دیده نمی‌شود */
+.sdn-ring .sdn-mk {
+  stroke: #fff;
+  stroke-linecap: round;
+  stroke-dasharray: 0 100;
+  transition: stroke-dasharray 1.2s var(--sdn-ease), stroke-width 0.25s;
+}
+.sdn-ring .sdn-sw {
+  stroke: #fff;
+  stroke-linecap: round;
+  pointer-events: none;
+  opacity: 0;
+  transition: none;
+  animation: sdn-sw-move var(--d) linear var(--w) infinite, sdn-sw-fade var(--d) linear var(--w) infinite;
+}
+.sdn-ring .sdn-sw.core {
+  stroke-width: 1.5;
+  stroke-dasharray: 3 1000;
+  stroke-opacity: 0.95;
+  --o: 3;
+}
+.sdn-ring .sdn-sw.mid {
+  stroke-linecap: butt;
+  stroke-width: 1.2;
+  stroke-dasharray: 8 1000;
+  stroke-opacity: 0.4;
+  --o: 8;
+}
+.sdn-ring .sdn-sw.tail {
+  stroke-linecap: butt;
+  stroke-width: 0.8;
+  stroke-dasharray: 15 1000;
+  stroke-opacity: 0.22;
+  --o: 15;
+}
+@keyframes sdn-sw-move {
+  0% {
+    stroke-dashoffset: calc((var(--o) - var(--s)) * 1px);
+  }
+  60%,
+  100% {
+    stroke-dashoffset: calc((var(--o) - var(--e)) * 1px);
+  }
+}
+@keyframes sdn-sw-fade {
+  0% {
+    opacity: 0;
+  }
+  3% {
+    opacity: 1;
+  }
+  55% {
+    opacity: 1;
+  }
+  60%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.sdn-mid {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  line-height: 1.2;
+}
+.sdn-mid b {
+  font-size: 34px;
+  font-weight: 800;
+  color: var(--sdn-ink);
+  font-variant-numeric: tabular-nums;
+}
+.sdn-mid span {
+  font-size: 12px;
+  color: var(--sdn-ink3);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sdn-ring .sdn-sw {
+    display: none;
+  }
+  .sdn-ring .sdn-seg,
+  .sdn-ring .sdn-mk {
+    transition: none;
+  }
+}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CalendarDays, FlaskConical, LayoutDashboard } from "lucide-react";
+import { CalendarDays, FlaskConical, LayoutDashboard, TrendingUp } from "lucide-react";
 import Icon from "@mdi/react";
 import { mdiCalendarMonthOutline, mdiCalendarMultiselectOutline, mdiCalendarWeekBeginOutline } from "@mdi/js";
 import { dayFull, fa } from "./format";
@@ -40,7 +40,18 @@ export default function DashboardHero({ summary, days, setDays, loading, demoAva
           <h1 id="dash-title" className="mt-1.5 text-2xl font-extrabold sm:text-3xl">
             داشبورد مدیریت
           </h1>
-          <p className="mt-2 min-h-7 max-w-xl text-sm leading-7 text-white/90">{summary}</p>
+          {/* خلاصهٔ دوره در چیپ شیشه‌ای، همان چیپ‌های کارت صورتی پروفایل (.pf .hero-meta li: زمینهٔ سفید ۱۵٪، حلقهٔ سفید ۲۵٪، تاری پس‌زمینه، کاشی آیکون ۳۶ پیکسلی).
+              min-h-[3.25rem] = ارتفاع چیپ؛ تا داده نرسیده جایش خالی می‌ماند و کارت با آمدن چیپ نمی‌پرد */}
+          <div className="mt-3 min-h-[3.25rem]">
+            {summary && (
+              <p className="inline-flex max-w-xl items-center gap-3 rounded-2xl bg-white/15 py-2 pe-3.5 ps-4 text-sm font-semibold leading-6 text-white ring-1 ring-white/25 backdrop-blur-sm">
+                <span aria-hidden="true" className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-white/20">
+                  <TrendingUp className="h-[19px] w-[19px]" />
+                </span>
+                <span className="min-w-0">{summary}</span>
+              </p>
+            )}
+          </div>
         </div>
 
         <div className="flex flex-col items-start gap-2.5 sm:items-end">

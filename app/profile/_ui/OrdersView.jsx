@@ -17,7 +17,7 @@ import { Empty, HeadChip, ST, Stack, Thumb, ViewHead, countByStatus } from "./pa
 const FILTERS = [
   ["all", "همه"],
   ["processing", "جاری"],
-  ["delivered", "تحویل شده"],
+  ["delivered", "تحویل‌داده‌شده"],
   ["returned", "مرجوع"],
   ["pending", "ناتمام"],
 ];

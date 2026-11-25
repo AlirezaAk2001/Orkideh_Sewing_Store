@@ -1,0 +1,108 @@
+/* جدول‌های پنل مدیریت (DataTable.jsx و Pagination.jsx؛ پیشوند alst-): سرستون‌های مرتب‌شدنی، نوار بارگذاری بالای جدول و قرص لغزان صفحهٔ فعال در صفحه‌بندی.
+   فقط transform و opacity حرکت می‌کنند و با «کاهش حرکت» همه خاموش‌اند. رنگ‌ها از تم سایت (--color-brand-*) می‌آیند. */
+
+/* ═════════ سرستون مرتب‌شدنی ═════════
+   دکمهٔ بی‌زمینه با فلش: بدون ترتیب فلش دوطرفهٔ کم‌رنگ، با ترتیب فلش رو به بالا (صعودی) یا چرخیده به پایین (نزولی) و متن صورتی */
+.alst-sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin: -2px -6px;
+  padding: 2px 6px;
+  border-radius: 8px;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+}
+.alst-sort:hover {
+  color: var(--color-gray-900);
+  background: #fff;
+}
+.alst-sort:focus-visible {
+  outline: 2px solid var(--color-brand-300);
+  outline-offset: 1px;
+}
+.alst-sort svg {
+  width: 14px;
+  height: 14px;
+  opacity: 0.45;
+  transition: transform 0.3s cubic-bezier(0.34, 1.5, 0.5, 1), opacity 0.2s;
+}
+.alst-sort:hover svg {
+  opacity: 0.8;
+}
+.alst-sort[data-dir] {
+  color: var(--color-brand-700);
+}
+.alst-sort[data-dir] svg {
+  opacity: 1;
+}
+.alst-sort[data-dir="desc"] svg {
+  transform: rotate(180deg);
+}
+
+/* ═════════ نوار بارگذاری ═════════
+   وقتی دادهٔ موجود دوباره گرفته می‌شود (تغییر دسته، پس از حذف) یک خط نازک صورتی روی لبهٔ بالای جدول از کنار به کنار می‌دود */
+.alst-busy {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  z-index: 20;
+  height: 2px;
+  overflow: hidden;
+  pointer-events: none;
+}
+.alst-busy::before {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  width: 38%;
+  background: linear-gradient(90deg, transparent, var(--color-brand-500), transparent);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .alst-busy::before {
+    animation: alst-busy 1.1s ease-in-out infinite;
+  }
+}
+@keyframes alst-busy {
+  from {
+    transform: translateX(-110%);
+  }
+  to {
+    transform: translateX(270%);
+  }
+}
+
+/* ═════════ قرص لغزان صفحه‌بندی (useSlidePill) ═════════
+   زیر دکمهٔ صفحهٔ فعال می‌نشیند و با عوض شدن صفحه می‌لغزد؛ تا ننشسته، دکمهٔ فعال پس‌زمینهٔ خودش را دارد */
+.alst-pg-nav {
+  position: relative;
+  isolation: isolate;
+}
+.alst-pg-pill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  width: 0;
+  height: 0;
+  border-radius: 8px;
+  pointer-events: none;
+  background: linear-gradient(135deg, var(--color-brand-500), var(--color-brand-700));
+  box-shadow: 0 8px 16px -8px rgb(190 24 93 / 0.65);
+  transition: transform 0.5s cubic-bezier(0.34, 1.25, 0.5, 1), width 0.4s cubic-bezier(0.2, 0.7, 0.2, 1), height 0.4s;
+}
+:not([data-pill]) > .alst-pg-pill {
+  visibility: hidden;
+}
+[data-pill] .alst-pg[aria-current="page"] {
+  background: transparent;
+  box-shadow: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .alst-pg-pill {
+    transition: none;
+  }
+}

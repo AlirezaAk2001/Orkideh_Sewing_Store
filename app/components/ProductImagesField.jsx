@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { ArrowLeft, ArrowRight, ImagePlus, Plus, Star } from "lucide-react";
+import { ArrowLeft, ArrowRight, FileImage, ImagePlus, Plus, Star } from "lucide-react";
 import { TrashCan } from "./ActionIcons";
 import AppImage from "./AppImage";
+import CollapseCard from "@/app/admin/_form/CollapseCard";
+import { FloatLabel } from "@/app/admin/_form/Fields";
 import { MAX_PRODUCT_IMAGES, isAcceptableImageRef } from "@/lib/productImages";
 
 // گالری تصویر محصول در فرم‌های افزودن و ویرایش ادمین. value آرایهٔ تصویرهاست و اولین مورد تصویر اصلی (کاور) است؛
@@ -26,11 +28,21 @@ export default function ProductImagesField({ value, onChange, onBusyChange, disa
   const [pending, setPending] = useState([]); // آپلودهای در جریان: [{ id, name }]
   const [dragging, setDragging] = useState(false);
   const [nameInput, setNameInput] = useState("");
+  const [nameOpen, setNameOpen] = useState(false); // کارت «افزودن با نام فایل» باز است
+  const nameId = useId();
+  const nameRef = useRef(null);
   const inputRef = useRef(null);
 
   useEffect(() => {
     onBusyChange?.(pending.length > 0);
   }, [pending.length, onBusyChange]);
+
+  // با باز شدن کارت، فیلد نام فایل فوکوس می‌گیرد (بعد از شروع انیمیشن تا inert برداشته شده باشد)؛ preventScroll تا صفحه نپرد
+  useEffect(() => {
+    if (!nameOpen) return undefined;
+    const t = setTimeout(() => nameRef.current?.focus({ preventScroll: true }), 120);
+    return () => clearTimeout(t);
+  }, [nameOpen]);
 
   const room = MAX_PRODUCT_IMAGES - value.length - pending.length;
   const full = room <= 0;
@@ -216,35 +228,51 @@ export default function ProductImagesField({ value, onChange, onBusyChange, disa
         </ul>
       )}
 
-      <details className="mt-4 rounded-xl bg-gray-50 px-3.5 py-2.5 text-sm text-gray-600 ring-1 ring-gray-100">
-        <summary className="cursor-pointer select-none text-xs font-medium text-gray-600 hover:text-gray-900">افزودن با نام فایل (تصویرهایی که از قبل داخل پوشهٔ public/image گذاشته‌اید)</summary>
-        <div className="mt-3 flex gap-2">
-          <input
-            dir="ltr"
-            value={nameInput}
-            onChange={(event) => setNameInput(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === "Enter") {
-                event.preventDefault();
-                addByName();
-              }
-            }}
-            placeholder="مثال: janome1.jpeg"
-            aria-label="نام فایل تصویر"
-            disabled={disabled}
-            className="h-10 min-w-0 flex-1 rounded-xl border border-gray-300 bg-white px-3 text-left text-sm outline-none transition hover:border-gray-400 focus:border-brand-500 focus:ring-4 focus:ring-brand-100"
-          />
+      {/* افزودن با نام فایل: کارت جمع‌شونده مشترک پنل (CollapseCard؛ همان کارت «ثبت با نام فایل یا آدرس» فرم بنر و دسته‌بندی). باز شد، فیلد نام فوکوس می‌گیرد (effect بالا) */}
+      <CollapseCard
+        className="mt-4"
+        icon={FileImage}
+        title="افزودن با نام فایل"
+        subtitle={
+          <>
+            تصویرهایی که از قبل داخل پوشهٔ <bdi dir="ltr">public/image</bdi> گذاشته‌اید
+          </>
+        }
+        open={nameOpen}
+        onToggle={() => setNameOpen((open) => !open)}
+      >
+        {/* باکس و دکمه هم مثل فیلدهای دیگر پنل ۴۴px‌اند (h-11) */}
+        <div className="flex gap-2">
+          <div className="ff relative min-w-0 flex-1">
+            <input
+              ref={nameRef}
+              id={`${nameId}-input`}
+              dir="ltr"
+              value={nameInput}
+              onChange={(event) => setNameInput(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.preventDefault();
+                  addByName();
+                }
+              }}
+              placeholder="مثال: janome1.jpeg"
+              disabled={disabled}
+              className="block h-11 w-full rounded-xl border border-gray-300 bg-white px-3.5 text-left text-sm outline-none transition placeholder:text-gray-400 hover:border-gray-400 focus:border-brand-500 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-400"
+            />
+            <FloatLabel id={`${nameId}-input`} label="نام فایل تصویر" />
+          </div>
           <button
             type="button"
             onClick={addByName}
             disabled={disabled || !nameInput.trim()}
-            className="inline-flex h-10 cursor-pointer items-center gap-1 rounded-xl bg-gray-800 px-4 text-sm font-semibold text-white transition hover:bg-gray-700 disabled:cursor-not-allowed disabled:opacity-40"
+            className="inline-flex h-11 cursor-pointer items-center gap-1 rounded-xl bg-gray-800 px-4 text-sm font-semibold text-white transition hover:bg-gray-700 disabled:cursor-not-allowed disabled:opacity-40"
           >
             <Plus className="h-4 w-4" aria-hidden="true" />
             افزودن
           </button>
         </div>
-      </details>
+      </CollapseCard>
     </div>
   );
 }

@@ -1,0 +1,9 @@
+/* یافتهٔ جست‌وجوی لیست‌های پنل (Highlight.jsx) */
+.hl-mark {
+  padding-inline: 2px;
+  margin-inline: -2px;
+  border-radius: 5px;
+  color: inherit;
+  background: color-mix(in oklab, var(--color-brand-300) 42%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in oklab, var(--color-brand-300) 38%, transparent);
+}

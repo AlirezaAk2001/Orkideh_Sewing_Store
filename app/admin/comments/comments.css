@@ -1,0 +1,185 @@
+/* صفحهٔ مدیریت نظرها (page.jsx و پوشهٔ _ui؛ پیشوند cm-). کارت نظر، نوار آمار (کاشی‌ها در CommentStats با کلاس‌های Tailwind‌اند و فقط نوارهای پرشونده اینجاست)
+   و ناحیهٔ پاسخ مدیر (رنگ یافته‌های جست‌وجو در _list/highlight.css). همهٔ حرکت‌ها فقط بدون «کاهش حرکت» اجرا می‌شوند */
+
+/* کارت نظر: --cm-c رنگ وضعیت است (زرد در انتظار، سبز تأییدشده). سطح سفید گرد با سایهٔ نرم؛ overflow:hidden برای گردی گوشه‌ها و نوار رنگی لبه */
+.cm-card {
+  --cm-c: #f5b00a;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.05), 0 0 0 1px rgb(229 231 235 / 0.8);
+  transition: box-shadow 0.25s;
+}
+.cm-card:hover {
+  box-shadow: 0 10px 24px -14px rgb(110 20 90 / 0.28), 0 0 0 1px rgb(229 231 235 / 0.8);
+}
+.cm-card[data-ok] {
+  --cm-c: var(--viz-st-delivered);
+}
+.cm-rail {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  width: 4px;
+  background: var(--cm-c);
+  transition: background-color 0.5s ease;
+}
+/* درخشش نرم دوطرفهٔ هاور: با ورود ماوس یک نوار روشن صورتیِ کم‌رنگ از یک سمت کارت رد می‌شود و با خروج از همان مسیر برمی‌گردد (گذار است، نه انیمیشن).
+   آرام: ۱٫۸ ثانیه با منحنی سینوسی (شروع و پایان نرم)، و نوار فقط تا جایی می‌رود که کاملاً از کارت بیرون بیفتد (±۸۰٪ عرض؛ نوار ۲۴٪ عرض و مرکزش روی ۵۰٪ است)،
+   پس سرعتش حدود یک‌سوم نسخهٔ اول (۰٫۹ ثانیه برای ±۱۱۰٪) است */
+.cm-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(105deg, transparent 38%, rgb(224 50 140 / 0.06) 50%, transparent 62%);
+  translate: -80% 0;
+  transition: translate 1.8s cubic-bezier(0.37, 0, 0.63, 1);
+}
+.cm-card:hover::after {
+  translate: 80% 0;
+}
+/* حلقهٔ کوتاه دور کارت پس از تأیید یا رد در تب «همه» (کارت می‌ماند و وضعیتش عوض می‌شود) */
+.cm-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: inset 0 0 0 2px var(--cm-c);
+  opacity: 0;
+  animation: cm-ring 1.2s ease-out both;
+}
+@keyframes cm-ring {
+  0% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* ستارهٔ پر: جهش و چرخش کوتاه هنگام ورود، یکی‌یکی (--i شمارهٔ ستاره، --d تأخیر کارت) */
+@keyframes cm-star {
+  from {
+    opacity: 0;
+    transform: scale(0.3) rotate(-35deg);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* پاسخ مدیر: حباب با خط ارتباطِ خمیده به نظر بالایش (از لبهٔ شروع پایین می‌آید و به حباب می‌پیوندد) */
+.cm-reply {
+  position: relative;
+  margin-inline-start: 20px;
+}
+.cm-reply::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: -14px;
+  top: -14px;
+  width: 14px;
+  height: 34px;
+  border-inline-start: 2px solid var(--color-brand-200);
+  border-block-end: 2px solid var(--color-brand-200);
+  border-end-start-radius: 12px;
+  pointer-events: none;
+}
+
+/* ناحیهٔ پاسخ مدیر (حباب پاسخ با خط ارتباطش؛ هم نمایش پاسخ است هم جای نوشتن و ویرایش آن). باز شدنش پله‌پله است: ردیف شبکه از ۰fr به ۱fr می‌رود (ارتفاع واقعی بدون اندازه‌گیری)،
+   اول خط ارتباط از بالا به پایین کشیده می‌شود (clip-path)، بعد حباب نرم ظاهر می‌شود (cm-bubble). فرزندش overflow:hidden است، پس padding درونی آن جای خط (بالا)
+   و حلقهٔ حباب (کنار و پایین) را می‌دهد. بسته‌اش inert است (Tab به باکس پنهان نمی‌رسد). پاسخ‌هایی که از اول هستند با data-open ساخته می‌شوند، پس گذار و حرکتی ندارند */
+.cm-fold {
+  display: grid;
+  grid-template-rows: 0fr;
+}
+.cm-fold[data-open] {
+  grid-template-rows: 1fr;
+}
+.cm-fold > div {
+  min-height: 0;
+  overflow: hidden;
+  padding-inline: 3px;
+  margin-inline: -3px;
+}
+.cm-fold .cm-reply::before {
+  clip-path: inset(0 0 100% 0);
+}
+.cm-fold[data-open] .cm-reply::before {
+  clip-path: inset(0);
+}
+.cm-fold:not([data-open]) .cm-bubble {
+  opacity: 0;
+  translate: 0 -6px;
+}
+/* حباب در حال نوشتن: سفید با حلقهٔ صورتی (مثل فیلدهای پنل)، و با فوکوس پررنگ‌تر */
+.cm-bubble[data-editing] {
+  background-color: #fff;
+  box-shadow: 0 0 0 1px var(--color-brand-300);
+}
+.cm-bubble[data-editing]:focus-within {
+  box-shadow: 0 0 0 1.5px var(--color-brand-500);
+}
+
+/* نوار باریک پرشونده (توزیع ستاره‌ها و درصد پاسخ‌دهی): عرض --w با رنگ --c، هنگام ورود از صفر پر می‌شود (--d تأخیر) */
+.cm-bar {
+  display: block;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 9999px;
+  background: var(--color-gray-100);
+}
+.cm-bar > i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  width: var(--w);
+  background: var(--c, var(--color-amber-400));
+}
+@keyframes cm-grow {
+  from {
+    width: 0;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .cm-fold {
+    transition: grid-template-rows 0.4s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  /* باز شدن: خط ۰٫۵ ثانیه کشیده می‌شود و حباب با تأخیر ۰٫۳۵ ثانیه ظاهر می‌شود؛ بسته شدن: همه با هم و کوتاه */
+  .cm-fold .cm-reply::before {
+    transition: clip-path 0.2s ease-in;
+  }
+  .cm-fold[data-open] .cm-reply::before {
+    transition: clip-path 0.5s cubic-bezier(0.37, 0, 0.63, 1);
+  }
+  .cm-bubble {
+    transition: opacity 0.2s ease, translate 0.2s ease, background-color 0.25s, box-shadow 0.25s;
+  }
+  .cm-fold[data-open] .cm-bubble {
+    transition: opacity 0.45s ease 0.35s, translate 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) 0.35s, background-color 0.25s, box-shadow 0.25s;
+  }
+  .cm-star[data-on] {
+    animation: cm-star 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    animation-delay: calc(var(--d, 0ms) + var(--i) * 70ms + 160ms);
+  }
+  .cm-bar > i {
+    animation: cm-grow 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    animation-delay: var(--d, 0ms);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cm-card::after,
+  .cm-ring {
+    display: none;
+  }
+  .cm-card,
+  .cm-rail {
+    transition: none;
+  }
+}

@@ -1,0 +1,112 @@
+/* کارت‌های خلاصهٔ نمودار فروش (SummaryStrip در SalesChart.jsx؛ پیشوند scs-): مجموع، میانگین، بهترین روز و (در نمای نمودار) «مقایسه با دورهٔ قبل» یا (در نمای جدول) «خروجی CSV».
+   هاور مثل کارت‌های دیگر سایت: کارت کمی بالا می‌آید و سایه‌ای به رنگ همان کارت می‌گیرد، و برق نرمی از راست به چپ از رویش می‌گذرد؛ برق (مثل برق هاور چیپ تخفیف)
+   با transition است نه keyframe، پس با برداشتن موس همان مسیر را برمی‌گردد (دو طرفه). رنگ هر کارت از متغیر --sc می‌آید که SalesChart.jsx روی کارت می‌گذارد.
+   فقط برای دستگاه‌های دارای موس و بدون «کاهش حرکت»؛ در لمسی هاور می‌چسبد. */
+
+/* نمونهٔ container: چینش ستون‌ها به عرض خود پنل بستگی دارد، نه عرض صفحه (پنل روی صفحهٔ پهن دو سوم عرض را می‌گیرد). با سه کارت همان چینش قبلی (sm:grid-cols-3 در JSX)
+   می‌ماند؛ با چهار کارت: یک ستون در عرض کم، دو ستون (۲×۲) در عرض متوسط و چهار ستون وقتی هر کارت جای نوشتهٔ عنوان و نمونه‌خط را دارد */
+.scs-wrap {
+  container: scs / inline-size;
+}
+.scs-grid[data-n="4"] {
+  grid-template-columns: minmax(0, 1fr);
+}
+@container scs (min-width: 28rem) {
+  .scs-grid[data-n="4"] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+/* چهار کارت در یک ردیف (از ۴۴ rem عرض پنل): برای اینکه ارتفاع نوار کم شود و هر چهار کارت کنار هم بنشینند، کارت‌ها جمع‌تر می‌شوند: کاشی و دایرهٔ تیک و فاصله‌ها
+   کوچک‌تر، نوشتهٔ عنوان و مبلغ یک پله ریزتر. نمونه‌خط عنوان فقط وقتی کارت به اندازهٔ کافی پهن است دیده می‌شود (پایین‌تر، بخش .scs-card container است) */
+@container scs (min-width: 44rem) {
+  .scs-grid[data-n="4"] {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+  .scs-grid[data-n="4"] .scs-card {
+    gap: 0.375rem;
+    padding: 0.5rem;
+  }
+  .scs-grid[data-n="4"] .scs-badge {
+    width: 1.875rem;
+    height: 1.875rem;
+    border-radius: 0.625rem;
+  }
+  .scs-grid[data-n="4"] .scs-badge svg {
+    width: 1rem;
+    height: 1rem;
+  }
+  .scs-grid[data-n="4"] .scs-check {
+    width: 1rem;
+    height: 1rem;
+  }
+  .scs-grid[data-n="4"] .scs-check svg {
+    width: 0.6875rem;
+    height: 0.6875rem;
+  }
+  .scs-grid[data-n="4"] .scs-lbl {
+    font-size: 11px;
+    column-gap: 0.3125rem;
+  }
+  .scs-grid[data-n="4"] .scs-val {
+    font-size: 13px;
+  }
+  .scs-grid[data-n="4"] .scs-val span {
+    font-size: 11px;
+  }
+  .scs-grid[data-n="4"] .scs-sw {
+    width: 22px;
+    height: auto;
+  }
+}
+
+.scs-card {
+  --scs-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  transition: translate 0.3s var(--scs-ease), box-shadow 0.3s var(--scs-ease);
+  container-type: inline-size; /* برای پنهان‌شدن نمونه‌خط در کارت خیلی باریک (پایین) */
+}
+@container (max-width: 11.5rem) {
+  .scs-sw {
+    display: none;
+  }
+}
+
+/* برق: پشت نوشته‌ها (z-index منفی در کارتی که isolate است: بالای زمینهٔ کارت و زیر محتوا)، به رنگ کارت و کم‌رنگ؛ کلیک را رد می‌کند */
+.scs-card::after {
+  content: "";
+  display: none;
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(100deg, transparent 25%, color-mix(in srgb, var(--sc, #fff) 22%, transparent) 50%, transparent 75%);
+  translate: 110% 0;
+}
+
+@media (hover: hover) {
+  /* سایه از --tw-shadow می‌آید تا حلقهٔ (ring) کارت که با Tailwind کشیده شده سر جایش بماند */
+  .scs-card:hover {
+    --tw-shadow: 0 18px 26px -18px color-mix(in srgb, var(--sc, var(--color-gray-500)) 58%, transparent);
+  }
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .scs-card:hover {
+    translate: 0 -3px;
+  }
+  button.scs-card:active {
+    translate: 0 -1px;
+  }
+  /* همان برق هاور چیپ تخفیف کارت محصول (.discount-chip--card::before در globals.css): همان زاویه و پهنای نوار نور (۲۵٪ تا ۷۵٪)، همان مسیر از ۱۱۰٪ تا ۱۱۰٪- عرض کارت،
+     همان ۲٫۴ ثانیه و همان منحنی. قبلاً نوار باریک‌تر بود و مسیرش ۲٫۶ برابر عرض کارت، که روی کارتِ پهن خیلی تند دیده می‌شد */
+  .scs-card::after {
+    display: block;
+    transition: translate 2.4s cubic-bezier(0.37, 0, 0.63, 1);
+  }
+  .scs-card:hover::after {
+    translate: -110% 0;
+  }
+}

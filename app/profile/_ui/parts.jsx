@@ -10,7 +10,7 @@ import { NO_IMAGE, fa } from "./format";
 // وضعیت‌های سفارش در پنل: برچسب، رنگ (--st-* در profile.css) و آیکون
 export const ST = {
   processing: { label: "جاری", c: "var(--st-processing)", icon: "truck" },
-  delivered: { label: "تحویل شده", c: "var(--st-delivered)", icon: "packcheck" },
+  delivered: { label: "تحویل‌داده‌شده", c: "var(--st-delivered)", icon: "packcheck" },
   returned: { label: "مرجوع شده", c: "var(--st-returned)", icon: "undo" },
   pending: { label: "منتظر پرداخت", c: "var(--st-pending)", icon: "hourglass" },
 };

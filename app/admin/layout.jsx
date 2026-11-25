@@ -7,10 +7,13 @@ import { useAuth } from "@/lib/context";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { DesktopSidebar, MobileDrawer } from "./_shell/AdminSidebar";
 import AdminTopBar from "./_shell/AdminTopBar";
+import AdminBackdrop from "./_shell/AdminBackdrop";
 import PageLoader from "@/app/components/PageLoader";
 import ScrollArea from "@/app/components/ScrollArea";
 import ConfirmDialog from "./_shell/ConfirmDialog";
 import { findNavItem } from "./_shell/nav";
+import useAdminCounts from "./_shell/useAdminCounts";
+import { HeaderSlotContext } from "./_shell/HeaderSlot";
 
 export default function AdminLayout({ children }) {
   const { currentUser, loading: authLoading, logout } = useAuth();
@@ -23,6 +26,10 @@ export default function AdminLayout({ children }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const menuButton = useRef(null);
+  // عنصر جایگاه سربرگ صفحه (بالای <main>): state است نه ref تا با ساخته‌شدنش، PageHeaderِ صفحه پیش از اولین رنگ‌شدن در آن portal بسازد
+  const [headerSlot, setHeaderSlot] = useState(null);
+  // نشان‌های «منتظر شما» روی آیتم‌های سایدبار (سفارش جاری، نظر تأییدنشده)
+  const counts = useAdminCounts(pathname, isAdminUser);
 
   useEffect(() => {
     const saved = localStorage.getItem('adminSidebarOpen');
@@ -92,11 +99,12 @@ export default function AdminLayout({ children }) {
     );
   }
 
-  const shell = { busy: isLoading, pathname };
+  const shell = { busy: isLoading, pathname, counts };
 
   return (
     <>
       <div className="admin-canvas relative flex h-dvh overflow-hidden" dir="rtl">
+        <AdminBackdrop />
         <DesktopSidebar collapsed={!isSidebarOpen} onToggleCollapsed={toggleSidebar} onLogout={handleLogout} {...shell} />
         <MobileDrawer
           open={drawerOpen}
@@ -116,12 +124,18 @@ export default function AdminLayout({ children }) {
             menuRef={menuButton}
             drawerOpen={drawerOpen}
           />
+          {/* جایگاه ثابت سربرگ صفحه (PageHeader با portal در آن می‌نشیند): بیرون از اسکرولر main است، پس سربرگ هنگام اسکرول جایش می‌ماند و اسکرول از زیر خط‌چینش شروع می‌شود.
+              px-4 pt-4 همان فاصله‌ای است که سربرگ پیش‌تر از padding main داشت؛ صفحه‌ای بی‌سربرگ (داشبورد) جایگاهش خالی است و empty:hidden آن را کاملاً حذف می‌کند.
+              z-10: سایه و حلقهٔ دکمه‌های سربرگ روی محتوای زیرش می‌افتد */}
+          <div ref={setHeaderSlot} className="relative z-10 shrink-0 px-4 pt-4 empty:hidden" />
           {/* container-type:size = واحد cqh (ارتفاع محتوای خود main) برای صفحه‌های جدول‌دار: TablePage با h-[100cqh] دقیقاً به اندازهٔ main می‌شود و فقط ردیف‌های جدول اسکرول می‌خورند. ScrollArea: اسکرولر main با شست سفارشی سمت راست */}
           <ScrollArea as="main" className="min-h-0 flex-1" innerClassName="overflow-x-hidden p-4 [container-type:size]">
             {/* min-h-full و نه h-full: با h-full لفاف همیشه هم‌قد پنجره می‌ماند و محتوای بلندتر از آن بیرون می‌زند، پس فاصلهٔ پایینِ p-4 در اسکرول حساب نمی‌شد و کارت‌های آخر هر صفحه (مثل دو کارت آخر داشبورد) به لبهٔ پنجره می‌چسبیدند و پایینشان بریده دیده می‌شد */}
-            <div key={pathname} className="admin-page-in min-h-full">
-              {children}
-            </div>
+            <HeaderSlotContext.Provider value={headerSlot}>
+              <div key={pathname} className="admin-page-in min-h-full">
+                {children}
+              </div>
+            </HeaderSlotContext.Provider>
           </ScrollArea>
         </div>
       </div>

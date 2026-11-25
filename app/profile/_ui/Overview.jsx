@@ -140,7 +140,8 @@ function TrackTile({ order, onGo, onPay, paying }) {
           ثبت‌شده در <b>{dateFa(order.createdAt)}</b>
         </span>
       </div>
-      <div className={`steps ${arrived ? "on" : ""}`} style={{ "--n": n, "--cur": cur }}>
+      {/* data-status: در سفارش جاری، کامیون مرحلهٔ «ارسال» (در انتظار) رفت‌وبرگشت می‌کند (profile.css: pf-drive) */}
+      <div className={`steps ${arrived ? "on" : ""}`} data-status={order.status} style={{ "--n": n, "--cur": cur }}>
         <ol>
           {steps.map((st, i) => {
             const k = state(i);
@@ -602,7 +603,7 @@ function Lead({ orders, cartCount }) {
   else if (last)
     first = (
       <LeadChip icon={last.status === "delivered" ? "packcheck" : "undo"}>
-        آخرین سفارش (شمارهٔ <b>{fa(last.userOrderNumber)}</b>) {last.status === "delivered" ? "تحویل شده است" : "مرجوع شده است"}
+        آخرین سفارش (شمارهٔ <b>{fa(last.userOrderNumber)}</b>) {last.status === "delivered" ? "تحویل داده شده است" : "مرجوع شده است"}
       </LeadChip>
     );
   else first = <LeadChip icon="bag">هنوز سفارشی ثبت نکرده‌اید</LeadChip>;

@@ -9,6 +9,7 @@ import PageHeader from "@/app/admin/_shell/PageHeader";
 import FormSection from "@/app/admin/_form/FormSection";
 import { TextInput } from "@/app/admin/_form/Fields";
 import SaveBar from "@/app/admin/_form/SaveBar";
+import UnsavedGuard from "@/app/admin/_form/UnsavedGuard";
 import ImagePreviewField from "@/app/admin/_form/ImagePreviewField";
 import { useImagePreview } from "@/app/admin/_form/useImagePreview";
 
@@ -57,8 +58,8 @@ export default function AddCategory() {
     <>
       <PageHeader icon={<SquarePlus className="h-[22px] w-[22px]" aria-hidden="true" />} title="افزودن دسته‌بندی جدید" subtitle="نام، آدرس صفحه و تصویر دسته‌بندی را وارد کنید." />
 
-      <form onSubmit={handleSubmit}>
-        <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,26rem)]">
+      <form onSubmit={handleSubmit} noValidate>
+        <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)]">
           <FormSection index={0} icon={Shapes} title="اطلاعات دسته‌بندی" hint="نام در منوی فروشگاه و آدرس صفحه در لینک‌ها دیده می‌شود">
             <div className="grid gap-4">
               <TextInput label="نام دسته‌بندی" placeholder="مثال: لامپ‌ها" value={name} onChange={(e) => setName(e.target.value)} />
@@ -81,7 +82,6 @@ export default function AddCategory() {
               preview={img}
               label="آدرس تصویر"
               placeholder="مثال: y.png"
-              hint="اختیاری. با آپلود خودکار پر می‌شود؛ یا نام فایلی از پوشهٔ public/image را بنویسید، یا آدرس کامل"
               removable
               onBusyChange={setUploading}
               disabled={isSaving}
@@ -89,6 +89,7 @@ export default function AddCategory() {
           </FormSection>
         </div>
 
+        <UnsavedGuard when={Boolean(isFormFilled) && !isSaving} />
         <SaveBar label="ذخیرهٔ دسته‌بندی" backHref="/admin/categories" saving={isSaving} disabled={uploading || !isFormFilled} tone={uploading ? "dirty" : !isFormFilled ? "idle" : missing.length ? "dirty" : "ready"} status={status} />
       </form>
     </>

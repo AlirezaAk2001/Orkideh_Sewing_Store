@@ -3,13 +3,14 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { LayoutGrid, PackageSearch, SearchX, Trash2, TriangleAlert, X } from "lucide-react";
+import { Images, LayoutGrid, PackageSearch, Play, SearchX, Trash2, TriangleAlert, X } from "lucide-react";
 import Icon from "@mdi/react";
 import { mdiStoreCogOutline } from "@mdi/js";
 import { getImagePath } from "@/app/utils/getImagePath";
 import AppImage from "@/app/components/AppImage";
 import ExpandSearch from "@/app/components/ExpandSearch";
 import { tracksStock } from "@/lib/stock";
+import { productImages } from "@/lib/productImages";
 import { LOW_STOCK_THRESHOLD } from "@/lib/statsMath";
 import PageHeader from "@/app/admin/_shell/PageHeader";
 import ConfirmDialog from "@/app/admin/_shell/ConfirmDialog";
@@ -34,6 +35,9 @@ const CATEGORY_FILTERS = [
   { id: "accessories", name: "لوازم جانبی", image: "/image/Needle.png" },
 ];
 
+// محصول در فیلتر کدام دسته است: «همه» همه را می‌گیرد و بقیه با slug دسته‌بندی محصول (همان id فیلتر)
+const inCategory = (p, id) => id === "all" || p.Category?.slug === id;
+
 const formatPrice = (val) => {
   if (val == null || isNaN(val)) return "—";
   return fa(Math.round(Number(val)));
@@ -49,6 +53,37 @@ const getCategoryName = (row) => row.Category?.name || row.categoryName || "بد
 
 const hasDiscount = (row) => row.discount != null && Number(row.discount) > 0 && Number(getFinalPrice(row)) < Number(row.price);
 
+// نشان‌های رسانهٔ محصول کنار دسته‌بندی: «ویدیو» اگر ویدیو دارد و شمار تصویرها اگر بیش از یکی است (دادهٔ واقعی خود محصول)
+function MediaChips({ row }) {
+  const images = productImages(row).length;
+  if (!row.video && images < 2) return null;
+  return (
+    <>
+      {row.video && (
+        <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-brand-50 px-2 py-0.5 text-[11px] font-semibold text-brand-700 ring-1 ring-brand-100">
+          <Play className="h-3 w-3 fill-current" aria-hidden="true" />
+          ویدیو
+        </span>
+      )}
+      {images > 1 && (
+        <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-gray-600">
+          <Images className="h-3 w-3" aria-hidden="true" />
+          {fa(images)} تصویر
+        </span>
+      )}
+    </>
+  );
+}
+
+// ترتیب‌دهنده‌ها (روی ردیف‌های فیلترشدهٔ همین صفحه): هر کدام مقداری می‌دهد که مقایسه می‌شود؛ ردیفِ بدون مقدار (null: مثل موجودی «لوازم جانبی» که پیگیری نمی‌شود) همیشه آخر می‌ماند
+const SORT_VALUE = {
+  id: (r) => Number(r.id),
+  name: (r) => String(r.name ?? ""),
+  price: (r) => Number(getFinalPrice(r)),
+  discount: (r) => (hasDiscount(r) ? Number(r.discount) : 0),
+  stock: (r) => (tracksStock(r) ? Number(r.stock) : null),
+};
+
 // درصد تخفیف به شکل همان سکهٔ براق صورتی که مشتری روی کارت محصول فروشگاه می‌بیند (.discount-chip در globals.css، با برق). در جدول فقط عدد (عنوان ستون «تخفیف» معنی را
 // می‌گوید)؛ withWord (کارت موبایل، که ستون ندارد) برچسب «تخفیف» هم دارد
 function DiscountChip({ row, withWord = false }) {
@@ -62,27 +97,32 @@ function DiscountChip({ row, withWord = false }) {
   );
 }
 
-// قیمت نهایی درشت و اگر تخفیف دارد زیرش قیمت اصلی خط‌خورده
-function Price({ row }) {
+// قیمت نهایی در چیپ صورتیِ کم‌رنگ و اگر تخفیف دارد زیرش قیمت اصلی خط‌خورده در چیپ خاکستری کوچک. start (کارت موبایل): چیپ‌ها از ابتدا می‌آیند و به اندازهٔ نوشته‌اند.
+// در ستون جدول (بدون start) چیپ‌ها پهنای ثابت دارند (۱۰rem و ۷rem) تا لبهٔ چپ و راستشان هم زیر هم بیفتد، نه فقط مرکزشان
+function Price({ row, start = false }) {
   const final = getFinalPrice(row);
   return (
-    <div className="leading-6">
-      <p className="whitespace-nowrap font-bold text-gray-900">
-        {formatPrice(final)} <span className="text-xs font-medium text-gray-500">تومان</span>
-      </p>
-      {hasDiscount(row) && <p className="whitespace-nowrap text-xs text-gray-400 line-through">{formatPrice(row.price)}</p>}
+    <div className={`flex flex-col gap-1 leading-6 ${start ? "items-start" : "items-center"}`}>
+      <span className={`inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-brand-50 px-3 py-0.5 font-bold text-brand-700 ring-1 ring-brand-100 ${start ? "" : "w-40 justify-center"}`}>
+        {formatPrice(final)} <span className="text-xs font-medium text-brand-600/80">تومان</span>
+      </span>
+      {hasDiscount(row) && (
+        <span className={`inline-flex items-center whitespace-nowrap rounded-full bg-gray-100 px-2.5 text-xs leading-5 text-gray-400 line-through ring-1 ring-gray-200 ${start ? "" : "w-28 justify-center"}`}>{formatPrice(row.price)}</span>
+      )}
     </div>
   );
 }
 
 // موجودی با همان قاعدهٔ فروشگاه: بدون پیگیری موجودی («لوازم جانبی» یا خالی) فقط خط تیره (در کارت موبایل هیچ)؛ صفر قرمز با نقطهٔ ضربان‌دار؛ تا آستانهٔ
-// داشبورد زرد؛ بقیه سبز
-function StockChip({ row, quiet = false }) {
+// داشبورد زرد؛ بقیه سبز. wide (ستون جدول): همان اندازهٔ چیپ قیمت (نوشتهٔ ۱۴px پررنگ، size="lg") با پهنای ثابت ۷rem تا لبه‌هایشان هم زیر هم بیفتد
+function StockChip({ row, quiet = false, wide = false }) {
   if (!tracksStock(row)) return quiet ? null : <span className="text-gray-400">—</span>;
   const n = Number(row.stock);
+  const fixed = wide ? "w-28 justify-center" : "";
+  const size = wide ? "lg" : "sm";
   if (n <= 0) {
     return (
-      <Chip tone="red">
+      <Chip tone="red" size={size} className={fixed}>
         <span className="relative grid h-2 w-2 place-items-center" aria-hidden="true">
           <span className="sold-ping absolute h-2 w-2 rounded-full bg-red-500/60" />
           <span className="relative h-2 w-2 rounded-full bg-red-600" />
@@ -91,33 +131,27 @@ function StockChip({ row, quiet = false }) {
       </Chip>
     );
   }
-  if (n <= LOW_STOCK_THRESHOLD) return <Chip tone="amber" icon={TriangleAlert}>{fa(n)} عدد</Chip>;
-  return <Chip tone="green">{fa(n)} عدد</Chip>;
+  if (n <= LOW_STOCK_THRESHOLD) return <Chip tone="amber" icon={TriangleAlert} size={size} className={fixed}>{fa(n)} عدد</Chip>;
+  return <Chip tone="green" size={size} className={fixed}>{fa(n)} عدد</Chip>;
 }
 
 export default function AdminProducts() {
-  const [products, setProducts] = useState([]); // کل محصولات (بر اساس فیلتر دسته‌بندی)
+  const [products, setProducts] = useState([]); // کل محصولات (همهٔ دسته‌ها)؛ فیلتر دسته‌بندی و شمار هر تب سمت کلاینت از همین فهرست می‌آید
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all"); // فیلتر دسته‌بندی
+  const [sort, setSort] = useState(null); // مرتب‌سازی با سرستون‌ها: { id, dir } یا null (ترتیب خود سرور: جدیدترین اول)
   const filterRef = useSegmentSlide(categoryFilter);
   const [deleteDialog, setDeleteDialog] = useState({ open: false, id: null, name: "" });
   const isMounted = useRef(true);
 
-  const fetchProducts = useCallback(async (catFilter) => {
+  // همیشه کل فهرست می‌آید (بدون پارامتر category)، چون چیپ شمارِ هر تب دسته‌بندی هم‌زمان به شمار همهٔ دسته‌ها نیاز دارد؛ با عوض‌شدن تب دیگر درخواستی نمی‌رود
+  const fetchProducts = useCallback(async () => {
     setLoading(true);
     try {
-      let categoryParam = undefined;
-      if (catFilter === "sewing-machine") {
-        categoryParam = "sewing-machine";
-      } else if (catFilter === "accessories") {
-        categoryParam = "accessories";
-      }
-
       const { data } = await axios.get("/api/admin/products", {
-        params: { category: categoryParam },
         headers: { "Cache-Control": "no-cache" },
       });
 
@@ -146,23 +180,43 @@ export default function AdminProducts() {
 
   useEffect(() => {
     isMounted.current = true;
-    fetchProducts(categoryFilter);
+    fetchProducts();
     return () => {
       isMounted.current = false;
     };
-  }, [categoryFilter, fetchProducts]);
+  }, [fetchProducts]);
 
-  // جست‌وجو و صفحه‌بندی سمت کلاینت (API لیست کامل محصولات را برمی‌گرداند)
-  const filteredProducts = useMemo(() => {
+  // جست‌وجو، فیلتر دسته‌بندی و صفحه‌بندی سمت کلاینت (API لیست کامل محصولات را برمی‌گرداند). شمار هر تب از نتیجهٔ جست‌وجو می‌آید (مثل صفحهٔ نظرات)
+  // تا عددِ تب همان‌قدر باشد که با کلیک روی آن دیده می‌شود؛ دسته‌ها با slug دسته‌بندی محصول (همان id فیلترها) جدا می‌شوند
+  const searchHits = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return products;
     return products.filter((p) => String(p.name ?? "").toLowerCase().includes(q));
   }, [products, search]);
+  const counts = useMemo(() => Object.fromEntries(CATEGORY_FILTERS.map((f) => [f.id, searchHits.filter((p) => inCategory(p, f.id)).length])), [searchHits]);
+  const filteredProducts = useMemo(() => searchHits.filter((p) => inCategory(p, categoryFilter)), [searchHits, categoryFilter]);
 
-  const total = filteredProducts.length;
+  // مرتب‌سازی سرستون‌ها: کلیک اول صعودی، دوم نزولی، سوم برگشت به ترتیب سرور. مقدار تهی (null) همیشه آخر می‌ماند
+  const sortedProducts = useMemo(() => {
+    if (!sort) return filteredProducts;
+    const value = SORT_VALUE[sort.id];
+    const sign = sort.dir === "asc" ? 1 : -1;
+    return [...filteredProducts].sort((a, b) => {
+      const x = value(a);
+      const y = value(b);
+      if (x == null || y == null) return x == null ? (y == null ? 0 : 1) : -1;
+      return (typeof x === "string" ? x.localeCompare(y, "fa") : x - y) * sign;
+    });
+  }, [filteredProducts, sort]);
+  const handleSort = (id) => {
+    setSort((cur) => (cur?.id !== id ? { id, dir: "asc" } : cur.dir === "asc" ? { id, dir: "desc" } : null));
+    setPage(1);
+  };
+
+  const total = sortedProducts.length;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const currentPage = Math.min(page, totalPages);
-  const pagedProducts = filteredProducts.slice(
+  const pagedProducts = sortedProducts.slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize
   );
@@ -191,7 +245,7 @@ export default function AdminProducts() {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       toast.success("محصول با موفقیت حذف گردید.");
-      fetchProducts(categoryFilter);
+      fetchProducts();
     } catch (err) {
       console.error("Error deleting product:", err);
       toast.error(err.response?.data?.error || "مشکلی در حذف محصول به‌وجود آمد.");
@@ -214,32 +268,51 @@ export default function AdminProducts() {
 
   const columns = [
     // ستون شناسه زیر xl پنهان است تا جدول در ۷۳۶ پیکسل (تبلت، یا لپ‌تاپ با منوی باز) بدون اسکرول افقی جا شود؛ دسته‌بندی زیر نام می‌آید
-    { id: "id", label: "شناسه", align: "center", th: "hidden w-16 xl:table-cell", td: "hidden tabular-nums text-gray-400 xl:table-cell", sk: "h-4 w-8", cell: (r) => fa(r.id) },
+    // شناسه در چیپ گرد: دایرهٔ ثابت ۳۲px برای همهٔ ردیف‌ها (تا چهار رقم جا می‌شود)
+    {
+      id: "id",
+      label: "شناسه",
+      sortable: true,
+      align: "center",
+      th: "hidden w-16 xl:table-cell",
+      td: "hidden xl:table-cell",
+      sk: "h-8 w-8 rounded-full",
+      cell: (r) => <span className="inline-grid h-8 w-8 place-items-center rounded-full bg-gray-100 text-xs font-bold tabular-nums text-gray-600 ring-1 ring-gray-200 ml-3">{fa(r.id)}</span>,
+    },
     {
       id: "name",
       label: "محصول",
+      sortable: true,
+      align: "center",
       td: "w-[38%] max-w-0",
-      sk: "h-11 w-48 rounded-xl",
+      sk: "h-11 w-[18rem] max-w-full rounded-xl",
+      // هر ردیف یک بلوک هم‌عرضِ ثابت (۱۸rem، در جای کم تمام ستون) است که وسط ستون می‌نشیند؛ تصویر و نوشته داخلش از ابتدا می‌آیند، پس تصویرها زیر هم‌اند.
+      // عرض را عمداً به اندازهٔ همین نام‌ها گرفتیم (۴۸px تصویر + ۱۲px فاصله + حدود ۲۲۸px نوشته): با ۲۶rem جای خالیِ سمت چپ بلوک وسط‌چین حساب می‌شد
+      // و نوشته‌ها در گوشهٔ ستون، دور از وسطِ سرستون می‌افتادند. نام بلندتر در دو خط بریده می‌شود
       cell: (r) => (
-        <div className="flex min-w-0 items-center gap-3">
+        <div className="flex w-[18rem] min-w-0 max-w-full items-center gap-3 text-start">
           <Thumb src={imageOf(r)} alt={r.name || "محصول"} className="h-12 w-12" sizes="48px" />
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <p className="line-clamp-2 font-bold leading-6 text-gray-900">{r.name || "—"}</p>
-            <p className="truncate text-xs text-gray-500">{getCategoryName(r)}</p>
+            <div className="mt-0.5 flex min-w-0 items-center gap-2">
+              <span className="truncate text-xs text-gray-500">{getCategoryName(r)}</span>
+              <MediaChips row={r} />
+            </div>
           </div>
         </div>
       ),
     },
-    { id: "price", label: "قیمت", align: "center", sk: "h-8 w-28", cell: (r) => <Price row={r} /> },
+    { id: "price", label: "قیمت", sortable: true, align: "center", sk: "h-7 w-40 rounded-full", cell: (r) => <Price row={r} /> },
     {
       id: "discount",
       label: "تخفیف",
+      sortable: true,
       align: "center",
       th: "w-24",
       sk: "h-10 w-10",
       cell: (r) => (hasDiscount(r) ? <DiscountChip row={r} /> : <span className="text-gray-400">—</span>),
     },
-    { id: "stock", label: "موجودی", align: "center", sk: "h-6 w-20", cell: (r) => <StockChip row={r} /> },
+    { id: "stock", label: "موجودی", sortable: true, align: "center", sk: "h-7 w-28 rounded-full", cell: (r) => <StockChip row={r} wide /> },
     { id: "actions", label: "عملیات", align: "center", th: "w-28", sk: "h-9 w-20 rounded-xl", cell: actions },
   ];
 
@@ -249,15 +322,16 @@ export default function AdminProducts() {
         <Thumb src={imageOf(r)} alt={r.name || "محصول"} className="h-16 w-16" sizes="64px" />
         <div className="min-w-0 flex-1">
           <h3 className="line-clamp-2 font-bold leading-6 text-gray-900">{r.name || "—"}</h3>
-          <div className="mt-1">
+          <div className="mt-1 flex flex-wrap items-center gap-1.5">
             <Chip tone="gray">{getCategoryName(r)}</Chip>
+            <MediaChips row={r} />
           </div>
         </div>
       </div>
       <div className="mt-3 flex items-end justify-between gap-3">
         <div className="flex flex-col items-start gap-1.5">
           <div className="flex items-center gap-3">
-            <Price row={r} />
+            <Price row={r} start />
             <DiscountChip row={r} withWord />
           </div>
           <StockChip row={r} quiet />
@@ -292,7 +366,7 @@ export default function AdminProducts() {
               aria-pressed={on}
               data-on={on ? "" : undefined}
               onClick={() => handleFilterSelect(f.id)}
-              aria-label={f.name}
+              aria-label={isFirstLoad ? f.name : `${f.name}: ${fa(counts[f.id])} محصول`}
               className={`seg-tab flex h-8 shrink-0 cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 sm:px-3 ${
                 on ? "text-brand-700" : "text-gray-600 hover:bg-white/60 hover:text-gray-900"
               }`}
@@ -310,6 +384,14 @@ export default function AdminProducts() {
               ) : (
                 f.name
               )}
+              {/* چیپ شمار محصولات همین دسته (همان چیپ شمار تب‌های نظرات و سفارش‌ها، SegmentedTabs)؛ با بارگذاری اولیه نقطهٔ چشمک‌زن */}
+              <span
+                aria-hidden="true"
+                className="grid h-5 min-w-5 place-items-center rounded-full bg-gray-200/80 px-1.5 text-[11px] font-bold tabular-nums text-gray-600 transition-colors"
+                style={on ? { background: "color-mix(in srgb, var(--color-brand-600) 14%, white)", color: "var(--color-brand-700)" } : undefined}
+              >
+                {isFirstLoad ? <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-current" /> : fa(counts[f.id])}
+              </span>
             </button>
           );
         })}
@@ -404,6 +486,8 @@ export default function AdminProducts() {
               loading={isFirstLoad}
               busy={loading}
               skeletonRows={5}
+              sort={sort}
+              onSort={handleSort}
             />
             {!isFirstLoad && (
               <Pagination

@@ -1251,6 +1251,22 @@ html.sb-dragging * {
 .seg-tab[data-on]::before {
   opacity: 1;
 }
+/* تبِ فعال در همهٔ تب‌های سه‌بعدی سایت با هاور بالا نمی‌آید و لبه و سایهٔ سه‌بعدی نمی‌گیرد؛ فقط تب‌های غیرفعال حرکت سه‌بعدی دارند (کلیک روی آن‌ها همان حرکت را دارد).
+   «فعال» یعنی: تب قطعه‌ای .seg-tab با data-on (تب‌های وضعیت ادمین، بازهٔ گزارش و نمایش نمودار داشبورد، فیلتر دسته‌بندی محصولات، فیلتر سفارش‌های پروفایل و زبانهٔ ورود/ثبت‌نام)،
+   تب .tab-3d با aria-current (بخش‌های فرم ادمین) یا aria-selected و aria-pressed درست، و چیپ .chip-3d با aria-current="page" (دستهٔ جاریِ فهرست محصولات).
+   حلقهٔ فوکوس Tailwind (جزو box-shadow) حفظ می‌شود. انتخابگرها از قاعده‌های هاور بالا قوی‌ترند (چهار و پنج کلاس‌واره در برابر سه و چهار)، پس ترتیب فایل مهم نیست */
+.seg-tab[data-on]:not(:disabled, [aria-disabled="true"]):hover,
+.seg-tab[data-on]:not(:disabled, [aria-disabled="true"]):hover:active,
+.tab-3d:is([aria-current]:not([aria-current="false"]), [aria-selected="true"], [aria-pressed="true"]):not(:disabled, [aria-disabled="true"]):hover,
+.tab-3d:is([aria-current]:not([aria-current="false"]), [aria-selected="true"], [aria-pressed="true"]):not(:disabled, [aria-disabled="true"]):hover:active {
+  transform: none;
+  box-shadow: var(--tw-inset-shadow, 0 0 #0000), var(--tw-inset-ring-shadow, 0 0 #0000), var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000);
+}
+.chip-3d[aria-current="page"]:hover,
+.chip-3d[aria-current="page"]:hover:active {
+  transform: perspective(420px) translate3d(0, 0, 0);
+  box-shadow: var(--tw-inset-shadow, 0 0 #0000), var(--tw-inset-ring-shadow, 0 0 #0000), var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000);
+}
 @keyframes seg-underline-in {
   from {
     opacity: 0;
@@ -1551,6 +1567,28 @@ html.sb-dragging * {
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
+
+/* ───── ارقام فارسی در فیلدها ─────
+   مقدار فیلدها (و برنامه) همچنان رقم لاتین است (۱۲۵۰۰۰۰ در state و API همان 1250000 می‌ماند، پس type="number"، parseFloat، شمارهٔ موبایل، کد تأیید و
+   اعتبارسنجی سرور دست‌نخورده‌اند)؛ فقط «شکل» رقم عوض می‌شود: فونت Vazirmatn FD (نسخهٔ رسمی وزیرمتن با ارقام فارسی، همان مجوز OFL) فقط برای نویسه‌های ۰ تا ۹
+   (unicode-range) تعریف شده و در فیلدهای ورودی، متن تایپ‌شده و placeholder جلوی وزیرمتن معمولی می‌نشیند؛ حروف همان وزیرمتنِ بقیهٔ سایت‌اند.
+   فایل (۴۹KB) فقط وقتی دانلود می‌شود که رقمی در یک فیلد دیده شود. بیرون فیلدها (متن صفحه، برچسب‌ها، جدول‌ها) دست نخورده است.
+   MUI (TextField نظرها) فونت را با کلاس خودش می‌گذارد، پس برای آن !important لازم است */
+@font-face {
+  font-family: "Vazirmatn Digits";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/Vazirmatn-FD-Regular.woff2") format("woff2");
+  unicode-range: U+0030-0039;
+}
+input,
+textarea {
+  font-family: "Vazirmatn Digits", "Vazirmatn", sans-serif;
+}
+.MuiInputBase-input {
+  font-family: "Vazirmatn Digits", "Vazirmatn", sans-serif !important;
+}
 
 /* ───── صفحه‌های ورود، ثبت‌نام، تأیید ایمیل و بازیابی رمز (AuthShell) ───── */
 
@@ -2558,17 +2596,21 @@ html.sb-dragging * {
 /* برچسب شناور فیلدهای ورود/ثبت‌نام/فراموشی رمز/تأیید (Field در components/auth/AuthUI.jsx): عنوان داخل باکس است؛ با کلیک (فوکوس) یا پر بودن کوچک می‌شود و روی لبهٔ بالای باکس می‌نشیند
    و مثال (placeholder) تازه بعد از کلیک دیده می‌شود. «پر بودن» همان input:not(:placeholder-shown) است (همهٔ فیلدها placeholder دارند)؛ :has چون فیلد رمز input را داخل یک ظرف دارد.
    زمینهٔ کارت‌ها سفید است، پس پس‌زمینهٔ برچسب سفید مات می‌شود و هم لبهٔ باکس و هم حلقهٔ فوکوس (ring-4 بیرون لبه) را پشت برچسب می‌برد؛ سایه روی نوشتهٔ عنوان نمی‌افتد.
-   جایگاه‌ها منطقی‌اند (inset-inline-start) تا در راست‌به‌چپ درست بنشینند؛ فیلد رمز دکمهٔ چشم (.ff-eye) سمت راست دارد، پس برچسبِ حالت استراحت از زیر چشم کنار می‌رود. */
+   جایگاه‌ها منطقی‌اند (inset-inline-start) تا در راست‌به‌چپ درست بنشینند؛ فیلد رمز دکمهٔ چشم (.ff-eye) سمت راست دارد، پس برچسبِ حالت استراحت از زیر چشم کنار می‌رود.
+   همین الگو فیلدهای فرم‌های پنل مدیریت را هم می‌سازد (app/admin/_form/Fields.jsx: TextInput، TextArea و SelectInput؛ فیلد نام فایل تصویر و پاسخ مدیر به نظرها). تفاوت‌ها با متغیر است و مقدار پیش‌فرضشان همان
+   مقدار صفحه‌های ورود است: --ff-rest = ارتفاع مرکز برچسب در حالت استراحت (فیلد چندخطی: وسط سطر اول)، --ff-start و --ff-end = فاصلهٔ برچسبِ استراحت از ابتدا و انتهای باکس (سلکت: کاشی آیکون ابتدا و فلش انتها)،
+   --ff-bg = رنگ داخل باکس زیر نیمهٔ پایینی برچسب. برچسبِ بالا رفته فقط نیمهٔ پایینش پس‌زمینه دارد (نیمهٔ بالایی شفاف است): لبهٔ باکس را می‌پوشاند، ولی روی زمینهٔ بیرون باکس (کارت خاکستریِ روش غیرفعال) لکهٔ سفید نمی‌اندازد.
+   textarea و سلکت: «پر بودن» برای textarea همان :placeholder-shown است و برای سلکت (ظرف .ff، بدون input) صفت data-float را خود کامپوننت می‌گذارد (باز یا دارای مقدار) */
 .ff {
   position: relative;
 }
 .ff-label {
   position: absolute;
   z-index: 1;
-  inset-inline-start: 15px;
-  top: 22px;
+  inset-inline-start: var(--ff-start, 15px);
+  top: var(--ff-rest, 22px);
   translate: 0 -50%;
-  max-width: calc(100% - 30px);
+  max-width: calc(100% - var(--ff-start, 15px) - var(--ff-end, 15px));
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -2585,7 +2627,9 @@ html.sb-dragging * {
 }
 .ff:focus-within .ff-label,
 .ff:has(input:not(:placeholder-shown)) .ff-label,
-.ff:has(input:-webkit-autofill) .ff-label {
+.ff:has(textarea:not(:placeholder-shown)) .ff-label,
+.ff:has(input:-webkit-autofill) .ff-label,
+.ff[data-float] .ff-label {
   top: 0;
   inset-inline-start: 11px;
   max-width: calc(100% - 22px);
@@ -2593,33 +2637,42 @@ html.sb-dragging * {
   font-size: 12px;
   font-weight: 600;
   color: var(--color-gray-700);
-  background: #fff;
+  background: linear-gradient(to bottom, transparent 50%, var(--ff-bg, #fff) 50%);
   pointer-events: auto; /* برچسبِ بالا رفته هم با کلیک فیلد را فوکوس می‌کند؛ در حالت استراحت شفاف است تا کلیک به خود فیلد برسد */
 }
 .ff:focus-within .ff-label {
   color: var(--color-brand-600);
 }
-.ff:has(input[aria-invalid="true"]) .ff-label {
+.ff:has(:is(input, textarea, button)[aria-invalid="true"]) .ff-label {
   color: var(--color-red-600);
 }
-.ff input::placeholder {
+/* فیلد غیرفعال یا فقط‌خواندنی داخلش خاکستری است (disabled:bg-gray-50 و read-only:bg-gray-50 در Fields.jsx)، پس نیمهٔ پایینی برچسب هم همان رنگ را می‌گیرد */
+.ff:has(:is(input, textarea):is(:disabled, :read-only)) {
+  --ff-bg: var(--color-gray-50);
+}
+.ff input::placeholder,
+.ff textarea::placeholder {
   opacity: 0;
   transition: opacity 0.2s;
 }
-.ff input:focus::placeholder {
+.ff input:focus::placeholder,
+.ff textarea:focus::placeholder {
   opacity: 1;
 }
 /* فوکوس: سایهٔ نرم فقط «زیر» باکس به‌جای حلقهٔ ring-4 دورتادور (که بالای باکس روی عنوانِ شناور می‌افتاد و بریدگی‌اش قاب روشنی دور عنوان می‌ساخت)؛ یک خط داخلی هم لبه را ۲px می‌کند.
    بدون این‌ها هم ring-4 کلاس‌های TextInput می‌ماند؛ این قاعده (بدون لایه) روی آن‌ها برنده است. وضعیت نامعتبر قرمز می‌ماند. */
-.ff input:focus {
+.ff input:focus,
+.ff textarea:focus {
   box-shadow: inset 0 0 0 1px var(--color-brand-500), 0 12px 22px -12px color-mix(in oklab, var(--color-brand-500) 55%, transparent);
 }
-.ff input[aria-invalid="true"]:focus {
+.ff input[aria-invalid="true"]:focus,
+.ff textarea[aria-invalid="true"]:focus {
   box-shadow: inset 0 0 0 1px var(--color-red-500), 0 12px 22px -12px color-mix(in oklab, var(--color-red-500) 55%, transparent);
 }
 @media (prefers-reduced-motion: reduce) {
   .ff-label,
-  .ff input::placeholder {
+  .ff input::placeholder,
+  .ff textarea::placeholder {
     transition: none;
   }
 }
@@ -2643,6 +2696,15 @@ html.sb-dragging * {
 }
 .react-tooltip.app-tip .react-tooltip-arrow {
   background: #1f2937;
+}
+/* راهنمای سایدبار جمع‌شدهٔ پنل مدیریت (AdminSidebar.jsx): بالای آیکون می‌نشیند و از عرض خود سایدبار (۷۶ پیکسل) پهن‌تر نمی‌شود، پس هرچه بلندتر باشد دو خطی می‌شود
+   و هرگز بیرون پنل روی کارت‌های صفحه نمی‌افتد */
+.react-tooltip.app-tip.app-tip--rail {
+  max-width: 76px;
+  padding: 4px 6px;
+  font-size: 0.6875rem;
+  line-height: 1.6;
+  text-align: center;
 }
 /* دکمهٔ غیرفعال رویداد موس نمی‌گیرد؛ راهنما روی عنصر دربرگیرنده است و موس باید از دکمه رد شود تا به آن برسد */
 .qty-step button:disabled {

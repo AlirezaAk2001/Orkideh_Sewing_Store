@@ -1,0 +1,614 @@
+/* پخش‌کنندهٔ ویدیو (VideoPlayer.jsx؛ پیشوند vp-): جای کنترل‌های بومی مرورگر. چهار حالت دارد که با data-state روی ریشه عوض می‌شوند:
+   idle (پیش از اولین پخش: قاب اول، دکمهٔ پخش شیشه‌ای با حلقهٔ تپنده، چیپ مدت)، playing/paused (نوار کنترل شیشه‌ای که هنگام پخش خودکار پنهان می‌شود)، ended (پخش دوباره).
+   فقط transform و opacity و scale حرکت می‌کنند (مثل بقیهٔ سایت) و با «کاهش حرکت» همهٔ انیمیشن‌های تزئینی خاموش‌اند. رنگ‌ها از تم سایت (--color-brand-*) می‌آیند.
+   پیشرفت (--vp-p) و بافر (--vp-b) را خود VideoPlayer روی ریشه می‌نویسد (بی‌رندر دوباره). نوار و نوشته‌ها چپ‌به‌راست‌اند (مثل کنترل بومی و بقیهٔ پخش‌کننده‌ها) */
+.vp {
+  --vp-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --vp-spring: cubic-bezier(0.34, 1.5, 0.5, 1);
+  --vp-p: 0;
+  --vp-b: 0;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  direction: ltr;
+  border-radius: 16px;
+  background: #000;
+  color: #fff;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.vp:focus {
+  outline: none;
+}
+.vp:focus-visible {
+  outline: 3px solid var(--color-brand-300);
+  outline-offset: 2px;
+}
+.vp:fullscreen {
+  aspect-ratio: auto;
+  border-radius: 0;
+  box-shadow: none;
+}
+/* زوم هاور پیش از پخش: هیچ‌وقت روی خود <video> انجام نمی‌شود.
+   لرزشِ زوم دو بار با زوم‌کردنِ لفاف یا خود ویدیو و برداشتن تاری و فیلتر درست نشد؛ چون خودِ المان <video> وقتی transform می‌گیرد (مرورگر آن را لایهٔ ویدیوی سخت‌افزاری/overlay می‌کند که
+   به پیکسل کامل گرد می‌شود و نمی‌تواند نیم‌پیکسلی حرکت کند) هر فریمِ انیمیشن را پله‌پله می‌کشد. پس ویدیو همیشه بدون transform می‌ماند و زوم فقط روی یک «عکسِ ایستا» روی آن است:
+   در پنل ادمین فریم اول ویدیو را یک‌بار روی <canvas> (.vp-frame) می‌کشیم (VideoPlayer.capture) و در صفحهٔ محصول خودِ پوستر (.vp-poster، تصویر next/image) است. عکس و بوم لایهٔ
+   معمولیِ رسترشده‌اند و با will-change همیشه لایهٔ جدا می‌مانند، پس زوم و برگشتشان نرم است. با شروع پخش عکس محو می‌شود (و ویدیوی بی‌زوم زیرش می‌ماند). هنوز بدون مرورگر دیده نشده */
+.vp-media {
+  position: absolute;
+  inset: 0;
+}
+.vp-video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #000;
+}
+.vp-frame,
+.vp-poster {
+  transform: scale(1);
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transition: transform 0.9s var(--vp-ease), opacity 0.4s var(--vp-ease), visibility 0s;
+}
+.vp-frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.vp-poster {
+  object-fit: cover;
+}
+/* پیش از پخش: با هاور قاب کمی نزدیک می‌شود (دعوت به پخش) */
+.vp[data-state="idle"]:hover .vp-frame,
+.vp[data-state="idle"]:hover .vp-poster {
+  transform: scale(1.035);
+}
+/* با اولین فریمِ واقعیِ پخش، عکس نرم محو می‌شود (پوستر در صفحهٔ محصول تا آن لحظه ویدیو را می‌پوشاند) */
+.vp-frame[data-framed],
+.vp-poster[data-framed] {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: transform 0.9s var(--vp-ease), opacity 0.4s var(--vp-ease), visibility 0s 0.4s;
+}
+.vp-stage {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  cursor: pointer;
+}
+.vp[data-state="playing"][data-ui="hide"] .vp-stage {
+  cursor: none;
+}
+
+/* ───── حالت اول: پیش از پخش ───── */
+.vp-idle {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 50%, rgb(0 0 0 / 0.08), rgb(0 0 0 / 0.46));
+  transition: opacity 0.4s var(--vp-ease), visibility 0s;
+}
+.vp:not([data-state="idle"]) .vp-idle {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s var(--vp-ease), visibility 0s 0.3s;
+}
+/* دکمهٔ بزرگ پخش: حلقهٔ شیشه‌ای، هستهٔ صورتی برند و حلقهٔ تپنده که از پشتش پخش می‌شود */
+.vp-big {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  place-items: center;
+  width: 78px;
+  height: 78px;
+  border: 0;
+  border-radius: 50%;
+  padding: 0;
+  color: #fff;
+  cursor: pointer;
+  pointer-events: auto;
+  /* بدون backdrop-filter: تاری پشت دکمه با هر فریمِ زوم تصویر پشتش دوباره حساب می‌شد و همان ناحیه (پشت آیکون پخش) می‌لرزید؛ شیشه با پس‌زمینهٔ نیمه‌شفاف و حلقهٔ روشن ساخته می‌شود */
+  background: radial-gradient(circle at 50% 35%, rgb(255 255 255 / 0.32), rgb(255 255 255 / 0.16) 70%);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.42), 0 14px 34px -10px rgb(0 0 0 / 0.55);
+  transition: scale 0.35s var(--vp-spring), box-shadow 0.3s;
+}
+.vp-big::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: 50%;
+  background: color-mix(in oklab, var(--color-brand-500) 60%, transparent);
+  animation: vp-ring 2.2s ease-out infinite;
+}
+.vp-big-core {
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: linear-gradient(150deg, var(--color-brand-500), var(--color-brand-700));
+  box-shadow: 0 8px 20px -6px color-mix(in oklab, var(--color-brand-600) 80%, transparent), inset 0 1px 0 rgb(255 255 255 / 0.4);
+  transition: box-shadow 0.3s;
+}
+.vp-big-core svg {
+  width: 26px;
+  height: 26px;
+  translate: 2px 0; /* مثلث پخش از نظر بصری کمی به راست می‌رود؛ برای وسط‌چین دیده‌شدن جابه‌جا می‌شود */
+}
+.vp-big:hover,
+.vp[data-state="idle"]:hover .vp-big {
+  scale: 1.09;
+}
+.vp-big:hover .vp-big-core,
+.vp[data-state="idle"]:hover .vp-big-core {
+  box-shadow: 0 0 0 7px color-mix(in oklab, var(--color-brand-500) 28%, transparent), 0 10px 26px -6px color-mix(in oklab, var(--color-brand-600) 90%, transparent), inset 0 1px 0 rgb(255 255 255 / 0.4);
+}
+.vp-big:active {
+  scale: 0.95;
+}
+.vp-big:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 3px;
+}
+.vp-chip {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px 4px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.6;
+  background: rgb(18 10 26 / 0.62); /* بدون backdrop-filter (مثل دکمهٔ پخش): زیرش تصویرِ در حال زوم است */
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.18);
+}
+.vp-chip svg {
+  width: 15px;
+  height: 15px;
+  color: var(--color-brand-300);
+}
+
+/* ───── حالت دوم: هنگام پخش (و مکث) ───── */
+.vp-bar {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 3;
+  padding: 34px 12px 8px;
+  background: linear-gradient(to top, rgb(0 0 0 / 0.8), rgb(0 0 0 / 0.38) 56%, transparent);
+  transition: opacity 0.3s var(--vp-ease), translate 0.3s var(--vp-ease);
+}
+.vp[data-ui="hide"] .vp-bar,
+.vp[data-state="idle"] .vp-bar,
+.vp[data-state="ended"] .vp-bar,
+.vp[data-failed] .vp-bar {
+  opacity: 0;
+  translate: 0 10px;
+  pointer-events: none;
+}
+/* نوار پیشرفت: ریل ۴ پیکسلی که با هاور ۶ می‌شود؛ بافر سفید کم‌رنگ، پیشرفت گرادیان برند، دستگیره با جهش می‌آید و با هاور چیپ زمان نشان می‌دهد */
+.vp-seek {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 18px;
+  cursor: pointer;
+  touch-action: none;
+  outline: none;
+}
+.vp-track {
+  position: absolute;
+  inset-inline: 0;
+  height: 4px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.28);
+  transition: height 0.15s var(--vp-ease);
+}
+.vp-seek:hover .vp-track,
+.vp-seek[data-drag] .vp-track,
+.vp-seek:focus-visible .vp-track {
+  height: 6px;
+}
+.vp-buf,
+.vp-fill {
+  position: absolute;
+  inset: 0;
+  transform-origin: left center;
+}
+.vp-buf {
+  background: rgb(255 255 255 / 0.36);
+  transform: scaleX(var(--vp-b));
+  transition: transform 0.3s linear;
+}
+.vp-fill {
+  background: linear-gradient(90deg, var(--color-brand-400), var(--color-brand-600));
+  transform: scaleX(var(--vp-p));
+}
+.vp-thumb {
+  position: absolute;
+  top: 50%;
+  left: calc(var(--vp-p) * 100%);
+  width: 14px;
+  height: 14px;
+  margin: -7px 0 0 -7px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-brand-500) 40%, transparent), 0 2px 6px rgb(0 0 0 / 0.45);
+  scale: 0;
+  transition: scale 0.2s var(--vp-spring);
+}
+.vp-seek:hover .vp-thumb,
+.vp-seek[data-drag] .vp-thumb,
+.vp-seek:focus-visible .vp-thumb {
+  scale: 1;
+}
+.vp-seek-tip {
+  position: absolute;
+  bottom: 24px;
+  translate: -50% 0;
+  padding: 2px 8px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.7;
+  white-space: nowrap;
+  pointer-events: none;
+  background: rgb(20 12 28 / 0.9);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.16), 0 6px 14px -6px rgb(0 0 0 / 0.6);
+}
+.vp-row {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 38px;
+}
+.vp-btn {
+  display: grid;
+  place-items: center;
+  min-width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  color: #fff;
+  background: transparent;
+  cursor: pointer;
+  transition: background-color 0.15s, scale 0.15s var(--vp-spring), color 0.15s;
+}
+.vp-btn:hover {
+  background: rgb(255 255 255 / 0.18);
+}
+.vp-btn:active {
+  scale: 0.9;
+}
+.vp-btn:focus-visible,
+.vp-menu-item:focus-visible,
+.vp-replay:focus-visible {
+  outline: 2px solid var(--color-brand-300);
+  outline-offset: -2px;
+}
+.vp-btn svg {
+  width: 20px;
+  height: 20px;
+}
+/* پخش و توقف روی هم‌اند و با چرخش و کوچک‌شدن به هم تبدیل می‌شوند */
+.vp-swap {
+  position: relative;
+  display: block;
+  width: 20px;
+  height: 20px;
+}
+.vp-swap > svg {
+  position: absolute;
+  inset: 0;
+  transition: opacity 0.2s, transform 0.35s var(--vp-spring);
+}
+.vp-swap[data-on="a"] > svg:nth-child(2) {
+  opacity: 0;
+  transform: scale(0.4) rotate(-90deg);
+}
+.vp-swap[data-on="b"] > svg:nth-child(1) {
+  opacity: 0;
+  transform: scale(0.4) rotate(90deg);
+}
+.vp-time {
+  margin-inline: 6px 4px;
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  opacity: 0.94;
+}
+.vp-time i {
+  font-style: normal;
+  opacity: 0.6;
+}
+.vp-grow {
+  flex: 1;
+}
+.vp-vol {
+  display: flex;
+  align-items: center;
+}
+.vp-range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 0;
+  height: 4px;
+  margin: 0;
+  padding: 0;
+  opacity: 0;
+  border-radius: 999px;
+  outline: none;
+  cursor: pointer;
+  background: linear-gradient(to right, #fff var(--v, 100%), rgb(255 255 255 / 0.3) var(--v, 100%));
+  transition: width 0.25s var(--vp-ease), opacity 0.2s, margin 0.25s var(--vp-ease);
+}
+.vp-vol:hover .vp-range,
+.vp-vol:focus-within .vp-range {
+  width: 64px;
+  margin-inline: 2px 10px;
+  opacity: 1;
+}
+.vp-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  border: 0;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-brand-500) 40%, transparent);
+}
+.vp-range::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border: 0;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-brand-500) 40%, transparent);
+}
+.vp-rate {
+  padding-inline: 8px;
+  font-size: 12.5px;
+  font-weight: 700;
+}
+.vp-rate-wrap {
+  position: relative;
+}
+.vp-menu {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 10px);
+  min-width: 112px;
+  padding: 6px;
+  border-radius: 14px;
+  background: rgb(20 12 28 / 0.94);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.14), 0 18px 34px -14px rgb(0 0 0 / 0.7);
+  transform-origin: bottom right;
+  animation: vp-menu 0.22s var(--vp-ease) both;
+}
+.vp-menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 7px 10px;
+  border: 0;
+  border-radius: 9px;
+  font-size: 13px;
+  color: #fff;
+  background: transparent;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+}
+.vp-menu-item + .vp-menu-item {
+  margin-top: 2px;
+}
+.vp-menu-item:hover {
+  background: rgb(255 255 255 / 0.14);
+}
+.vp-menu-item[aria-checked="true"] {
+  font-weight: 800;
+  color: var(--color-brand-300);
+}
+.vp-menu-item svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* پاسخ‌های لحظه‌ای: نشان پخش یا توقف وسط کادر با کلیک و کیبورد، و چرخندهٔ بافر */
+.vp-pop {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  width: 72px;
+  height: 72px;
+  margin: auto;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  pointer-events: none;
+  background: rgb(0 0 0 / 0.5);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  animation: vp-pop 0.55s var(--vp-ease) forwards;
+}
+.vp-pop svg {
+  width: 30px;
+  height: 30px;
+}
+.vp-wait {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  width: 46px;
+  height: 46px;
+  margin: auto;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  pointer-events: none;
+  background: rgb(0 0 0 / 0.45);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+.vp-wait svg {
+  width: 24px;
+  height: 24px;
+  color: var(--color-brand-300);
+  animation: vp-spin 0.9s linear infinite;
+}
+
+/* ───── حالت سوم: پایان پخش و خطا ───── */
+.vp-end,
+.vp-err {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 10px;
+  padding: 16px;
+  text-align: center;
+  pointer-events: none;
+  background: rgb(10 5 16 / 0.62);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  animation: vp-fade 0.45s var(--vp-ease) both;
+}
+.vp-end span,
+.vp-err span {
+  font-size: 13px;
+  font-weight: 600;
+  opacity: 0.92;
+}
+.vp-replay {
+  display: grid;
+  place-items: center;
+  width: 68px;
+  height: 68px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  color: #fff;
+  cursor: pointer;
+  pointer-events: auto;
+  background: linear-gradient(150deg, var(--color-brand-500), var(--color-brand-700));
+  box-shadow: 0 0 0 7px rgb(255 255 255 / 0.16), 0 14px 30px -8px color-mix(in oklab, var(--color-brand-600) 85%, transparent), inset 0 1px 0 rgb(255 255 255 / 0.4);
+  animation: vp-spin-in 0.7s var(--vp-spring) both;
+  transition: scale 0.3s var(--vp-spring);
+}
+.vp-replay:hover {
+  scale: 1.1;
+}
+.vp-replay:active {
+  scale: 0.94;
+}
+.vp-replay svg {
+  width: 28px;
+  height: 28px;
+}
+.vp-err svg {
+  width: 34px;
+  height: 34px;
+  color: var(--color-brand-300);
+}
+.vp-err b {
+  font-size: 14px;
+}
+
+@keyframes vp-ring {
+  0% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1.75);
+    opacity: 0;
+  }
+}
+@keyframes vp-pop {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.95;
+  }
+  100% {
+    transform: scale(1.4);
+    opacity: 0;
+  }
+}
+@keyframes vp-menu {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes vp-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes vp-spin-in {
+  from {
+    opacity: 0;
+    transform: rotate(-200deg) scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes vp-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .vp-big::before,
+  .vp-pop,
+  .vp-replay,
+  .vp-menu,
+  .vp-end,
+  .vp-err {
+    animation: none;
+  }
+  .vp-frame,
+  .vp-poster,
+  .vp-big,
+  .vp-thumb,
+  .vp-swap > svg,
+  .vp-bar,
+  .vp-range {
+    transition: none;
+  }
+  .vp[data-state="idle"]:hover .vp-frame,
+  .vp[data-state="idle"]:hover .vp-poster {
+    transform: none;
+  }
+}

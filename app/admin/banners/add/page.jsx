@@ -8,6 +8,7 @@ import PageHeader from "@/app/admin/_shell/PageHeader";
 import FormSection from "@/app/admin/_form/FormSection";
 import { TextInput } from "@/app/admin/_form/Fields";
 import SaveBar from "@/app/admin/_form/SaveBar";
+import UnsavedGuard from "@/app/admin/_form/UnsavedGuard";
 import ImagePreviewField from "@/app/admin/_form/ImagePreviewField";
 import { useImagePreview } from "@/app/admin/_form/useImagePreview";
 
@@ -54,7 +55,7 @@ export default function AddBannerPage() {
     <>
       <PageHeader icon={<ImagePlus className="h-[22px] w-[22px]" aria-hidden="true" />} title="افزودن بنر جدید" subtitle="متن و تصویر بنر را وارد کنید؛ نتیجه همان‌جا روی پیش‌نمایش دیده می‌شود." />
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} noValidate>
         <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,24rem)_minmax(0,1fr)]">
           <FormSection index={0} icon={Type} title="متن بنر" hint="روی تصویر بنر در صفحهٔ اصلی نشان داده می‌شود">
             <div className="grid gap-4">
@@ -70,13 +71,13 @@ export default function AddBannerPage() {
               overlay={{ title, desc }}
               label="آدرس تصویر"
               placeholder="مثال: x.png"
-              hint="با آپلود خودکار پر می‌شود؛ یا نام فایلی از پوشهٔ public/image را بنویسید، یا آدرس کامل"
               onBusyChange={setUploading}
               disabled={isSaving}
             />
           </FormSection>
         </div>
 
+        <UnsavedGuard when={Boolean(isFormFilled) && !isSaving} />
         <SaveBar label="ذخیرهٔ بنر" backHref="/admin/banners" saving={isSaving} disabled={uploading || !isFormFilled} tone={uploading ? "dirty" : !isFormFilled ? "idle" : missing.length ? "dirty" : "ready"} status={status} />
       </form>
     </>

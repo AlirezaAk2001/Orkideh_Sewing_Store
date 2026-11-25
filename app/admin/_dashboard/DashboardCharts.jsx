@@ -26,7 +26,7 @@ export default function DashboardCharts({ data, busy }) {
           actions={<ViewToggle view={view} setView={setView} />}
           busy={busy}
         >
-          <SalesChart daily={data.daily} view={view} />
+          <SalesChart daily={data.daily} previousDaily={data.previousDaily} view={view} />
         </Panel>
         <Panel index={5} icon={ChartPie} title="وضعیت سفارش‌ها" subtitle={`سفارش‌های ${days} روز اخیر`} busy={busy}>
           <StatusDonut statuses={data.statuses} />

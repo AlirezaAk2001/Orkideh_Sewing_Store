@@ -1,0 +1,82 @@
+/* کلید فعال/غیرفعال روش‌های ارسال (Switch در page.jsx؛ پیشوند shs-). اندازه ۸۸×۳۲px، دستگیرهٔ ۲۴px با ۴px فاصله از هر لبه، پس دستگیره ۸۸ − ۲×۴ − ۲۴ = ۵۶px می‌لغزد.
+   عنوان وضعیت داخل کلید است و دو نوشته (فعال و غیرفعال) روی هم‌اند و با محو شدن عوض می‌شوند. هر نوشته در جای خالی کنار دستگیره وسط می‌ایستد: دستگیره کنار لبهٔ شروع است و
+   «غیرفعال» جای ۵۰px می‌گیرد (۸۸ − ۳۲ − ۶، نوشته حدود ۴۱px)، و دستگیره کنار لبهٔ پایان است و «فعال» جای همان ۵۰px را. جایگاه‌ها منطقی‌اند (inset-inline) تا در راست‌به‌چپ درست بنشینند.
+   جهت لغزش با --shs-sign است (۱ چپ‌به‌راست، ۱- راست‌به‌چپ). نرمی: دستگیره ۶۰۰ میلی‌ثانیه با منحنی بی‌جهش، زمینه و حلقه ۵۰۰ میلی‌ثانیه؛ با «کاهش حرکت» گذارها خاموش‌اند */
+.shs {
+  --shs-sign: 1;
+  position: relative;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 88px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 700;
+  background: var(--color-gray-100);
+  box-shadow: 0 0 0 1px var(--color-gray-200);
+  transition: background-color 0.5s ease-in-out, box-shadow 0.5s ease-in-out;
+}
+[dir="rtl"] .shs {
+  --shs-sign: -1;
+}
+.shs[aria-checked="true"] {
+  background: var(--color-emerald-50);
+  box-shadow: 0 0 0 1px var(--color-emerald-200);
+}
+.shs:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px var(--color-gray-300);
+}
+.shs[aria-checked="true"]:focus-visible {
+  box-shadow: 0 0 0 4px var(--color-emerald-200);
+}
+.shs-knob {
+  position: absolute;
+  top: 4px;
+  inset-inline-start: 4px;
+  width: 24px;
+  height: 24px;
+  border-radius: 9999px;
+  background: var(--color-gray-400);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.2);
+  transition: translate 0.6s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.shs[aria-checked="true"] .shs-knob {
+  background: var(--color-emerald-500);
+  translate: calc(56px * var(--shs-sign)) 0;
+}
+.shs-txt {
+  position: absolute;
+  inset-block: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  transition: opacity 0.5s ease-in-out;
+}
+.shs-on {
+  inset-inline: 6px 32px;
+  color: var(--color-emerald-700);
+  opacity: 0;
+}
+.shs-off {
+  inset-inline: 32px 6px;
+  color: var(--color-gray-500);
+  opacity: 1;
+}
+.shs[aria-checked="true"] .shs-on {
+  opacity: 1;
+}
+.shs[aria-checked="true"] .shs-off {
+  opacity: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .shs,
+  .shs-knob,
+  .shs-txt {
+    transition: none;
+  }
+}

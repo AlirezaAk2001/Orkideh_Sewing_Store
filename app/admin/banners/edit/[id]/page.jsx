@@ -9,6 +9,7 @@ import PageHeader from "@/app/admin/_shell/PageHeader";
 import FormSection from "@/app/admin/_form/FormSection";
 import { TextInput } from "@/app/admin/_form/Fields";
 import SaveBar from "@/app/admin/_form/SaveBar";
+import UnsavedGuard from "@/app/admin/_form/UnsavedGuard";
 import ImagePreviewField from "@/app/admin/_form/ImagePreviewField";
 import { useImagePreview } from "@/app/admin/_form/useImagePreview";
 
@@ -81,7 +82,7 @@ export default function EditBannerPage() {
   // ⏳ حالت لودینگ
   if (loading) {
     return (
-      <PageLoader className="min-h-[60vh]" label="در حال بارگذاری جزئیات بنر..." />
+      <PageLoader className="h-[100cqh]" label="در حال بارگذاری جزئیات بنر..." />
     );
   }
 
@@ -95,7 +96,7 @@ export default function EditBannerPage() {
         subtitle={initialData.title ? <>در حال ویرایش «<b>{initialData.title}</b>»</> : undefined}
       />
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} noValidate>
         <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,24rem)_minmax(0,1fr)]">
           <FormSection index={0} icon={Type} title="متن بنر" hint="روی تصویر بنر در صفحهٔ اصلی نشان داده می‌شود">
             <div className="grid gap-4">
@@ -111,13 +112,13 @@ export default function EditBannerPage() {
               overlay={{ title, desc }}
               label="آدرس تصویر"
               placeholder="مثال: x.png"
-              hint="با آپلود خودکار پر می‌شود؛ یا نام فایلی از پوشهٔ public/image را بنویسید، یا آدرس کامل"
               onBusyChange={setUploading}
               disabled={isSaving}
             />
           </FormSection>
         </div>
 
+        <UnsavedGuard when={Boolean(hasChanged) && !isSaving} />
         <SaveBar label="ذخیرهٔ تغییرات" backHref="/admin/banners" saving={isSaving} disabled={uploading || !hasChanged} tone={uploading || hasChanged ? "dirty" : "idle"} status={status} />
       </form>
     </>

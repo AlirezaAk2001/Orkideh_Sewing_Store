@@ -15,7 +15,7 @@ export async function GET(req) {
     Address: { select: { title: true, address: true, plate: true, unit: true, postalCode: true } },
     OrderItems: {
       include: {
-        Product: { select: { name: true, price: true, finalPrice: true } },
+        Product: { select: { name: true, price: true, finalPrice: true, image: true } },
       },
     },
   },
@@ -76,7 +76,7 @@ export async function PUT(req) {
         Address: { select: { title: true, address: true, plate: true, unit: true, postalCode: true } },
         OrderItems: {
           include: {
-            Product: { select: { name: true, price: true, finalPrice: true } },
+            Product: { select: { name: true, price: true, finalPrice: true, image: true } },
           },
         },
       },
